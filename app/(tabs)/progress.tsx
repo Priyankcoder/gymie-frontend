@@ -12,14 +12,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   FlatList,
+  Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { Card, LineChart } from '../../src/components/ui';
 import { localApi } from '../../src/services/localApi';
-import { Workout, WeightLog, UserPreferences, ExerciseInfo } from '../../src/types';
+import { Workout, WeightLog, UserPreferences, ExerciseInfo, ProgressPhoto } from '../../src/types';
 
 type DateRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
 type MetricType = 'weight' | 'reps' | 'volume' | '1rm';
@@ -44,7 +47,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function ProgressScreen() {
   const { colors, spacing, borderRadius } = useTheme();
 
-  const [selectedTab, setSelectedTab] = useState<'exercises' | 'weight'>('exercises');
+  const [selectedTab, setSelectedTab] = useState<'exercises' | 'weight' | 'photos'>('exercises');
   const [exerciseRange, setExerciseRange] = useState<DateRange>('3M');
   const [weightRange, setWeightRange] = useState<DateRange>('1M');
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('weight');
@@ -58,6 +61,11 @@ export default function ProgressScreen() {
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [newWeight, setNewWeight] = useState('');
+  
+  // Photos state
+  const [progressPhotos, setProgressPhotos] = useState<ProgressPhoto[]>([]);
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
 
   const dateRanges: DateRange[] = ['1W', '1M', '3M', '6M', '1Y', 'ALL'];
   const metrics: { key: MetricType; label: string }[] = [
@@ -74,13 +82,15 @@ export default function ProgressScreen() {
   );
 
   const loadData = async () => {
-    const [workoutsRes, weightRes, exercisesRes, prefsRes] = await Promise.all([
+    const [workoutsRes, weightRes, exercisesRes, prefsRes, photosRes] = await Promise.all([
       localApi.workouts.getAll(),
       localApi.weightLogs.getAll(),
       localApi.exercises.getAll(),
       localApi.preferences.get(),
+      localApi.photos.getAll(),
     ]);
 
+    if (photosRes.data) setProgressPhotos(photosRes.data);
     if (workoutsRes.data) {
       setWorkouts(workoutsRes.data);
       // Auto-select first exercise if none selected
@@ -314,6 +324,33 @@ export default function ProgressScreen() {
     setNewWeight('');
     setShowWeightModal(false);
     loadData();
+  };
+
+  const calculateBMI = (): number => {
+    const weight = weightLogs[0]?.weight;
+    const height = preferences?.height;
+    if (!weight || !height) return 0;
+    
+    // Convert weight to kg if needed
+    const weightKg = preferences?.units === 'lb' ? weight * 0.453592 : weight;
+    // Height is stored in cm, convert to meters
+    const heightM = height / 100;
+    
+    return weightKg / (heightM * heightM);
+  };
+
+  const getBMICategory = (bmi: number): string => {
+    if (bmi < 18.5) return 'Underweight';
+    if (bmi < 25) return 'Normal';
+    if (bmi < 30) return 'Overweight';
+    return 'Obese';
+  };
+
+  const getBMIColor = (bmi: number): string => {
+    if (bmi < 18.5) return colors.warning;
+    if (bmi < 25) return colors.success;
+    if (bmi < 30) return colors.warning;
+    return colors.error;
   };
 
   const exerciseChartData = getExerciseChartData();
@@ -602,6 +639,49 @@ export default function ProgressScreen() {
                 </View>
               </Card>
 
+              {/* BMI Card */}
+              {preferences?.height && weightStats.current > 0 && (
+                <Card style={styles.bmiCard}>
+                  <View style={styles.bmiHeader}>
+                    <View>
+                      <Text style={[styles.bmiTitle, { color: colors.textPrimary }]}>Body Mass Index</Text>
+                      <Text style={[styles.bmiSubtitle, { color: colors.textSecondary }]}>
+                        Based on {preferences.height} cm height
+                      </Text>
+                    </View>
+                    <View style={[styles.bmiValueContainer, { backgroundColor: getBMIColor(calculateBMI()) + '20' }]}>
+                      <Text style={[styles.bmiValue, { color: getBMIColor(calculateBMI()) }]}>
+                        {calculateBMI().toFixed(1)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.bmiScale}>
+                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.warning, flex: 18.5 }]} />
+                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.success, flex: 6.5 }]} />
+                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.warning, flex: 5 }]} />
+                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.error, flex: 10, borderTopRightRadius: 4, borderBottomRightRadius: 4 }]} />
+                    <View
+                      style={[
+                        styles.bmiIndicator,
+                        {
+                          left: `${Math.min(Math.max((calculateBMI() / 40) * 100, 0), 100)}%`,
+                          backgroundColor: colors.textPrimary,
+                        }
+                      ]}
+                    />
+                  </View>
+                  <View style={styles.bmiLabels}>
+                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Underweight</Text>
+                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Normal</Text>
+                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Overweight</Text>
+                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Obese</Text>
+                  </View>
+                  <Text style={[styles.bmiCategory, { color: getBMIColor(calculateBMI()) }]}>
+                    {getBMICategory(calculateBMI())}
+                  </Text>
+                </Card>
+              )}
+
               <Text style={[styles.totalEntries, { color: colors.textSecondary }]}>
                 {weightStats.totalEntries} entries in selected period
               </Text>
@@ -617,6 +697,258 @@ export default function ProgressScreen() {
           <Text style={[styles.emptyStateSubtitle, { color: colors.textSecondary }]}>
             Log your body weight to see trends over time
           </Text>
+        </View>
+      )}
+
+      <View style={{ height: 100 }} />
+    </ScrollView>
+  );
+
+  // Photo helper functions
+  const pickProgressPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your photo library to add progress photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const newPhoto: ProgressPhoto = {
+        id: Date.now().toString(),
+        uri: result.assets[0].uri,
+        date: new Date().toISOString(),
+        notes: '',
+      };
+
+      const response = await localApi.photos.create(newPhoto);
+      if (response.data) {
+        setProgressPhotos(prev => [response.data!, ...prev]);
+      }
+    }
+  };
+
+  const takeProgressPhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your camera to take progress photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      const newPhoto: ProgressPhoto = {
+        id: Date.now().toString(),
+        uri: result.assets[0].uri,
+        date: new Date().toISOString(),
+        notes: '',
+      };
+
+      const response = await localApi.photos.create(newPhoto);
+      if (response.data) {
+        setProgressPhotos(prev => [response.data!, ...prev]);
+      }
+    }
+  };
+
+  const togglePhotoSelection = (photoId: string) => {
+    setSelectedPhotos(prev => {
+      if (prev.includes(photoId)) {
+        return prev.filter(id => id !== photoId);
+      }
+      if (prev.length < 2) {
+        return [...prev, photoId];
+      }
+      return [prev[1], photoId];
+    });
+  };
+
+  const deletePhoto = async (photoId: string) => {
+    Alert.alert(
+      'Delete Photo',
+      'Are you sure you want to delete this progress photo?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await localApi.photos.delete(photoId);
+            setProgressPhotos(prev => prev.filter(p => p.id !== photoId));
+            setSelectedPhotos(prev => prev.filter(id => id !== photoId));
+          },
+        },
+      ]
+    );
+  };
+
+  const groupPhotosByMonth = () => {
+    const groups: { [key: string]: ProgressPhoto[] } = {};
+    progressPhotos.forEach(photo => {
+      const date = new Date(photo.date);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(photo);
+    });
+    return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
+  };
+
+  const formatMonthYear = (key: string) => {
+    const [year, month] = key.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const renderPhotosTab = () => (
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      {/* Compare Mode Toggle */}
+      <View style={styles.photoHeader}>
+        <Pressable
+          style={[
+            styles.compareModeToggle,
+            {
+              backgroundColor: compareMode ? colors.accentBlue : colors.card,
+              borderColor: colors.border,
+            }
+          ]}
+          onPress={() => {
+            setCompareMode(!compareMode);
+            if (!compareMode) {
+              setSelectedPhotos([]);
+            }
+          }}
+        >
+          <Ionicons
+            name="git-compare-outline"
+            size={18}
+            color={compareMode ? '#FFF' : colors.textSecondary}
+          />
+          <Text style={[
+            styles.compareModeText,
+            { color: compareMode ? '#FFF' : colors.textSecondary }
+          ]}>
+            {compareMode ? 'Exit Compare' : 'Compare'}
+          </Text>
+        </Pressable>
+        
+        <View style={styles.photoActions}>
+          <Pressable
+            style={[styles.photoActionButton, { backgroundColor: colors.card }]}
+            onPress={takeProgressPhoto}
+          >
+            <Ionicons name="camera" size={20} color={colors.accentBlue} />
+          </Pressable>
+          <Pressable
+            style={[styles.photoActionButton, { backgroundColor: colors.card }]}
+            onPress={pickProgressPhoto}
+          >
+            <Ionicons name="images" size={20} color={colors.accentBlue} />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Compare View */}
+      {compareMode && selectedPhotos.length > 0 && (
+        <Card style={styles.compareCard}>
+          <View style={styles.compareContainer}>
+            {selectedPhotos.map((photoId, index) => {
+              const photo = progressPhotos.find(p => p.id === photoId);
+              if (!photo) return null;
+              return (
+                <View key={photo.id} style={styles.comparePhoto}>
+                  <Image source={{ uri: photo.uri }} style={styles.compareImage} />
+                  <Text style={[styles.compareDate, { color: colors.textSecondary }]}>
+                    {new Date(photo.date).toLocaleDateString()}
+                  </Text>
+                </View>
+              );
+            })}
+            {selectedPhotos.length === 1 && (
+              <View style={[styles.comparePhoto, styles.comparePlaceholder, { borderColor: colors.border }]}>
+                <Ionicons name="add" size={32} color={colors.textSecondary} />
+                <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
+                  Select another photo
+                </Text>
+              </View>
+            )}
+          </View>
+        </Card>
+      )}
+
+      {/* Photo Grid */}
+      {progressPhotos.length > 0 ? (
+        groupPhotosByMonth().map(([monthKey, photos]) => (
+          <View key={monthKey} style={styles.monthGroup}>
+            <Text style={[styles.monthTitle, { color: colors.textSecondary }]}>
+              {formatMonthYear(monthKey)}
+            </Text>
+            <View style={styles.photoGrid}>
+              {photos.map(photo => (
+                <Pressable
+                  key={photo.id}
+                  style={[
+                    styles.photoItem,
+                    compareMode && selectedPhotos.includes(photo.id) && {
+                      borderColor: colors.accentBlue,
+                      borderWidth: 3,
+                    }
+                  ]}
+                  onPress={() => {
+                    if (compareMode) {
+                      togglePhotoSelection(photo.id);
+                    }
+                  }}
+                  onLongPress={() => deletePhoto(photo.id)}
+                >
+                  <Image source={{ uri: photo.uri }} style={styles.photoThumbnail} />
+                  {compareMode && selectedPhotos.includes(photo.id) && (
+                    <View style={[styles.selectedOverlay, { backgroundColor: colors.accentBlue + '40' }]}>
+                      <View style={[styles.selectedBadge, { backgroundColor: colors.accentBlue }]}>
+                        <Text style={styles.selectedNumber}>
+                          {selectedPhotos.indexOf(photo.id) + 1}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                  <View style={[styles.photoDateBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
+                    <Text style={styles.photoDateText}>
+                      {new Date(photo.date).getDate()}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        ))
+      ) : (
+        <View style={styles.emptyState}>
+          <Ionicons name="camera-outline" size={64} color={colors.textSecondary} />
+          <Text style={[styles.emptyStateTitle, { color: colors.textPrimary }]}>
+            Track Your Transformation
+          </Text>
+          <Text style={[styles.emptyStateSubtitle, { color: colors.textSecondary }]}>
+            Take progress photos to visualize your fitness journey
+          </Text>
+          <Pressable
+            style={[styles.emptyStateButton, { backgroundColor: colors.accentBlue }]}
+            onPress={takeProgressPhoto}
+          >
+            <Ionicons name="camera" size={20} color="#FFF" />
+            <Text style={styles.emptyStateButtonText}>Take First Photo</Text>
+          </Pressable>
         </View>
       )}
 
@@ -648,10 +980,19 @@ export default function ProgressScreen() {
             Body Weight
           </Text>
         </Pressable>
+        <Pressable
+          style={[styles.tab, selectedTab === 'photos' && { borderBottomColor: colors.accentBlue, borderBottomWidth: 2 }]}
+          onPress={() => setSelectedTab('photos')}
+        >
+          <Text style={[styles.tabText, { color: selectedTab === 'photos' ? colors.accentBlue : colors.textSecondary }]}>
+            Photos
+          </Text>
+        </Pressable>
       </View>
 
       {selectedTab === 'exercises' && renderExercisesTab()}
       {selectedTab === 'weight' && renderWeightTab()}
+      {selectedTab === 'photos' && renderPhotosTab()}
 
       {/* Exercise Picker Modal */}
       <Modal visible={showExercisePicker} animationType="slide" transparent>
@@ -953,6 +1294,65 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
+  bmiCard: {
+    marginBottom: 12,
+  },
+  bmiHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  bmiTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  bmiSubtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  bmiValueContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  bmiValue: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  bmiScale: {
+    flexDirection: 'row',
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  bmiScaleSegment: {
+    height: '100%',
+  },
+  bmiIndicator: {
+    position: 'absolute',
+    top: -4,
+    width: 4,
+    height: 16,
+    borderRadius: 2,
+    marginLeft: -2,
+  },
+  bmiLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  bmiLabel: {
+    fontSize: 9,
+    fontWeight: '500',
+  },
+  bmiCategory: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 12,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -1043,6 +1443,143 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     fontSize: 16,
+    fontWeight: '600',
+  },
+  // Photo styles
+  photoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  compareModeToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  compareModeText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  photoActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  photoActionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  compareCard: {
+    marginBottom: 16,
+    padding: 12,
+  },
+  compareContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  comparePhoto: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  compareImage: {
+    width: '100%',
+    aspectRatio: 3 / 4,
+    borderRadius: 12,
+  },
+  compareDate: {
+    fontSize: 12,
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  comparePlaceholder: {
+    aspectRatio: 3 / 4,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  placeholderText: {
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  monthGroup: {
+    marginBottom: 20,
+  },
+  monthTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 4,
+  },
+  photoItem: {
+    width: (SCREEN_WIDTH - 32 - 8) / 3,
+    aspectRatio: 3 / 4,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  photoThumbnail: {
+    width: '100%',
+    height: '100%',
+  },
+  selectedOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedNumber: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  photoDateBadge: {
+    position: 'absolute',
+    bottom: 4,
+    left: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  photoDateText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginTop: 16,
+    gap: 8,
+  },
+  emptyStateButtonText: {
+    color: '#FFF',
+    fontSize: 15,
     fontWeight: '600',
   },
 });

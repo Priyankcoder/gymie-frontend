@@ -35,6 +35,7 @@ const generateId = () => {
 // Default User Preferences
 const defaultPreferences: UserPreferences = {
   units: 'kg',
+  heightUnits: 'cm',
   theme: 'dark',
   stepsSync: false,
   calorieGoal: 2200,

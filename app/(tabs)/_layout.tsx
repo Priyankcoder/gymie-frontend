@@ -82,22 +82,23 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="tools"
-        options={{
-          title: 'Tools',
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon name={focused ? 'construct' : 'construct-outline'} color={color} focused={focused} />
-          ),
-        }}
-        href={null}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name={focused ? 'person' : 'person-outline'} color={color} focused={focused} />
           ),
+        }}
+      />
+      {/* Hidden tabs - still accessible but not shown in tab bar */}
+      <Tabs.Screen
+        name="tools"
+        options={{
+          title: 'Tools',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'construct' : 'construct-outline'} color={color} focused={focused} />
+          ),
+          tabBarButton: () => null,
         }}
       />
     </Tabs>

@@ -2,6 +2,7 @@
 // User Preferences
 export interface UserPreferences {
   units: 'kg' | 'lb';
+  heightUnits: 'cm' | 'ft';
   theme: 'light' | 'dark';
   stepsSync: boolean;
   calorieGoal: number;
@@ -11,6 +12,7 @@ export interface UserPreferences {
   stepsGoal: number;
   currentWeight?: number;
   targetWeight?: number;
+  height?: number; // in cm
 }
 
 // Workout Types
