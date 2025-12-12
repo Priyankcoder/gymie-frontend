@@ -5,3 +5,4 @@ export { MetricRing } from './MetricRing';
 export { MacroBar } from './MacroBar';
 export { QuickActionCard } from './QuickActionCard';
 export { StatCard } from './StatCard';
+export { LineChart } from './LineChart';

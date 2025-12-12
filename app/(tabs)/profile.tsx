@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,36 +9,62 @@ import {
   Switch,
   Image,
   Alert,
+  TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { Card } from '../../src/components/ui';
+import { Card, Button } from '../../src/components/ui';
 import { localApi } from '../../src/services/localApi';
-import { ProgressPhoto, UserPreferences } from '../../src/types';
+import { ProgressPhoto, UserPreferences, WeightLog, StreakData } from '../../src/types';
 
 export default function ProfileScreen() {
   const { colors, borderRadius, toggleTheme, isDark } = useTheme();
 
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [progressPhotos, setProgressPhotos] = useState<ProgressPhoto[]>([]);
-  const [selectedTab, setSelectedTab] = useState<'settings' | 'photos'>('settings');
+  const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
+  const [streakData, setStreakData] = useState<StreakData | null>(null);
+  const [selectedTab, setSelectedTab] = useState<'settings' | 'weight' | 'photos'>('settings');
   const [compareMode, setCompareMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [newWeight, setNewWeight] = useState('');
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<{
+    key: keyof UserPreferences;
+    label: string;
+    value: string;
+  } | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const loadData = async () => {
-    const [prefsRes, photosRes] = await Promise.all([
+    const [prefsRes, photosRes, weightRes, streakRes] = await Promise.all([
       localApi.preferences.get(),
       localApi.photos.getAll(),
+      localApi.weightLogs.getAll(),
+      localApi.attendance.getStreak(),
     ]);
 
     if (prefsRes.data) setPreferences(prefsRes.data);
     if (photosRes.data) setProgressPhotos(photosRes.data);
+    if (weightRes.data) {
+      const sorted = [...weightRes.data].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      setWeightLogs(sorted);
+    }
+    if (streakRes.data) setStreakData(streakRes.data);
   };
 
   const updatePreference = async (key: keyof UserPreferences, value: any) => {
@@ -46,6 +72,30 @@ export default function ProfileScreen() {
     const updated = { ...preferences, [key]: value };
     setPreferences(updated);
     await localApi.preferences.update({ [key]: value });
+  };
+
+  const logWeight = async () => {
+    const weight = parseFloat(newWeight);
+    if (isNaN(weight) || weight <= 0) return;
+
+    await localApi.weightLogs.create({
+      date: new Date().toISOString().split('T')[0],
+      weight,
+      unit: preferences?.units || 'kg',
+    });
+    setNewWeight('');
+    setShowWeightModal(false);
+    loadData();
+  };
+
+  const saveGoal = async () => {
+    if (!editingGoal) return;
+    const value = parseFloat(editingGoal.value);
+    if (isNaN(value) || value <= 0) return;
+
+    await updatePreference(editingGoal.key, value);
+    setShowGoalModal(false);
+    setEditingGoal(null);
   };
 
   const pickProgressPhoto = async () => {
@@ -57,9 +107,11 @@ export default function ProfileScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
+      const latestWeight = weightLogs[0]?.weight;
       const newPhoto: Omit<ProgressPhoto, 'id'> = {
         uri: result.assets[0].uri,
         date: new Date().toISOString().split('T')[0],
+        weight: latestWeight,
       };
       await localApi.photos.create(newPhoto);
       loadData();
@@ -80,9 +132,11 @@ export default function ProfileScreen() {
     });
 
     if (!result.canceled && result.assets[0]) {
+      const latestWeight = weightLogs[0]?.weight;
       const newPhoto: Omit<ProgressPhoto, 'id'> = {
         uri: result.assets[0].uri,
         date: new Date().toISOString().split('T')[0],
+        weight: latestWeight,
       };
       await localApi.photos.create(newPhoto);
       loadData();
@@ -100,7 +154,7 @@ export default function ProfileScreen() {
   const groupPhotosByMonth = () => {
     const grouped: { [key: string]: ProgressPhoto[] } = {};
     progressPhotos.forEach((photo) => {
-      const monthKey = photo.date.substring(0, 7); // YYYY-MM
+      const monthKey = photo.date.substring(0, 7);
       if (!grouped[monthKey]) {
         grouped[monthKey] = [];
       }
@@ -114,18 +168,42 @@ export default function ProfileScreen() {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
+  const getWeightChange = () => {
+    if (weightLogs.length < 2) return null;
+    const latest = weightLogs[0].weight;
+    const previous = weightLogs[1].weight;
+    return latest - previous;
+  };
+
   const renderSettingsTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      {/* Profile Header */}
-      <Card style={styles.profileCard}>
-        <View style={styles.profileContent}>
-          <View style={[styles.avatar, { backgroundColor: colors.accentBlue }]}>
-            <Ionicons name="person" size={40} color="#FFF" />
+      {/* Stats Summary */}
+      <Card style={styles.statsCard}>
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.warning }]}>
+              🔥 {streakData?.currentStreak || 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              Current Streak
+            </Text>
           </View>
-          <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: colors.textPrimary }]}>Gymie User</Text>
-            <Text style={[styles.profileSubtitle, { color: colors.textSecondary }]}>
-              Fitness Enthusiast
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.accentBlue }]}>
+              {streakData?.totalWorkouts || 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              Total Workouts
+            </Text>
+          </View>
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: colors.success }]}>
+              {streakData?.thisMonthWorkouts || 0}
+            </Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+              This Month
             </Text>
           </View>
         </View>
@@ -134,36 +212,82 @@ export default function ProfileScreen() {
       {/* Goals Section */}
       <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Daily Goals</Text>
       <Card style={styles.settingsCard}>
-        <View style={styles.settingItem}>
+        <Pressable 
+          style={styles.settingItem}
+          onPress={() => {
+            setEditingGoal({
+              key: 'calorieGoal',
+              label: 'Calorie Goal',
+              value: (preferences?.calorieGoal || 2200).toString(),
+            });
+            setShowGoalModal(true);
+          }}
+        >
           <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Calorie Goal</Text>
-          <Text style={[styles.settingValue, { color: colors.accentBlue }]}>
-            {preferences?.calorieGoal || 2200} kcal
-          </Text>
-        </View>
-        <View style={[styles.settingItem, { borderTopColor: colors.border }]}>
+          <View style={styles.settingValueRow}>
+            <Text style={[styles.settingValue, { color: colors.accentBlue }]}>
+              {preferences?.calorieGoal || 2200} kcal
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          </View>
+        </Pressable>
+        <Pressable 
+          style={[styles.settingItem, { borderTopColor: colors.border }]}
+          onPress={() => {
+            setEditingGoal({
+              key: 'proteinGoal',
+              label: 'Protein Goal',
+              value: (preferences?.proteinGoal || 150).toString(),
+            });
+            setShowGoalModal(true);
+          }}
+        >
           <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Protein Goal</Text>
-          <Text style={[styles.settingValue, { color: colors.proteinColor }]}>
-            {preferences?.proteinGoal || 150}g
-          </Text>
-        </View>
-        <View style={[styles.settingItem, { borderTopColor: colors.border }]}>
+          <View style={styles.settingValueRow}>
+            <Text style={[styles.settingValue, { color: colors.proteinColor }]}>
+              {preferences?.proteinGoal || 150}g
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          </View>
+        </Pressable>
+        <Pressable 
+          style={[styles.settingItem, { borderTopColor: colors.border }]}
+          onPress={() => {
+            setEditingGoal({
+              key: 'carbsGoal',
+              label: 'Carbs Goal',
+              value: (preferences?.carbsGoal || 250).toString(),
+            });
+            setShowGoalModal(true);
+          }}
+        >
           <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Carbs Goal</Text>
-          <Text style={[styles.settingValue, { color: colors.carbsColor }]}>
-            {preferences?.carbsGoal || 250}g
-          </Text>
-        </View>
-        <View style={[styles.settingItem, { borderTopColor: colors.border }]}>
+          <View style={styles.settingValueRow}>
+            <Text style={[styles.settingValue, { color: colors.carbsColor }]}>
+              {preferences?.carbsGoal || 250}g
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          </View>
+        </Pressable>
+        <Pressable 
+          style={[styles.settingItem, { borderTopColor: colors.border }]}
+          onPress={() => {
+            setEditingGoal({
+              key: 'fatGoal',
+              label: 'Fat Goal',
+              value: (preferences?.fatGoal || 70).toString(),
+            });
+            setShowGoalModal(true);
+          }}
+        >
           <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Fat Goal</Text>
-          <Text style={[styles.settingValue, { color: colors.fatColor }]}>
-            {preferences?.fatGoal || 70}g
-          </Text>
-        </View>
-        <View style={[styles.settingItem, { borderTopColor: colors.border }]}>
-          <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Steps Goal</Text>
-          <Text style={[styles.settingValue, { color: colors.stepsColor }]}>
-            {preferences?.stepsGoal?.toLocaleString() || '10,000'}
-          </Text>
-        </View>
+          <View style={styles.settingValueRow}>
+            <Text style={[styles.settingValue, { color: colors.fatColor }]}>
+              {preferences?.fatGoal || 70}g
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          </View>
+        </Pressable>
       </Card>
 
       {/* Preferences Section */}
@@ -210,20 +334,6 @@ export default function ProfileScreen() {
             ))}
           </View>
         </View>
-        <View style={[styles.settingItem, { borderTopColor: colors.border }]}>
-          <View style={styles.settingLabelContainer}>
-            <Ionicons name="footsteps" size={20} color={colors.textSecondary} />
-            <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
-              Steps Sync
-            </Text>
-          </View>
-          <Switch
-            value={preferences?.stepsSync || false}
-            onValueChange={(value) => updatePreference('stepsSync', value)}
-            trackColor={{ false: colors.border, true: colors.accentBlue }}
-            thumbColor="#FFF"
-          />
-        </View>
       </Card>
 
       {/* About Section */}
@@ -234,15 +344,6 @@ export default function ProfileScreen() {
             <Ionicons name="information-circle" size={20} color={colors.textSecondary} />
             <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
               About Gymie
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-        </Pressable>
-        <Pressable style={[styles.settingItem, { borderTopColor: colors.border }]}>
-          <View style={styles.settingLabelContainer}>
-            <Ionicons name="document-text" size={20} color={colors.textSecondary} />
-            <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
-              Privacy Policy
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
@@ -262,6 +363,118 @@ export default function ProfileScreen() {
       <View style={{ height: 100 }} />
     </ScrollView>
   );
+
+  const renderWeightTab = () => {
+    const weightChange = getWeightChange();
+
+    return (
+      <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+        {/* Current Weight Card */}
+        <Card style={styles.currentWeightCard}>
+          <View style={styles.currentWeightHeader}>
+            <Text style={[styles.currentWeightLabel, { color: colors.textSecondary }]}>
+              Current Weight
+            </Text>
+            <Pressable 
+              style={[styles.addWeightButton, { backgroundColor: colors.accentBlue }]}
+              onPress={() => setShowWeightModal(true)}
+            >
+              <Ionicons name="add" size={20} color="#FFF" />
+            </Pressable>
+          </View>
+          <View style={styles.currentWeightValue}>
+            <Text style={[styles.weightNumber, { color: colors.textPrimary }]}>
+              {weightLogs[0]?.weight || '--'}
+            </Text>
+            <Text style={[styles.weightUnit, { color: colors.textSecondary }]}>
+              {preferences?.units || 'kg'}
+            </Text>
+          </View>
+          {weightChange !== null && (
+            <View style={[
+              styles.weightChangeBadge,
+              { backgroundColor: weightChange <= 0 ? `${colors.success}20` : `${colors.error}20` }
+            ]}>
+              <Ionicons
+                name={weightChange <= 0 ? 'trending-down' : 'trending-up'}
+                size={16}
+                color={weightChange <= 0 ? colors.success : colors.error}
+              />
+              <Text style={[
+                styles.weightChangeText,
+                { color: weightChange <= 0 ? colors.success : colors.error }
+              ]}>
+                {Math.abs(weightChange).toFixed(1)} {preferences?.units || 'kg'} from last
+              </Text>
+            </View>
+          )}
+        </Card>
+
+        {/* Target Weight */}
+        <Card style={styles.targetWeightCard}>
+          <Pressable 
+            style={styles.targetWeightContent}
+            onPress={() => {
+              setEditingGoal({
+                key: 'targetWeight',
+                label: 'Target Weight',
+                value: (preferences?.targetWeight || 70).toString(),
+              });
+              setShowGoalModal(true);
+            }}
+          >
+            <View>
+              <Text style={[styles.targetWeightLabel, { color: colors.textSecondary }]}>
+                Target Weight
+              </Text>
+              <Text style={[styles.targetWeightValue, { color: colors.textPrimary }]}>
+                {preferences?.targetWeight || '--'} {preferences?.units || 'kg'}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+          </Pressable>
+        </Card>
+
+        {/* Weight History */}
+        <Text style={[styles.historyTitle, { color: colors.textPrimary }]}>Weight History</Text>
+        {weightLogs.length === 0 ? (
+          <View style={styles.emptyWeightHistory}>
+            <Ionicons name="scale-outline" size={50} color={colors.textSecondary} />
+            <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+              No weight entries yet
+            </Text>
+            <Button 
+              title="Log Weight" 
+              onPress={() => setShowWeightModal(true)} 
+              style={{ marginTop: 16 }}
+            />
+          </View>
+        ) : (
+          weightLogs.map((log, index) => (
+            <View 
+              key={log.id} 
+              style={[styles.weightLogItem, { borderBottomColor: colors.border }]}
+            >
+              <View>
+                <Text style={[styles.weightLogDate, { color: colors.textSecondary }]}>
+                  {new Date(log.date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </Text>
+              </View>
+              <Text style={[styles.weightLogValue, { color: colors.textPrimary }]}>
+                {log.weight} {log.unit}
+              </Text>
+            </View>
+          ))
+        )}
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+    );
+  };
 
   const renderPhotosTab = () => {
     const groupedPhotos = groupPhotosByMonth();
@@ -326,6 +539,11 @@ export default function ProfileScreen() {
                   <Text style={[styles.compareDate, { color: colors.textSecondary }]}>
                     {new Date(photo.date).toLocaleDateString()}
                   </Text>
+                  {photo.weight && (
+                    <Text style={[styles.compareWeight, { color: colors.accentBlue }]}>
+                      {photo.weight} {preferences?.units || 'kg'}
+                    </Text>
+                  )}
                 </View>
               );
             })}
@@ -365,9 +583,16 @@ export default function ProfileScreen() {
                       onPress={() => compareMode && togglePhotoSelection(photo.id)}
                     >
                       <Image source={{ uri: photo.uri }} style={styles.photoImage} />
-                      <Text style={[styles.photoDate, { color: colors.textSecondary }]}>
-                        {new Date(photo.date).getDate()}
-                      </Text>
+                      <View style={styles.photoOverlay}>
+                        <Text style={styles.photoDate}>
+                          {new Date(photo.date).getDate()}
+                        </Text>
+                        {photo.weight && (
+                          <Text style={styles.photoWeight}>
+                            {photo.weight}
+                          </Text>
+                        )}
+                      </View>
                       {compareMode && selectedPhotos.includes(photo.id) && (
                         <View style={[styles.selectedBadge, { backgroundColor: colors.accentBlue }]}>
                           <Ionicons name="checkmark" size={16} color="#FFF" />
@@ -392,7 +617,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={[styles.tabContainer, { borderBottomColor: colors.border }]}>
-        {(['settings', 'photos'] as const).map((tab) => (
+        {(['settings', 'weight', 'photos'] as const).map((tab) => (
           <Pressable
             key={tab}
             style={[
@@ -407,14 +632,105 @@ export default function ProfileScreen() {
                 { color: selectedTab === tab ? colors.accentBlue : colors.textSecondary },
               ]}
             >
-              {tab === 'settings' ? 'Settings' : 'Progress Photos'}
+              {tab === 'settings' ? 'Settings' : tab === 'weight' ? 'Weight' : 'Photos'}
             </Text>
           </Pressable>
         ))}
       </View>
 
       {selectedTab === 'settings' && renderSettingsTab()}
+      {selectedTab === 'weight' && renderWeightTab()}
       {selectedTab === 'photos' && renderPhotosTab()}
+
+      {/* Weight Log Modal */}
+      <Modal visible={showWeightModal} animationType="fade" transparent>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.weightModalContent, { backgroundColor: colors.card, borderRadius: borderRadius.xl }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Log Weight</Text>
+            <TextInput
+              style={[
+                styles.weightInput,
+                {
+                  backgroundColor: colors.inputBackground,
+                  color: colors.textPrimary,
+                  borderRadius: borderRadius.md,
+                },
+              ]}
+              value={newWeight}
+              onChangeText={setNewWeight}
+              placeholder={`Enter weight (${preferences?.units || 'kg'})`}
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="numeric"
+              autoFocus
+            />
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.modalButton, { backgroundColor: colors.inputBackground }]}
+                onPress={() => {
+                  setShowWeightModal(false);
+                  setNewWeight('');
+                }}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, { backgroundColor: colors.accentBlue }]}
+                onPress={logWeight}
+              >
+                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Goal Edit Modal */}
+      <Modal visible={showGoalModal} animationType="fade" transparent>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.weightModalContent, { backgroundColor: colors.card, borderRadius: borderRadius.xl }]}>
+            <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+              {editingGoal?.label || 'Edit Goal'}
+            </Text>
+            <TextInput
+              style={[
+                styles.weightInput,
+                {
+                  backgroundColor: colors.inputBackground,
+                  color: colors.textPrimary,
+                  borderRadius: borderRadius.md,
+                },
+              ]}
+              value={editingGoal?.value || ''}
+              onChangeText={(text) => setEditingGoal(prev => prev ? { ...prev, value: text } : null)}
+              keyboardType="numeric"
+              autoFocus
+            />
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[styles.modalButton, { backgroundColor: colors.inputBackground }]}
+                onPress={() => {
+                  setShowGoalModal(false);
+                  setEditingGoal(null);
+                }}
+              >
+                <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, { backgroundColor: colors.accentBlue }]}
+                onPress={saveGoal}
+              >
+                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
+              </Pressable>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -450,30 +766,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
   },
-  profileCard: {
-    marginBottom: 24,
+  statsCard: {
+    marginBottom: 20,
   },
-  profileContent: {
+  statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+  statItem: {
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  profileInfo: {
-    marginLeft: 16,
-  },
-  profileName: {
-    fontSize: 22,
+  statValue: {
+    fontSize: 24,
     fontWeight: '700',
   },
-  profileSubtitle: {
-    fontSize: 14,
+  statLabel: {
+    fontSize: 11,
     marginTop: 4,
+  },
+  statDivider: {
+    width: 1,
+    height: 40,
   },
   sectionTitle: {
     fontSize: 13,
@@ -503,6 +817,11 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 16,
   },
+  settingValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   settingValue: {
     fontSize: 16,
     fontWeight: '600',
@@ -523,6 +842,96 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     marginTop: 8,
+  },
+  currentWeightCard: {
+    marginBottom: 12,
+  },
+  currentWeightHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  currentWeightLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  addWeightButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  currentWeightValue: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  weightNumber: {
+    fontSize: 48,
+    fontWeight: '700',
+  },
+  weightUnit: {
+    fontSize: 20,
+    marginLeft: 8,
+  },
+  weightChangeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 4,
+  },
+  weightChangeText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  targetWeightCard: {
+    marginBottom: 20,
+  },
+  targetWeightContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  targetWeightLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  targetWeightValue: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  emptyWeightHistory: {
+    alignItems: 'center',
+    paddingTop: 40,
+  },
+  emptyText: {
+    fontSize: 14,
+    marginTop: 12,
+  },
+  weightLogItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  weightLogDate: {
+    fontSize: 14,
+  },
+  weightLogValue: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   photosActionBar: {
     flexDirection: 'row',
@@ -570,6 +979,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
+  compareWeight: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
   photosContainer: {
     flex: 1,
   },
@@ -611,12 +1025,25 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  photoDate: {
+  photoOverlay: {
     position: 'absolute',
-    bottom: 4,
-    right: 6,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 4,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  photoDate: {
     fontSize: 12,
     fontWeight: '600',
+    color: '#FFF',
+  },
+  photoWeight: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFF',
   },
   selectedBadge: {
     position: 'absolute',
@@ -627,5 +1054,42 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  weightModalContent: {
+    width: '85%',
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  weightInput: {
+    height: 56,
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

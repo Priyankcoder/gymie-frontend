@@ -11,6 +11,8 @@ const STORAGE_KEYS = {
   HEALTH_METRICS: '@gymie_health_metrics',
   PROGRESS_PHOTOS: '@gymie_progress_photos',
   EXERCISES: '@gymie_exercises',
+  GYM_ATTENDANCE: '@gymie_gym_attendance',
+  WEIGHT_LOGS: '@gymie_weight_logs',
 } as const;
 
 type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];

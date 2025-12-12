@@ -1,52 +1,82 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   RefreshControl,
-  Dimensions,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { Card, MetricRing, MacroBar, QuickActionCard, StatCard } from '../../src/components/ui';
+import { Card, MetricRing, MacroBar, QuickActionCard } from '../../src/components/ui';
 import { localApi } from '../../src/services/localApi';
-import { HealthMetrics, Meal, Workout, UserPreferences } from '../../src/types';
-
-const { width } = Dimensions.get('window');
+import {
+  Meal,
+  Workout,
+  UserPreferences,
+  StreakData,
+  PersonalRecord
+} from '../../src/types';
 
 export default function HomeScreen() {
-  const { colors, spacing, borderRadius, isDark } = useTheme();
+  const { colors, spacing, borderRadius } = useTheme();
   const router = useRouter();
 
   const [refreshing, setRefreshing] = useState(false);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [todayMeals, setTodayMeals] = useState<Meal[]>([]);
   const [todayWorkouts, setTodayWorkouts] = useState<Workout[]>([]);
-  const [healthMetrics, setHealthMetrics] = useState<HealthMetrics | null>(null);
-
+  const [streakData, setStreakData] = useState<StreakData | null>(null);
+  const [recentPRs, setRecentPRs] = useState<PersonalRecord[]>([]);
+  const [volumeStats, setVolumeStats] = useState<{
+    thisWeek: number;
+    lastWeek: number;
+    thisMonth: number;
+    allTime: number;
+  } | null>(null);
   const today = new Date().toISOString().split('T')[0];
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   const loadData = async () => {
     try {
-      const [prefsRes, mealsRes, workoutsRes, metricsRes] = await Promise.all([
+      const [
+        prefsRes,
+        mealsRes,
+        workoutsRes,
+        streakRes,
+        prsRes,
+        volumeRes,
+      ] = await Promise.all([
         localApi.preferences.get(),
         localApi.meals.getByDate(today),
         localApi.workouts.getByDate(today),
-        localApi.metrics.syncFromDevice(),
+        localApi.attendance.getStreak(),
+        localApi.prs.getAll(),
+        localApi.progress.getVolumeStats(),
       ]);
 
       if (prefsRes.data) setPreferences(prefsRes.data);
       if (mealsRes.data) setTodayMeals(mealsRes.data);
       if (workoutsRes.data) setTodayWorkouts(workoutsRes.data);
-      if (metricsRes.data) setHealthMetrics(metricsRes.data);
+      if (streakRes.data) setStreakData(streakRes.data);
+      if (prsRes.data) {
+        // Get recent PRs (last 7 days)
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const recent = prsRes.data.filter(pr => new Date(pr.date) >= weekAgo);
+        setRecentPRs(recent.slice(0, 3));
+      }
+      if (volumeRes.data) setVolumeStats(volumeRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -73,7 +103,6 @@ export default function HomeScreen() {
   const proteinGoal = preferences?.proteinGoal || 150;
   const carbsGoal = preferences?.carbsGoal || 250;
   const fatGoal = preferences?.fatGoal || 70;
-  const stepsGoal = preferences?.stepsGoal || 10000;
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -90,6 +119,16 @@ export default function HomeScreen() {
     });
   };
 
+  const formatVolume = (volume: number) => {
+    if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M`;
+    if (volume >= 1000) return `${(volume / 1000).toFixed(1)}K`;
+    return volume.toString();
+  };
+
+  const volumeChange = volumeStats 
+    ? ((volumeStats.thisWeek - volumeStats.lastWeek) / Math.max(volumeStats.lastWeek, 1)) * 100
+    : 0;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
@@ -104,7 +143,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-              {greeting()} 👋
+              {greeting()} 💪
             </Text>
             <Text style={[styles.date, { color: colors.textPrimary }]}>
               {formatDate()}
@@ -112,14 +151,145 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Main Calories Ring Card */}
+        {/* Streak & Stats Row */}
+        <View style={styles.statsRow}>
+          {/* Streak Card */}
+          <Card style={[styles.streakCard, { flex: 1 }]}>
+            <View style={styles.streakContent}>
+              <View style={[styles.streakIcon, { backgroundColor: `${colors.warning}20` }]}>
+                <Text style={styles.fireEmoji}>🔥</Text>
+              </View>
+              <View style={styles.streakInfo}>
+                <Text style={[styles.streakValue, { color: colors.textPrimary }]}>
+                  {streakData?.currentStreak || 0}
+                </Text>
+                <Text style={[styles.streakLabel, { color: colors.textSecondary }]}>
+                  Day Streak
+                </Text>
+              </View>
+            </View>
+            <View style={styles.streakMeta}>
+              <Text style={[styles.streakMetaText, { color: colors.textSecondary }]}>
+                Best: {streakData?.longestStreak || 0} days
+              </Text>
+            </View>
+          </Card>
+
+          {/* This Week Workouts */}
+          <Card style={[styles.weekCard, { flex: 1 }]}>
+            <View style={styles.weekContent}>
+              <View style={[styles.weekIcon, { backgroundColor: `${colors.accentBlue}20` }]}>
+                <Ionicons name="calendar" size={20} color={colors.accentBlue} />
+              </View>
+              <View style={styles.weekInfo}>
+                <Text style={[styles.weekValue, { color: colors.textPrimary }]}>
+                  {streakData?.thisWeekWorkouts || 0}
+                </Text>
+                <Text style={[styles.weekLabel, { color: colors.textSecondary }]}>
+                  This Week
+                </Text>
+              </View>
+            </View>
+            <View style={styles.weekDots}>
+              {[0, 1, 2, 3, 4, 5, 6].map((day) => (
+                <View
+                  key={day}
+                  style={[
+                    styles.dayDot,
+                    {
+                      backgroundColor: day < (streakData?.thisWeekWorkouts || 0)
+                        ? colors.accentBlue
+                        : colors.progressBackground,
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          </Card>
+        </View>
+
+        {/* Volume Stats Card */}
+        <Card style={styles.volumeCard}>
+          <View style={styles.volumeHeader}>
+            <View style={styles.volumeTitle}>
+              <Ionicons name="barbell" size={20} color={colors.accentBlue} />
+              <View>
+                <Text style={[styles.volumeTitleText, { color: colors.textPrimary }]}>
+                  Weekly Volume
+                </Text>
+                <Text style={[styles.volumeExplainer, { color: colors.textSecondary }]}>
+                  sets × reps × weight
+                </Text>
+              </View>
+            </View>
+            {volumeChange !== 0 && (
+              <View style={[
+                styles.volumeChange,
+                { backgroundColor: volumeChange > 0 ? `${colors.success}20` : `${colors.error}20` }
+              ]}>
+                <Ionicons
+                  name={volumeChange > 0 ? 'trending-up' : 'trending-down'}
+                  size={14}
+                  color={volumeChange > 0 ? colors.success : colors.error}
+                />
+                <Text style={[
+                  styles.volumeChangeText,
+                  { color: volumeChange > 0 ? colors.success : colors.error }
+                ]}>
+                  {Math.abs(volumeChange).toFixed(0)}%
+                </Text>
+              </View>
+            )}
+          </View>
+          <Text style={[styles.volumeValue, { color: colors.textPrimary }]}>
+            {formatVolume(volumeStats?.thisWeek || 0)} kg
+          </Text>
+          <Text style={[styles.volumeHint, { color: colors.textSecondary }]}>
+            💡 Higher volume = more muscle stimulus
+          </Text>
+          <View style={[styles.volumeDivider, { backgroundColor: colors.border }]} />
+          <Text style={[styles.volumeSubtext, { color: colors.textSecondary }]}>
+            All time: {formatVolume(volumeStats?.allTime || 0)} kg lifted
+          </Text>
+        </Card>
+
+        {/* Recent PRs */}
+        {recentPRs.length > 0 && (
+          <Card style={styles.prsCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleRow}>
+                <Ionicons name="trophy" size={20} color={colors.warning} />
+                <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
+                  Recent PRs 🎉
+                </Text>
+              </View>
+              <Pressable onPress={() => router.push('/workout')}>
+                <Text style={[styles.sectionAction, { color: colors.accentBlue }]}>
+                  View All
+                </Text>
+              </Pressable>
+            </View>
+            {recentPRs.map((pr) => (
+              <View key={pr.id} style={styles.prItem}>
+                <Text style={[styles.prExercise, { color: colors.textPrimary }]}>
+                  {pr.exerciseName}
+                </Text>
+                <Text style={[styles.prValue, { color: colors.warning }]}>
+                  {pr.value} {pr.unit} × {pr.reps}
+                </Text>
+              </View>
+            ))}
+          </Card>
+        )}
+
+        {/* Daily Nutrition Card */}
         <Card style={styles.caloriesCard}>
           <View style={styles.caloriesContent}>
             <MetricRing
               value={nutritionTotals.calories}
               maxValue={calorieGoal}
-              size={140}
-              strokeWidth={12}
+              size={120}
+              strokeWidth={10}
               color={colors.caloriesRing}
               label="Calories"
               unit="kcal"
@@ -157,63 +327,20 @@ export default function HomeScreen() {
           </View>
         </Card>
 
-        {/* Health Stats Row */}
-        <View style={styles.statsRow}>
-          <StatCard
-            title="Steps"
-            value={healthMetrics?.steps?.toLocaleString() || '0'}
-            icon={<Ionicons name="footsteps" size={18} color={colors.stepsColor} />}
-            color={colors.stepsColor}
-            style={styles.statCard}
-          />
-          <StatCard
-            title="Heart Rate"
-            value={healthMetrics?.heartRate || '--'}
-            unit="bpm"
-            icon={<Ionicons name="heart" size={18} color={colors.heartRateColor} />}
-            color={colors.heartRateColor}
-            style={styles.statCard}
-          />
-        </View>
-
-        {/* Steps Progress */}
-        <Card style={styles.stepsCard}>
-          <View style={styles.stepsHeader}>
-            <View style={styles.stepsInfo}>
-              <Ionicons name="footsteps" size={24} color={colors.stepsColor} />
-              <Text style={[styles.stepsTitle, { color: colors.textPrimary }]}>
-                Daily Steps
-              </Text>
-            </View>
-            <Text style={[styles.stepsValue, { color: colors.textPrimary }]}>
-              {healthMetrics?.steps?.toLocaleString() || '0'} / {stepsGoal.toLocaleString()}
-            </Text>
-          </View>
-          <View style={[styles.stepsTrack, { backgroundColor: colors.progressBackground }]}>
-            <View
-              style={[
-                styles.stepsFill,
-                {
-                  width: `${Math.min(((healthMetrics?.steps || 0) / stepsGoal) * 100, 100)}%`,
-                  backgroundColor: colors.stepsColor,
-                },
-              ]}
-            />
-          </View>
-        </Card>
-
-        {/* Today Workout Summary */}
+        {/* Today's Workout Summary */}
         <Card style={styles.workoutSummaryCard}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               {"Today's Workout"}
             </Text>
-            <Text style={[styles.sectionAction, { color: colors.accentBlue }]}>
-              View All
-            </Text>
+            <Pressable onPress={() => router.push('/workout')}>
+              <Text style={[styles.sectionAction, { color: colors.accentBlue }]}>
+                View All
+              </Text>
+            </Pressable>
           </View>
           {todayWorkouts.length > 0 ? (
-            todayWorkouts.map((workout, index) => (
+            todayWorkouts.map((workout) => (
               <View key={workout.id} style={styles.workoutItem}>
                 <View style={[styles.workoutIcon, { backgroundColor: `${colors.accentBlue}15` }]}>
                   <Ionicons name="barbell" size={20} color={colors.accentBlue} />
@@ -246,25 +373,25 @@ export default function HomeScreen() {
           Quick Actions
         </Text>
         <QuickActionCard
-          title="Log Workout"
-          subtitle="Start a new workout session"
-          icon={<Ionicons name="add-circle" size={24} color={colors.accentBlue} />}
+          title="Start Workout"
+          subtitle="Choose a template or start fresh"
+          icon={<Ionicons name="play-circle" size={24} color={colors.success} />}
           onPress={() => router.push('/workout')}
-          color={colors.accentBlue}
-        />
-        <QuickActionCard
-          title="Upload Meal Photo"
-          subtitle="AI-powered macro estimation"
-          icon={<Ionicons name="camera" size={24} color={colors.success} />}
-          onPress={() => router.push('/nutrition')}
           color={colors.success}
         />
         <QuickActionCard
-          title="View PRs"
-          subtitle="Check your personal records"
-          icon={<Ionicons name="trophy" size={24} color={colors.warning} />}
+          title="Log Meal"
+          subtitle="Track your nutrition"
+          icon={<Ionicons name="restaurant" size={24} color={colors.carbsColor} />}
+          onPress={() => router.push('/nutrition')}
+          color={colors.carbsColor}
+        />
+        <QuickActionCard
+          title="View Progress"
+          subtitle="Check your lifting stats"
+          icon={<Ionicons name="stats-chart" size={24} color={colors.accentBlue} />}
           onPress={() => router.push('/workout')}
-          color={colors.warning}
+          color={colors.accentBlue}
         />
 
         {/* Bottom Padding */}
@@ -300,6 +427,148 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 4,
   },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  streakCard: {
+    padding: 14,
+  },
+  streakContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  streakIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fireEmoji: {
+    fontSize: 22,
+  },
+  streakInfo: {
+    marginLeft: 12,
+  },
+  streakValue: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  streakLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  streakMeta: {
+    marginTop: 8,
+  },
+  streakMetaText: {
+    fontSize: 11,
+  },
+  weekCard: {
+    padding: 14,
+  },
+  weekContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  weekIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  weekInfo: {
+    marginLeft: 12,
+  },
+  weekValue: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  weekLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  weekDots: {
+    flexDirection: 'row',
+    gap: 4,
+    marginTop: 10,
+  },
+  dayDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  volumeCard: {
+    marginBottom: 12,
+  },
+  volumeHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  volumeTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  volumeTitleText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  volumeChange: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  volumeChangeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  volumeExplainer: {
+    fontSize: 10,
+    marginTop: 2,
+  },
+  volumeValue: {
+    fontSize: 32,
+    fontWeight: '700',
+  },
+  volumeHint: {
+    fontSize: 11,
+    marginTop: 6,
+  },
+  volumeDivider: {
+    height: 1,
+    marginVertical: 10,
+  },
+  volumeSubtext: {
+    fontSize: 12,
+  },
+  prsCard: {
+    marginBottom: 12,
+  },
+  prItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  prExercise: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  prValue: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
   caloriesCard: {
     marginBottom: 16,
   },
@@ -309,59 +578,19 @@ const styles = StyleSheet.create({
   },
   caloriesDetails: {
     flex: 1,
-    marginLeft: 20,
+    marginLeft: 16,
   },
   caloriesTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
   },
   caloriesSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     marginBottom: 12,
   },
   macrosContainer: {
     marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-  },
-  stepsCard: {
-    marginBottom: 16,
-  },
-  stepsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  stepsInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepsTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  stepsValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'monospace',
-  },
-  stepsTrack: {
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  stepsFill: {
-    height: '100%',
-    borderRadius: 4,
   },
   workoutSummaryCard: {
     marginBottom: 20,
@@ -372,8 +601,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
   },
   sectionAction: {
@@ -416,5 +650,41 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  weightModalContent: {
+    width: '85%',
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  weightInput: {
+    height: 56,
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

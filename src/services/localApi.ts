@@ -3,6 +3,7 @@ import { storage } from './localStorage';
 import {
   Workout,
   WorkoutTemplate,
+  TemplateExercise,
   PersonalRecord,
   Meal,
   MealEstimation,
@@ -12,6 +13,10 @@ import {
   UserPreferences,
   ExerciseInfo,
   ApiResponse,
+  GymAttendance,
+  StreakData,
+  WeightLog,
+  ExerciseProgress,
 } from '../types';
 
 // Utility to simulate network delay
@@ -93,6 +98,11 @@ export const localApi = {
       // Check for new PRs
       await localApi.prs.checkAndUpdate(newWorkout);
       
+      // Record gym attendance
+      if (workout.completed) {
+        await localApi.attendance.checkIn(workout.date, workout.duration);
+      }
+      
       return { success: true, data: newWorkout };
     },
 
@@ -122,16 +132,42 @@ export const localApi = {
     async getAll(): Promise<ApiResponse<WorkoutTemplate[]>> {
       await randomDelay();
       const templates = await storage.get<WorkoutTemplate[]>(storage.keys.WORKOUT_TEMPLATES);
-      return { success: true, data: templates || [] };
+      if (templates && templates.length > 0) {
+        return { success: true, data: templates };
+      }
+      return { success: true, data: defaultTemplates };
     },
 
-    async create(template: Omit<WorkoutTemplate, 'id'>): Promise<ApiResponse<WorkoutTemplate>> {
+    async getById(id: string): Promise<ApiResponse<WorkoutTemplate | null>> {
+      await randomDelay();
+      const templates = await storage.get<WorkoutTemplate[]>(storage.keys.WORKOUT_TEMPLATES) || defaultTemplates;
+      const template = templates.find(t => t.id === id) || null;
+      return { success: true, data: template };
+    },
+
+    async create(template: Omit<WorkoutTemplate, 'id' | 'createdAt'>): Promise<ApiResponse<WorkoutTemplate>> {
       await randomDelay();
       const templates = await storage.get<WorkoutTemplate[]>(storage.keys.WORKOUT_TEMPLATES) || [];
-      const newTemplate: WorkoutTemplate = { ...template, id: generateId() };
+      const newTemplate: WorkoutTemplate = { 
+        ...template, 
+        id: generateId(),
+        createdAt: new Date().toISOString(),
+      };
       templates.push(newTemplate);
       await storage.set(storage.keys.WORKOUT_TEMPLATES, templates);
       return { success: true, data: newTemplate };
+    },
+
+    async update(id: string, updates: Partial<WorkoutTemplate>): Promise<ApiResponse<WorkoutTemplate | null>> {
+      await randomDelay();
+      const templates = await storage.get<WorkoutTemplate[]>(storage.keys.WORKOUT_TEMPLATES) || [];
+      const index = templates.findIndex(t => t.id === id);
+      if (index === -1) {
+        return { success: false, error: 'Template not found' };
+      }
+      templates[index] = { ...templates[index], ...updates };
+      await storage.set(storage.keys.WORKOUT_TEMPLATES, templates);
+      return { success: true, data: templates[index] };
     },
 
     async delete(id: string): Promise<ApiResponse<boolean>> {
@@ -175,7 +211,7 @@ export const localApi = {
               id: generateId(),
               exerciseName: exercise.name,
               value: set.weight,
-              unit: 'kg', // TODO: Get from preferences
+              unit: 'kg',
               reps: set.reps,
               date: workout.date,
               workoutId: workout.id,
@@ -197,6 +233,253 @@ export const localApi = {
       }
 
       return newPRs;
+    },
+  },
+
+  // ==================== Gym Attendance & Streak ====================
+  attendance: {
+    async getAll(): Promise<ApiResponse<GymAttendance[]>> {
+      await randomDelay();
+      const attendance = await storage.get<GymAttendance[]>(storage.keys.GYM_ATTENDANCE);
+      return { success: true, data: attendance || [] };
+    },
+
+    async checkIn(date: string, duration?: number): Promise<ApiResponse<GymAttendance>> {
+      await randomDelay();
+      const attendance = await storage.get<GymAttendance[]>(storage.keys.GYM_ATTENDANCE) || [];
+      
+      // Check if already checked in today
+      const existing = attendance.find(a => a.date === date);
+      if (existing) {
+        return { success: true, data: existing };
+      }
+
+      const newAttendance: GymAttendance = {
+        id: generateId(),
+        date,
+        checkedIn: true,
+        duration,
+      };
+      attendance.push(newAttendance);
+      await storage.set(storage.keys.GYM_ATTENDANCE, attendance);
+      return { success: true, data: newAttendance };
+    },
+
+    async getStreak(): Promise<ApiResponse<StreakData>> {
+      await randomDelay();
+      const attendance = await storage.get<GymAttendance[]>(storage.keys.GYM_ATTENDANCE) || [];
+      const workouts = await storage.get<Workout[]>(storage.keys.WORKOUTS) || [];
+      
+      // Sort by date descending
+      const sortedAttendance = [...attendance].sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      // Calculate current streak
+      let currentStreak = 0;
+      let longestStreak = 0;
+      let tempStreak = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // For current streak, check consecutive days from today backwards
+      const dateSet = new Set(sortedAttendance.map(a => a.date));
+      let checkDate = new Date(today);
+      
+      // Check if worked out today or yesterday (allow 1 day gap)
+      const todayStr = checkDate.toISOString().split('T')[0];
+      checkDate.setDate(checkDate.getDate() - 1);
+      const yesterdayStr = checkDate.toISOString().split('T')[0];
+      
+      if (dateSet.has(todayStr) || dateSet.has(yesterdayStr)) {
+        checkDate = dateSet.has(todayStr) ? new Date(today) : new Date(today);
+        checkDate.setDate(checkDate.getDate() - (dateSet.has(todayStr) ? 0 : 1));
+        
+        while (dateSet.has(checkDate.toISOString().split('T')[0])) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        }
+      }
+
+      // Calculate longest streak
+      for (let i = 0; i < sortedAttendance.length; i++) {
+        if (i === 0) {
+          tempStreak = 1;
+        } else {
+          const prevDate = new Date(sortedAttendance[i - 1].date);
+          const currDate = new Date(sortedAttendance[i].date);
+          const diffDays = Math.floor((prevDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (diffDays === 1) {
+            tempStreak++;
+          } else {
+            tempStreak = 1;
+          }
+        }
+        longestStreak = Math.max(longestStreak, tempStreak);
+      }
+
+      // This week workouts (Sunday to Saturday)
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      const thisWeekWorkouts = attendance.filter(a => new Date(a.date) >= startOfWeek).length;
+
+      // This month workouts
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const thisMonthWorkouts = attendance.filter(a => new Date(a.date) >= startOfMonth).length;
+
+      const streakData: StreakData = {
+        currentStreak,
+        longestStreak,
+        totalWorkouts: workouts.filter(w => w.completed).length,
+        thisWeekWorkouts,
+        thisMonthWorkouts,
+        lastWorkoutDate: sortedAttendance[0]?.date,
+      };
+
+      return { success: true, data: streakData };
+    },
+  },
+
+  // ==================== Weight Logs ====================
+  weightLogs: {
+    async getAll(): Promise<ApiResponse<WeightLog[]>> {
+      await randomDelay();
+      const logs = await storage.get<WeightLog[]>(storage.keys.WEIGHT_LOGS);
+      return { success: true, data: logs || [] };
+    },
+
+    async getLatest(): Promise<ApiResponse<WeightLog | null>> {
+      await randomDelay();
+      const logs = await storage.get<WeightLog[]>(storage.keys.WEIGHT_LOGS) || [];
+      const sorted = [...logs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return { success: true, data: sorted[0] || null };
+    },
+
+    async create(log: Omit<WeightLog, 'id'>): Promise<ApiResponse<WeightLog>> {
+      await randomDelay();
+      const logs = await storage.get<WeightLog[]>(storage.keys.WEIGHT_LOGS) || [];
+      const newLog: WeightLog = { ...log, id: generateId() };
+      logs.push(newLog);
+      await storage.set(storage.keys.WEIGHT_LOGS, logs);
+      
+      // Update user preferences with current weight
+      await localApi.preferences.update({ currentWeight: log.weight });
+      
+      return { success: true, data: newLog };
+    },
+
+    async delete(id: string): Promise<ApiResponse<boolean>> {
+      await randomDelay();
+      const logs = await storage.get<WeightLog[]>(storage.keys.WEIGHT_LOGS) || [];
+      const filtered = logs.filter(l => l.id !== id);
+      await storage.set(storage.keys.WEIGHT_LOGS, filtered);
+      return { success: true, data: true };
+    },
+  },
+
+  // ==================== Exercise Progress Analytics ====================
+  progress: {
+    async getExerciseProgress(exerciseName: string): Promise<ApiResponse<ExerciseProgress>> {
+      await randomDelay();
+      const workouts = await storage.get<Workout[]>(storage.keys.WORKOUTS) || [];
+      
+      const history: ExerciseProgress['history'] = [];
+      
+      for (const workout of workouts) {
+        const exercise = workout.exercises.find(
+          e => e.name.toLowerCase() === exerciseName.toLowerCase()
+        );
+        
+        if (exercise && exercise.sets.some(s => s.completed)) {
+          const completedSets = exercise.sets.filter(s => s.completed);
+          const maxWeight = Math.max(...completedSets.map(s => s.weight));
+          const totalVolume = completedSets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+          const bestSet = completedSets.reduce((best, s) => 
+            (s.weight > best.weight) ? { reps: s.reps, weight: s.weight } : best,
+            { reps: 0, weight: 0 }
+          );
+          
+          history.push({
+            date: workout.date,
+            maxWeight,
+            totalVolume,
+            bestSet,
+          });
+        }
+      }
+
+      // Sort by date
+      history.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      return {
+        success: true,
+        data: { exerciseName, history },
+      };
+    },
+
+    async getAllExerciseNames(): Promise<ApiResponse<string[]>> {
+      await randomDelay();
+      const workouts = await storage.get<Workout[]>(storage.keys.WORKOUTS) || [];
+      const exerciseNames = new Set<string>();
+      
+      for (const workout of workouts) {
+        for (const exercise of workout.exercises) {
+          exerciseNames.add(exercise.name);
+        }
+      }
+
+      return { success: true, data: Array.from(exerciseNames).sort() };
+    },
+
+    async getVolumeStats(): Promise<ApiResponse<{
+      thisWeek: number;
+      lastWeek: number;
+      thisMonth: number;
+      allTime: number;
+    }>> {
+      await randomDelay();
+      const workouts = await storage.get<Workout[]>(storage.keys.WORKOUTS) || [];
+      
+      const today = new Date();
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      const startOfLastWeek = new Date(startOfWeek);
+      startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+      
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      let thisWeek = 0;
+      let lastWeek = 0;
+      let thisMonth = 0;
+      let allTime = 0;
+
+      for (const workout of workouts) {
+        const workoutDate = new Date(workout.date);
+        const volume = workout.exercises.reduce((sum, ex) => 
+          sum + ex.sets.filter(s => s.completed).reduce((setSum, s) => setSum + (s.weight * s.reps), 0),
+          0
+        );
+
+        allTime += volume;
+        
+        if (workoutDate >= startOfWeek) {
+          thisWeek += volume;
+        } else if (workoutDate >= startOfLastWeek && workoutDate < startOfWeek) {
+          lastWeek += volume;
+        }
+        
+        if (workoutDate >= startOfMonth) {
+          thisMonth += volume;
+        }
+      }
+
+      return {
+        success: true,
+        data: { thisWeek, lastWeek, thisMonth, allTime },
+      };
     },
   },
 
@@ -244,11 +527,9 @@ export const localApi = {
       return { success: true, data: true };
     },
 
-    // Mock AI Meal Estimation
     async estimateFromImage(imageUri: string): Promise<ApiResponse<MealEstimation>> {
-      await delay(800 + Math.random() * 700); // Longer delay for "AI processing"
+      await delay(800 + Math.random() * 700);
       
-      // Generate realistic random values
       const calories = Math.floor(300 + Math.random() * 500);
       const protein = Math.floor(15 + Math.random() * 35);
       const carbs = Math.floor(30 + Math.random() * 70);
@@ -263,11 +544,7 @@ export const localApi = {
           carbs,
           fat,
           confidence,
-          suggestions: [
-            'Grilled Chicken Breast',
-            'Steamed Rice',
-            'Mixed Vegetables',
-          ],
+          suggestions: ['Grilled Chicken Breast', 'Steamed Rice', 'Mixed Vegetables'],
         },
       };
     },
@@ -284,7 +561,6 @@ export const localApi = {
     async generateFromIngredients(ingredients: string[]): Promise<ApiResponse<Recipe[]>> {
       await delay(1000 + Math.random() * 500);
 
-      // Mock recipe generation
       const mockRecipes: Recipe[] = [
         {
           id: generateId(),
@@ -363,7 +639,6 @@ export const localApi = {
       return { success: true, data: metrics[index] };
     },
 
-    // Mock sync with health providers
     async syncFromDevice(): Promise<ApiResponse<HealthMetrics>> {
       await delay(500 + Math.random() * 300);
       
@@ -415,7 +690,6 @@ export const localApi = {
       if (exercises && exercises.length > 0) {
         return { success: true, data: exercises };
       }
-      // Return default exercises
       return { success: true, data: defaultExercises };
     },
 
@@ -430,6 +704,80 @@ export const localApi = {
     },
   },
 };
+
+// Default Workout Templates
+const defaultTemplates: WorkoutTemplate[] = [
+  {
+    id: 'template-push',
+    name: 'Push Day',
+    description: 'Chest, shoulders, and triceps',
+    color: '#EF4444',
+    createdAt: new Date().toISOString(),
+    exercises: [
+      { name: 'Bench Press', targetSets: 4, targetReps: 8 },
+      { name: 'Overhead Press', targetSets: 3, targetReps: 10 },
+      { name: 'Incline Dumbbell Press', targetSets: 3, targetReps: 10 },
+      { name: 'Lateral Raise', targetSets: 3, targetReps: 15 },
+      { name: 'Tricep Pushdown', targetSets: 3, targetReps: 12 },
+    ],
+  },
+  {
+    id: 'template-pull',
+    name: 'Pull Day',
+    description: 'Back and biceps',
+    color: '#3B82F6',
+    createdAt: new Date().toISOString(),
+    exercises: [
+      { name: 'Deadlift', targetSets: 4, targetReps: 5 },
+      { name: 'Barbell Row', targetSets: 4, targetReps: 8 },
+      { name: 'Pull Ups', targetSets: 3, targetReps: 10 },
+      { name: 'Face Pull', targetSets: 3, targetReps: 15 },
+      { name: 'Barbell Curl', targetSets: 3, targetReps: 10 },
+    ],
+  },
+  {
+    id: 'template-legs',
+    name: 'Leg Day',
+    description: 'Quads, hamstrings, and calves',
+    color: '#10B981',
+    createdAt: new Date().toISOString(),
+    exercises: [
+      { name: 'Squat', targetSets: 4, targetReps: 8 },
+      { name: 'Romanian Deadlift', targetSets: 3, targetReps: 10 },
+      { name: 'Leg Press', targetSets: 3, targetReps: 12 },
+      { name: 'Leg Curl', targetSets: 3, targetReps: 12 },
+      { name: 'Calf Raise', targetSets: 4, targetReps: 15 },
+    ],
+  },
+  {
+    id: 'template-upper',
+    name: 'Upper Body',
+    description: 'Full upper body workout',
+    color: '#8B5CF6',
+    createdAt: new Date().toISOString(),
+    exercises: [
+      { name: 'Bench Press', targetSets: 4, targetReps: 8 },
+      { name: 'Barbell Row', targetSets: 4, targetReps: 8 },
+      { name: 'Overhead Press', targetSets: 3, targetReps: 10 },
+      { name: 'Pull Ups', targetSets: 3, targetReps: 10 },
+      { name: 'Dumbbell Fly', targetSets: 3, targetReps: 12 },
+    ],
+  },
+  {
+    id: 'template-fullbody',
+    name: 'Full Body',
+    description: 'Complete full body session',
+    color: '#F59E0B',
+    createdAt: new Date().toISOString(),
+    exercises: [
+      { name: 'Squat', targetSets: 3, targetReps: 8 },
+      { name: 'Bench Press', targetSets: 3, targetReps: 8 },
+      { name: 'Barbell Row', targetSets: 3, targetReps: 8 },
+      { name: 'Overhead Press', targetSets: 3, targetReps: 10 },
+      { name: 'Romanian Deadlift', targetSets: 3, targetReps: 10 },
+    ],
+  },
+];
 
 // Default Exercise Database
 const defaultExercises: ExerciseInfo[] = [

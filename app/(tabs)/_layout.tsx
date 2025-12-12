@@ -64,6 +64,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="progress"
+        options={{
+          title: 'Progress',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'trending-up' : 'trending-up-outline'} color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="nutrition"
         options={{
           title: 'Nutrition',
@@ -80,6 +89,7 @@ export default function TabLayout() {
             <TabIcon name={focused ? 'construct' : 'construct-outline'} color={color} focused={focused} />
           ),
         }}
+        href={null}
       />
       <Tabs.Screen
         name="profile"

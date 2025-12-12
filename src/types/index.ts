@@ -9,6 +9,8 @@ export interface UserPreferences {
   carbsGoal: number;
   fatGoal: number;
   stepsGoal: number;
+  currentWeight?: number;
+  targetWeight?: number;
 }
 
 // Workout Types
@@ -35,12 +37,23 @@ export interface Workout {
   duration?: number; // in minutes
   notes?: string;
   completed: boolean;
+  templateId?: string;
 }
 
 export interface WorkoutTemplate {
   id: string;
   name: string;
-  exercises: Omit<Exercise, 'id'>[];
+  description?: string;
+  exercises: TemplateExercise[];
+  createdAt: string;
+  color?: string;
+}
+
+export interface TemplateExercise {
+  name: string;
+  targetSets: number;
+  targetReps: number;
+  notes?: string;
 }
 
 // Personal Record
@@ -52,6 +65,33 @@ export interface PersonalRecord {
   reps: number;
   date: string;
   workoutId?: string;
+}
+
+// Gym Attendance / Streak
+export interface GymAttendance {
+  id: string;
+  date: string;
+  checkedIn: boolean;
+  duration?: number; // minutes
+  workoutId?: string;
+}
+
+export interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  totalWorkouts: number;
+  thisWeekWorkouts: number;
+  thisMonthWorkouts: number;
+  lastWorkoutDate?: string;
+}
+
+// Weight Log
+export interface WeightLog {
+  id: string;
+  date: string;
+  weight: number;
+  unit: 'kg' | 'lb';
+  notes?: string;
 }
 
 // Meal Types
@@ -120,6 +160,17 @@ export interface ExerciseInfo {
   muscleGroups: string[];
   equipment?: string[];
   isCompound: boolean;
+}
+
+// Exercise Progress for analytics
+export interface ExerciseProgress {
+  exerciseName: string;
+  history: {
+    date: string;
+    maxWeight: number;
+    totalVolume: number;
+    bestSet: { reps: number; weight: number };
+  }[];
 }
 
 // API Response Types

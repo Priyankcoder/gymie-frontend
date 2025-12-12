@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,27 @@ import {
   TextInput,
   Modal,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { Card, Button } from '../../src/components/ui';
+import { Card, Button, MetricRing } from '../../src/components/ui';
 import { localApi } from '../../src/services/localApi';
-import { Workout, Exercise, WorkoutSet, ExerciseInfo, PersonalRecord } from '../../src/types';
+import { 
+  Workout, 
+  Exercise, 
+  WorkoutSet, 
+  ExerciseInfo, 
+  PersonalRecord, 
+  WorkoutTemplate,
+  ExerciseProgress 
+} from '../../src/types';
+
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function WorkoutScreen() {
   const { colors, spacing, borderRadius } = useTheme();
@@ -23,17 +37,25 @@ export default function WorkoutScreen() {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
   const [exerciseList, setExerciseList] = useState<ExerciseInfo[]>([]);
+  const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
   const [showExerciseModal, setShowExerciseModal] = useState(false);
   const [showRestTimer, setShowRestTimer] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const [restTime, setRestTime] = useState(90);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTab, setSelectedTab] = useState<'log' | 'history' | 'prs'>('log');
+  const [selectedTab, setSelectedTab] = useState<'log' | 'templates' | 'history' | 'progress'>('log');
+  const [selectedExerciseProgress, setSelectedExerciseProgress] = useState<ExerciseProgress | null>(null);
+  const [exerciseNames, setExerciseNames] = useState<string[]>([]);
+  const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -52,19 +74,26 @@ export default function WorkoutScreen() {
   }, [restTimeLeft]);
 
   const loadData = async () => {
-    const [workoutsRes, prsRes, exercisesRes] = await Promise.all([
+    const [workoutsRes, prsRes, exercisesRes, templatesRes, namesRes] = await Promise.all([
       localApi.workouts.getAll(),
       localApi.prs.getAll(),
       localApi.exercises.getAll(),
+      localApi.templates.getAll(),
+      localApi.progress.getAllExerciseNames(),
     ]);
 
-    if (workoutsRes.data) setWorkouts(workoutsRes.data);
+    if (workoutsRes.data) setWorkouts(workoutsRes.data.sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    ));
     if (prsRes.data) setPersonalRecords(prsRes.data);
     if (exercisesRes.data) setExerciseList(exercisesRes.data);
+    if (templatesRes.data) setTemplates(templatesRes.data);
+    if (namesRes.data) setExerciseNames(namesRes.data);
   };
 
   const startNewWorkout = () => {
     const today = new Date().toISOString().split('T')[0];
+    setWorkoutStartTime(new Date());
     setActiveWorkout({
       id: '',
       date: today,
@@ -72,6 +101,32 @@ export default function WorkoutScreen() {
       exercises: [],
       completed: false,
     });
+  };
+
+  const startFromTemplate = (template: WorkoutTemplate) => {
+    const today = new Date().toISOString().split('T')[0];
+    setWorkoutStartTime(new Date());
+    
+    const exercises: Exercise[] = template.exercises.map((te, index) => ({
+      id: `ex-${Date.now()}-${index}`,
+      name: te.name,
+      sets: Array.from({ length: te.targetSets }, (_, i) => ({
+        id: `set-${Date.now()}-${index}-${i}`,
+        reps: te.targetReps,
+        weight: 0,
+        completed: false,
+      })),
+    }));
+
+    setActiveWorkout({
+      id: '',
+      date: today,
+      name: template.name,
+      exercises,
+      completed: false,
+      templateId: template.id,
+    });
+    setShowTemplateModal(false);
   };
 
   const addExercise = (exercise: ExerciseInfo) => {
@@ -117,6 +172,23 @@ export default function WorkoutScreen() {
     });
   };
 
+  const removeSet = (exerciseId: string, setId: string) => {
+    if (!activeWorkout) return;
+
+    setActiveWorkout({
+      ...activeWorkout,
+      exercises: activeWorkout.exercises.map((ex) => {
+        if (ex.id === exerciseId && ex.sets.length > 1) {
+          return {
+            ...ex,
+            sets: ex.sets.filter((s) => s.id !== setId),
+          };
+        }
+        return ex;
+      }),
+    });
+  };
+
   const updateSet = (exerciseId: string, setId: string, updates: Partial<WorkoutSet>) => {
     if (!activeWorkout) return;
 
@@ -148,15 +220,33 @@ export default function WorkoutScreen() {
   const saveWorkout = async () => {
     if (!activeWorkout) return;
 
+    const duration = workoutStartTime 
+      ? Math.round((new Date().getTime() - workoutStartTime.getTime()) / 60000)
+      : 45;
+
     const completedWorkout = {
       ...activeWorkout,
       completed: true,
-      duration: 45, // TODO: Calculate actual duration
+      duration,
     };
 
     await localApi.workouts.create(completedWorkout);
     setActiveWorkout(null);
+    setWorkoutStartTime(null);
     loadData();
+  };
+
+  const cancelWorkout = () => {
+    setActiveWorkout(null);
+    setWorkoutStartTime(null);
+  };
+
+  const loadExerciseProgress = async (exerciseName: string) => {
+    const res = await localApi.progress.getExerciseProgress(exerciseName);
+    if (res.data) {
+      setSelectedExerciseProgress(res.data);
+      setShowProgressModal(true);
+    }
   };
 
   const filteredExercises = exerciseList.filter((ex) =>
@@ -171,7 +261,7 @@ export default function WorkoutScreen() {
 
   const renderTabs = () => (
     <View style={[styles.tabContainer, { borderBottomColor: colors.border }]}>
-      {(['log', 'history', 'prs'] as const).map((tab) => (
+      {(['log', 'templates', 'history', 'progress'] as const).map((tab) => (
         <Pressable
           key={tab}
           style={[
@@ -186,7 +276,7 @@ export default function WorkoutScreen() {
               { color: selectedTab === tab ? colors.accentBlue : colors.textSecondary },
             ]}
           >
-            {tab === 'log' ? 'Log' : tab === 'history' ? 'History' : 'PRs'}
+            {tab === 'log' ? 'Log' : tab === 'templates' ? 'Plans' : tab === 'history' ? 'History' : 'Progress'}
           </Text>
         </Pressable>
       ))}
@@ -202,25 +292,42 @@ export default function WorkoutScreen() {
             Ready to Train?
           </Text>
           <Text style={[styles.startWorkoutSubtitle, { color: colors.textSecondary }]}>
-            Start a new workout to track your exercises
+            Start a new workout or use a template
           </Text>
-          <Button title="Start Workout" onPress={startNewWorkout} size="lg" style={{ marginTop: 24 }} />
+          <View style={styles.startButtons}>
+            <Button 
+              title="Empty Workout" 
+              variant="outline"
+              onPress={startNewWorkout} 
+              style={{ flex: 1 }} 
+            />
+            <Button 
+              title="Use Template" 
+              onPress={() => setShowTemplateModal(true)} 
+              style={{ flex: 1 }} 
+            />
+          </View>
         </View>
       ) : (
         <ScrollView style={styles.workoutContainer} showsVerticalScrollIndicator={false}>
-          <TextInput
-            style={[
-              styles.workoutNameInput,
-              {
-                color: colors.textPrimary,
-                borderBottomColor: colors.border,
-              },
-            ]}
-            value={activeWorkout.name}
-            onChangeText={(text) => setActiveWorkout({ ...activeWorkout, name: text })}
-            placeholder="Workout Name"
-            placeholderTextColor={colors.textSecondary}
-          />
+          <View style={styles.workoutHeader}>
+            <TextInput
+              style={[
+                styles.workoutNameInput,
+                {
+                  color: colors.textPrimary,
+                  borderBottomColor: colors.border,
+                },
+              ]}
+              value={activeWorkout.name}
+              onChangeText={(text) => setActiveWorkout({ ...activeWorkout, name: text })}
+              placeholder="Workout Name"
+              placeholderTextColor={colors.textSecondary}
+            />
+            <Pressable onPress={cancelWorkout}>
+              <Ionicons name="close-circle" size={28} color={colors.error} />
+            </Pressable>
+          </View>
 
           {activeWorkout.exercises.map((exercise) => (
             <Card key={exercise.id} style={styles.exerciseCard}>
@@ -228,10 +335,10 @@ export default function WorkoutScreen() {
                 {exercise.name}
               </Text>
               <View style={styles.setsHeader}>
-                <Text style={[styles.setLabel, { color: colors.textSecondary }]}>SET</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary }]}>WEIGHT</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary }]}>REPS</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary }]}></Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 30 }]}>SET</Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1 }]}>KG</Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1 }]}>REPS</Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 40 }]}></Text>
               </View>
               {exercise.sets.map((set, index) => (
                 <View key={set.id} style={styles.setRow}>
@@ -273,7 +380,8 @@ export default function WorkoutScreen() {
                     placeholderTextColor={colors.textSecondary}
                   />
                   <Pressable
-                    onPress={() => completeSet(exercise.id, set.id)}
+                    onPress={() => set.completed ? null : completeSet(exercise.id, set.id)}
+                    onLongPress={() => removeSet(exercise.id, set.id)}
                     style={[
                       styles.completeButton,
                       {
@@ -309,6 +417,59 @@ export default function WorkoutScreen() {
     </View>
   );
 
+  const renderTemplatesTab = () => (
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      <Text style={[styles.templatesTitle, { color: colors.textPrimary }]}>
+        Workout Plans
+      </Text>
+      <Text style={[styles.templatesSubtitle, { color: colors.textSecondary }]}>
+        Choose a template to start your workout
+      </Text>
+      
+      {templates.map((template) => (
+        <Card 
+          key={template.id} 
+          style={styles.templateCard}
+          onPress={() => startFromTemplate(template)}
+        >
+          <View style={styles.templateHeader}>
+            <View 
+              style={[
+                styles.templateColor, 
+                { backgroundColor: template.color || colors.accentBlue }
+              ]} 
+            />
+            <View style={styles.templateInfo}>
+              <Text style={[styles.templateName, { color: colors.textPrimary }]}>
+                {template.name}
+              </Text>
+              {template.description && (
+                <Text style={[styles.templateDesc, { color: colors.textSecondary }]}>
+                  {template.description}
+                </Text>
+              )}
+            </View>
+            <Ionicons name="play-circle" size={32} color={colors.accentBlue} />
+          </View>
+          <View style={styles.templateExercises}>
+            {template.exercises.slice(0, 4).map((ex, i) => (
+              <Text key={i} style={[styles.templateExercise, { color: colors.textSecondary }]}>
+                • {ex.name} ({ex.targetSets}×{ex.targetReps})
+              </Text>
+            ))}
+            {template.exercises.length > 4 && (
+              <Text style={[styles.templateMore, { color: colors.textSecondary }]}>
+                +{template.exercises.length - 4} more exercises
+              </Text>
+            )}
+          </View>
+        </Card>
+      ))}
+      
+      <View style={{ height: 100 }} />
+    </ScrollView>
+  );
+
   const renderHistoryTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {workouts.length === 0 ? (
@@ -323,54 +484,104 @@ export default function WorkoutScreen() {
         workouts.map((workout) => (
           <Card key={workout.id} style={styles.historyCard}>
             <View style={styles.historyHeader}>
-              <Text style={[styles.historyName, { color: colors.textPrimary }]}>
-                {workout.name}
-              </Text>
-              <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
-                {new Date(workout.date).toLocaleDateString()}
-              </Text>
+              <View>
+                <Text style={[styles.historyName, { color: colors.textPrimary }]}>
+                  {workout.name}
+                </Text>
+                <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
+                  {new Date(workout.date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </Text>
+              </View>
+              {workout.completed && (
+                <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+              )}
             </View>
             <Text style={[styles.historyExercises, { color: colors.textSecondary }]}>
               {workout.exercises.length} exercises • {workout.duration || 0} min
             </Text>
-          </Card>
-        ))
-      )}
-    </ScrollView>
-  );
-
-  const renderPRsTab = () => (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      {personalRecords.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="trophy-outline" size={60} color={colors.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No PRs Yet</Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            Complete workouts to track your personal records
-          </Text>
-        </View>
-      ) : (
-        personalRecords.map((pr) => (
-          <Card key={pr.id} style={styles.prCard}>
-            <View style={styles.prContent}>
-              <View style={[styles.prIcon, { backgroundColor: `${colors.warning}20` }]}>
-                <Ionicons name="trophy" size={24} color={colors.warning} />
-              </View>
-              <View style={styles.prDetails}>
-                <Text style={[styles.prExercise, { color: colors.textPrimary }]}>
-                  {pr.exerciseName}
+            <View style={styles.historyPreview}>
+              {workout.exercises.slice(0, 3).map((ex, i) => (
+                <Text key={i} style={[styles.historyExercise, { color: colors.textSecondary }]}>
+                  {ex.name}
                 </Text>
-                <Text style={[styles.prMeta, { color: colors.textSecondary }]}>
-                  {pr.reps} rep{pr.reps > 1 ? 's' : ''} • {new Date(pr.date).toLocaleDateString()}
-                </Text>
-              </View>
-              <Text style={[styles.prValue, { color: colors.accentBlue }]}>
-                {pr.value} {pr.unit}
-              </Text>
+              ))}
             </View>
           </Card>
         ))
       )}
+      <View style={{ height: 100 }} />
+    </ScrollView>
+  );
+
+  const renderProgressTab = () => (
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      <Text style={[styles.progressTitle, { color: colors.textPrimary }]}>
+        Exercise Progress
+      </Text>
+      <Text style={[styles.progressSubtitle, { color: colors.textSecondary }]}>
+        Track your strength gains over time
+      </Text>
+
+      {exerciseNames.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Ionicons name="stats-chart-outline" size={60} color={colors.textSecondary} />
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Progress Data</Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            Complete workouts to track your progress
+          </Text>
+        </View>
+      ) : (
+        <>
+          {/* Top PRs Section */}
+          <Card style={styles.prsSection}>
+            <Text style={[styles.prsSectionTitle, { color: colors.textPrimary }]}>
+              Personal Records
+            </Text>
+            {personalRecords.slice(0, 5).map((pr) => (
+              <View key={pr.id} style={[styles.prRow, { borderBottomColor: colors.border }]}>
+                <View style={styles.prInfo}>
+                  <Text style={[styles.prExercise, { color: colors.textPrimary }]}>
+                    {pr.exerciseName}
+                  </Text>
+                  <Text style={[styles.prReps, { color: colors.textSecondary }]}>
+                    {pr.reps} rep{pr.reps > 1 ? 's' : ''} max
+                  </Text>
+                </View>
+                <View style={styles.prValueContainer}>
+                  <Text style={[styles.prValue, { color: colors.warning }]}>
+                    {pr.value}
+                  </Text>
+                  <Text style={[styles.prUnit, { color: colors.textSecondary }]}>
+                    {pr.unit}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </Card>
+
+          {/* Exercise List */}
+          <Text style={[styles.exerciseListTitle, { color: colors.textPrimary }]}>
+            View Progress By Exercise
+          </Text>
+          {exerciseNames.map((name) => (
+            <Pressable
+              key={name}
+              style={[styles.exerciseProgressItem, { backgroundColor: colors.card, borderRadius: borderRadius.md }]}
+              onPress={() => loadExerciseProgress(name)}
+            >
+              <Text style={[styles.exerciseProgressName, { color: colors.textPrimary }]}>
+                {name}
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </Pressable>
+          ))}
+        </>
+      )}
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 
@@ -383,14 +594,18 @@ export default function WorkoutScreen() {
       {renderTabs()}
 
       {selectedTab === 'log' && renderLogTab()}
+      {selectedTab === 'templates' && renderTemplatesTab()}
       {selectedTab === 'history' && renderHistoryTab()}
-      {selectedTab === 'prs' && renderPRsTab()}
+      {selectedTab === 'progress' && renderProgressTab()}
 
       {/* Exercise Selection Modal */}
       <Modal visible={showExerciseModal} animationType="slide" transparent>
-        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <View style={styles.modalHeader}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Add Exercise</Text>
               <Pressable onPress={() => setShowExerciseModal(false)}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
@@ -427,7 +642,103 @@ export default function WorkoutScreen() {
                 </Pressable>
               )}
               style={styles.exerciseList}
+              keyboardShouldPersistTaps="handled"
             />
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Template Selection Modal */}
+      <Modal visible={showTemplateModal} animationType="slide" transparent>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[styles.templateModalContent, { backgroundColor: colors.card }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Choose Template</Text>
+              <Pressable onPress={() => setShowTemplateModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+            <ScrollView style={styles.templateList}>
+              {templates.map((template) => (
+                <Pressable
+                  key={template.id}
+                  style={[styles.templateSelectItem, { borderBottomColor: colors.border }]}
+                  onPress={() => startFromTemplate(template)}
+                >
+                  <View 
+                    style={[
+                      styles.templateSelectColor, 
+                      { backgroundColor: template.color || colors.accentBlue }
+                    ]} 
+                  />
+                  <View style={styles.templateSelectInfo}>
+                    <Text style={[styles.templateSelectName, { color: colors.textPrimary }]}>
+                      {template.name}
+                    </Text>
+                    <Text style={[styles.templateSelectExercises, { color: colors.textSecondary }]}>
+                      {template.exercises.length} exercises
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Progress Detail Modal */}
+      <Modal visible={showProgressModal} animationType="slide" transparent>
+        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
+          <View style={[styles.progressModalContent, { backgroundColor: colors.card }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                {selectedExerciseProgress?.exerciseName || 'Progress'}
+              </Text>
+              <Pressable onPress={() => setShowProgressModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+            <ScrollView style={styles.progressDetail}>
+              {selectedExerciseProgress?.history.length === 0 ? (
+                <Text style={[styles.noProgressText, { color: colors.textSecondary }]}>
+                  No progress data yet
+                </Text>
+              ) : (
+                selectedExerciseProgress?.history.map((entry, index) => (
+                  <View key={index} style={[styles.progressEntry, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.progressDate, { color: colors.textSecondary }]}>
+                      {new Date(entry.date).toLocaleDateString()}
+                    </Text>
+                    <View style={styles.progressStats}>
+                      <View style={styles.progressStat}>
+                        <Text style={[styles.progressStatValue, { color: colors.textPrimary }]}>
+                          {entry.maxWeight}
+                        </Text>
+                        <Text style={[styles.progressStatLabel, { color: colors.textSecondary }]}>
+                          Max (kg)
+                        </Text>
+                      </View>
+                      <View style={styles.progressStat}>
+                        <Text style={[styles.progressStatValue, { color: colors.textPrimary }]}>
+                          {entry.totalVolume}
+                        </Text>
+                        <Text style={[styles.progressStatLabel, { color: colors.textSecondary }]}>
+                          Volume
+                        </Text>
+                      </View>
+                      <View style={styles.progressStat}>
+                        <Text style={[styles.progressStatValue, { color: colors.accentBlue }]}>
+                          {entry.bestSet.weight}×{entry.bestSet.reps}
+                        </Text>
+                        <Text style={[styles.progressStatLabel, { color: colors.textSecondary }]}>
+                          Best Set
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))
+              )}
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -492,7 +803,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tabText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
   },
   tabContent: {
@@ -515,16 +826,28 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
   },
+  startButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+    paddingHorizontal: 20,
+  },
   workoutContainer: {
     flex: 1,
     paddingTop: 16,
   },
+  workoutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   workoutNameInput: {
+    flex: 1,
     fontSize: 24,
     fontWeight: '600',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    marginBottom: 16,
+    marginRight: 12,
   },
   exerciseCard: {
     marginBottom: 12,
@@ -540,7 +863,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   setLabel: {
-    flex: 1,
     fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
@@ -583,6 +905,55 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 6,
   },
+  templatesTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginTop: 16,
+  },
+  templatesSubtitle: {
+    fontSize: 14,
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  templateCard: {
+    marginBottom: 12,
+  },
+  templateHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  templateColor: {
+    width: 4,
+    height: 50,
+    borderRadius: 2,
+    marginRight: 12,
+  },
+  templateInfo: {
+    flex: 1,
+  },
+  templateName: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  templateDesc: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  templateExercises: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  templateExercise: {
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  templateMore: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -600,11 +971,12 @@ const styles = StyleSheet.create({
   },
   historyCard: {
     marginBottom: 8,
+    marginTop: 8,
   },
   historyHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   historyName: {
     fontSize: 16,
@@ -612,46 +984,102 @@ const styles = StyleSheet.create({
   },
   historyDate: {
     fontSize: 13,
+    marginTop: 2,
   },
   historyExercises: {
     fontSize: 13,
-    marginTop: 4,
+    marginTop: 8,
   },
-  prCard: {
-    marginBottom: 8,
-  },
-  prContent: {
+  historyPreview: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
   },
-  prIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+  historyExercise: {
+    fontSize: 12,
   },
-  prDetails: {
-    flex: 1,
-    marginLeft: 12,
+  progressTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginTop: 16,
   },
-  prExercise: {
+  progressSubtitle: {
+    fontSize: 14,
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  prsSection: {
+    marginBottom: 20,
+  },
+  prsSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
+    marginBottom: 12,
   },
-  prMeta: {
-    fontSize: 13,
+  prRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+  },
+  prInfo: {
+    flex: 1,
+  },
+  prExercise: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  prReps: {
+    fontSize: 12,
     marginTop: 2,
+  },
+  prValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
   },
   prValue: {
     fontSize: 20,
     fontWeight: '700',
+  },
+  prUnit: {
+    fontSize: 14,
+    marginLeft: 4,
+  },
+  exerciseListTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  exerciseProgressItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 14,
+    marginBottom: 8,
+  },
+  exerciseProgressName: {
+    fontSize: 15,
+    fontWeight: '500',
   },
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
   },
   modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: SCREEN_HEIGHT * 0.75,
+    paddingBottom: 40,
+  },
+  templateModalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '70%',
+    paddingBottom: 40,
+  },
+  progressModalContent: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '80%',
@@ -690,6 +1118,63 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 2,
     textTransform: 'capitalize',
+  },
+  templateList: {
+    padding: 16,
+  },
+  templateSelectItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  templateSelectColor: {
+    width: 4,
+    height: 40,
+    borderRadius: 2,
+    marginRight: 12,
+  },
+  templateSelectInfo: {
+    flex: 1,
+  },
+  templateSelectName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  templateSelectExercises: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  progressDetail: {
+    padding: 16,
+  },
+  noProgressText: {
+    fontSize: 14,
+    textAlign: 'center',
+    paddingVertical: 40,
+  },
+  progressEntry: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  progressDate: {
+    fontSize: 13,
+    marginBottom: 8,
+  },
+  progressStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressStat: {
+    alignItems: 'center',
+  },
+  progressStatValue: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  progressStatLabel: {
+    fontSize: 11,
+    marginTop: 2,
   },
   timerOverlay: {
     flex: 1,
