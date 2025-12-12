@@ -19,14 +19,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { Card, Button, MetricRing } from '../../src/components/ui';
 import { localApi } from '../../src/services/localApi';
-import { 
-  Workout, 
-  Exercise, 
-  WorkoutSet, 
-  ExerciseInfo, 
-  PersonalRecord, 
-  WorkoutTemplate,
-  ExerciseProgress 
+import {
+  Workout,
+  Exercise,
+  WorkoutSet,
+  ExerciseInfo,
+  PersonalRecord,
+  WorkoutTemplate
 } from '../../src/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -42,13 +41,10 @@ export default function WorkoutScreen() {
   const [showExerciseModal, setShowExerciseModal] = useState(false);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [showProgressModal, setShowProgressModal] = useState(false);
   const [restTime, setRestTime] = useState(90);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTab, setSelectedTab] = useState<'log' | 'templates' | 'history' | 'progress'>('log');
-  const [selectedExerciseProgress, setSelectedExerciseProgress] = useState<ExerciseProgress | null>(null);
-  const [exerciseNames, setExerciseNames] = useState<string[]>([]);
+  const [selectedTab, setSelectedTab] = useState<'log' | 'templates' | 'history'>('log');
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
 
   useFocusEffect(
@@ -74,21 +70,19 @@ export default function WorkoutScreen() {
   }, [restTimeLeft]);
 
   const loadData = async () => {
-    const [workoutsRes, prsRes, exercisesRes, templatesRes, namesRes] = await Promise.all([
+    const [workoutsRes, prsRes, exercisesRes, templatesRes] = await Promise.all([
       localApi.workouts.getAll(),
       localApi.prs.getAll(),
       localApi.exercises.getAll(),
       localApi.templates.getAll(),
-      localApi.progress.getAllExerciseNames(),
     ]);
 
-    if (workoutsRes.data) setWorkouts(workoutsRes.data.sort((a, b) => 
+    if (workoutsRes.data) setWorkouts(workoutsRes.data.sort((a, b) =>
       new Date(b.date).getTime() - new Date(a.date).getTime()
     ));
     if (prsRes.data) setPersonalRecords(prsRes.data);
     if (exercisesRes.data) setExerciseList(exercisesRes.data);
     if (templatesRes.data) setTemplates(templatesRes.data);
-    if (namesRes.data) setExerciseNames(namesRes.data);
   };
 
   const startNewWorkout = () => {
@@ -241,14 +235,6 @@ export default function WorkoutScreen() {
     setWorkoutStartTime(null);
   };
 
-  const loadExerciseProgress = async (exerciseName: string) => {
-    const res = await localApi.progress.getExerciseProgress(exerciseName);
-    if (res.data) {
-      setSelectedExerciseProgress(res.data);
-      setShowProgressModal(true);
-    }
-  };
-
   const filteredExercises = exerciseList.filter((ex) =>
     ex.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -261,7 +247,7 @@ export default function WorkoutScreen() {
 
   const renderTabs = () => (
     <View style={[styles.tabContainer, { borderBottomColor: colors.border }]}>
-      {(['log', 'templates', 'history', 'progress'] as const).map((tab) => (
+      {(['log', 'templates', 'history'] as const).map((tab) => (
         <Pressable
           key={tab}
           style={[
@@ -276,7 +262,7 @@ export default function WorkoutScreen() {
               { color: selectedTab === tab ? colors.accentBlue : colors.textSecondary },
             ]}
           >
-            {tab === 'log' ? 'Log' : tab === 'templates' ? 'Plans' : tab === 'history' ? 'History' : 'Progress'}
+            {tab === 'log' ? 'Log' : tab === 'templates' ? 'Plans' : 'History'}
           </Text>
         </Pressable>
       ))}
@@ -517,74 +503,6 @@ export default function WorkoutScreen() {
     </ScrollView>
   );
 
-  const renderProgressTab = () => (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <Text style={[styles.progressTitle, { color: colors.textPrimary }]}>
-        Exercise Progress
-      </Text>
-      <Text style={[styles.progressSubtitle, { color: colors.textSecondary }]}>
-        Track your strength gains over time
-      </Text>
-
-      {exerciseNames.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="stats-chart-outline" size={60} color={colors.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Progress Data</Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            Complete workouts to track your progress
-          </Text>
-        </View>
-      ) : (
-        <>
-          {/* Top PRs Section */}
-          <Card style={styles.prsSection}>
-            <Text style={[styles.prsSectionTitle, { color: colors.textPrimary }]}>
-              Personal Records
-            </Text>
-            {personalRecords.slice(0, 5).map((pr) => (
-              <View key={pr.id} style={[styles.prRow, { borderBottomColor: colors.border }]}>
-                <View style={styles.prInfo}>
-                  <Text style={[styles.prExercise, { color: colors.textPrimary }]}>
-                    {pr.exerciseName}
-                  </Text>
-                  <Text style={[styles.prReps, { color: colors.textSecondary }]}>
-                    {pr.reps} rep{pr.reps > 1 ? 's' : ''} max
-                  </Text>
-                </View>
-                <View style={styles.prValueContainer}>
-                  <Text style={[styles.prValue, { color: colors.warning }]}>
-                    {pr.value}
-                  </Text>
-                  <Text style={[styles.prUnit, { color: colors.textSecondary }]}>
-                    {pr.unit}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </Card>
-
-          {/* Exercise List */}
-          <Text style={[styles.exerciseListTitle, { color: colors.textPrimary }]}>
-            View Progress By Exercise
-          </Text>
-          {exerciseNames.map((name) => (
-            <Pressable
-              key={name}
-              style={[styles.exerciseProgressItem, { backgroundColor: colors.card, borderRadius: borderRadius.md }]}
-              onPress={() => loadExerciseProgress(name)}
-            >
-              <Text style={[styles.exerciseProgressName, { color: colors.textPrimary }]}>
-                {name}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-            </Pressable>
-          ))}
-        </>
-      )}
-      <View style={{ height: 100 }} />
-    </ScrollView>
-  );
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
@@ -596,7 +514,6 @@ export default function WorkoutScreen() {
       {selectedTab === 'log' && renderLogTab()}
       {selectedTab === 'templates' && renderTemplatesTab()}
       {selectedTab === 'history' && renderHistoryTab()}
-      {selectedTab === 'progress' && renderProgressTab()}
 
       {/* Exercise Selection Modal */}
       <Modal visible={showExerciseModal} animationType="slide" transparent>
@@ -681,63 +598,6 @@ export default function WorkoutScreen() {
                   </View>
                 </Pressable>
               ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Progress Detail Modal */}
-      <Modal visible={showProgressModal} animationType="slide" transparent>
-        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.progressModalContent, { backgroundColor: colors.card }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                {selectedExerciseProgress?.exerciseName || 'Progress'}
-              </Text>
-              <Pressable onPress={() => setShowProgressModal(false)}>
-                <Ionicons name="close" size={24} color={colors.textSecondary} />
-              </Pressable>
-            </View>
-            <ScrollView style={styles.progressDetail}>
-              {selectedExerciseProgress?.history.length === 0 ? (
-                <Text style={[styles.noProgressText, { color: colors.textSecondary }]}>
-                  No progress data yet
-                </Text>
-              ) : (
-                selectedExerciseProgress?.history.map((entry, index) => (
-                  <View key={index} style={[styles.progressEntry, { borderBottomColor: colors.border }]}>
-                    <Text style={[styles.progressDate, { color: colors.textSecondary }]}>
-                      {new Date(entry.date).toLocaleDateString()}
-                    </Text>
-                    <View style={styles.progressStats}>
-                      <View style={styles.progressStat}>
-                        <Text style={[styles.progressStatValue, { color: colors.textPrimary }]}>
-                          {entry.maxWeight}
-                        </Text>
-                        <Text style={[styles.progressStatLabel, { color: colors.textSecondary }]}>
-                          Max (kg)
-                        </Text>
-                      </View>
-                      <View style={styles.progressStat}>
-                        <Text style={[styles.progressStatValue, { color: colors.textPrimary }]}>
-                          {entry.totalVolume}
-                        </Text>
-                        <Text style={[styles.progressStatLabel, { color: colors.textSecondary }]}>
-                          Volume
-                        </Text>
-                      </View>
-                      <View style={styles.progressStat}>
-                        <Text style={[styles.progressStatValue, { color: colors.accentBlue }]}>
-                          {entry.bestSet.weight}×{entry.bestSet.reps}
-                        </Text>
-                        <Text style={[styles.progressStatLabel, { color: colors.textSecondary }]}>
-                          Best Set
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                ))
-              )}
             </ScrollView>
           </View>
         </View>
@@ -1079,12 +939,6 @@ const styles = StyleSheet.create({
     maxHeight: '70%',
     paddingBottom: 40,
   },
-  progressModalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '80%',
-    paddingBottom: 40,
-  },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1143,37 +997,6 @@ const styles = StyleSheet.create({
   },
   templateSelectExercises: {
     fontSize: 13,
-    marginTop: 2,
-  },
-  progressDetail: {
-    padding: 16,
-  },
-  noProgressText: {
-    fontSize: 14,
-    textAlign: 'center',
-    paddingVertical: 40,
-  },
-  progressEntry: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  progressDate: {
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  progressStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  progressStat: {
-    alignItems: 'center',
-  },
-  progressStatValue: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  progressStatLabel: {
-    fontSize: 11,
     marginTop: 2,
   },
   timerOverlay: {
