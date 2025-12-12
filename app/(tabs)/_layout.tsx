@@ -94,11 +94,11 @@ export default function TabLayout() {
       <Tabs.Screen
         name="tools"
         options={{
+          href: null,
           title: 'Tools',
           tabBarIcon: ({ color, focused }) => (
             <TabIcon name={focused ? 'construct' : 'construct-outline'} color={color} focused={focused} />
           ),
-          tabBarButton: () => null,
         }}
       />
     </Tabs>
