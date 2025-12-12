@@ -1,7 +1,8 @@
 
+
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
-import Svg, { Path, Circle, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { LineChart as GiftedLineChart } from 'react-native-gifted-charts';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface DataPoint {
@@ -19,6 +20,9 @@ interface LineChartProps {
   showGrid?: boolean;
   formatYLabel?: (value: number) => string;
   formatXLabel?: (date: string) => string;
+  curved?: boolean;
+  hideDataPoints?: boolean;
+  areaChart?: boolean;
 }
 
 export const LineChart: React.FC<LineChartProps> = ({
@@ -31,8 +35,11 @@ export const LineChart: React.FC<LineChartProps> = ({
   showGrid = true,
   formatYLabel = (v) => v.toFixed(0),
   formatXLabel = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  curved = true,
+  hideDataPoints = false,
+  areaChart = true,
 }) => {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const lineColor = color || colors.accentBlue;
   
   if (data.length === 0) {
@@ -45,159 +52,125 @@ export const LineChart: React.FC<LineChartProps> = ({
     );
   }
 
-  const padding = { top: 20, right: 16, bottom: 30, left: 45 };
-  const chartWidth = width - padding.left - padding.right;
-  const chartHeight = height - padding.top - padding.bottom;
+  // Transform data to gifted-charts format
+  // Show max 6 labels evenly distributed
+  const labelInterval = Math.ceil(data.length / 6);
+  
+  const chartData = data.map((point, index) => ({
+    value: point.value,
+    label: index % labelInterval === 0 || index === data.length - 1 
+      ? formatXLabel(point.date)
+      : '',
+    dataPointText: '',
+    showDataPoint: showDots && !hideDataPoints,
+  }));
 
   const values = data.map(d => d.value);
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
   const valueRange = maxValue - minValue || 1;
   
-  // Add 10% padding to the range
-  const paddedMin = minValue - valueRange * 0.1;
-  const paddedMax = maxValue + valueRange * 0.1;
-  const paddedRange = paddedMax - paddedMin;
+  // Add padding to the range
+  const yAxisOffset = Math.floor(minValue - valueRange * 0.1);
+  const calculatedMaxValue = Math.ceil(maxValue + valueRange * 0.1);
 
-  const getX = (index: number) => padding.left + (index / (data.length - 1 || 1)) * chartWidth;
-  const getY = (value: number) => padding.top + chartHeight - ((value - paddedMin) / paddedRange) * chartHeight;
-
-  // Create smooth path using cubic bezier curves
-  const createSmoothPath = () => {
-    if (data.length < 2) {
-      const x = getX(0);
-      const y = getY(data[0].value);
-      return `M ${x} ${y}`;
-    }
-
-    let path = `M ${getX(0)} ${getY(data[0].value)}`;
-    
-    for (let i = 0; i < data.length - 1; i++) {
-      const x0 = getX(i);
-      const y0 = getY(data[i].value);
-      const x1 = getX(i + 1);
-      const y1 = getY(data[i + 1].value);
-      
-      const cpx1 = x0 + (x1 - x0) / 3;
-      const cpy1 = y0;
-      const cpx2 = x1 - (x1 - x0) / 3;
-      const cpy2 = y1;
-      
-      path += ` C ${cpx1} ${cpy1}, ${cpx2} ${cpy2}, ${x1} ${y1}`;
-    }
-    
-    return path;
-  };
-
-  // Create area path for gradient fill
-  const createAreaPath = () => {
-    const linePath = createSmoothPath();
-    const lastX = getX(data.length - 1);
-    const baseY = padding.top + chartHeight;
-    return `${linePath} L ${lastX} ${baseY} L ${padding.left} ${baseY} Z`;
-  };
-
-  // Generate Y-axis labels
-  const yLabels = Array.from({ length: 5 }, (_, i) => {
-    const value = paddedMin + (paddedRange * (4 - i)) / 4;
-    return { value, y: padding.top + (chartHeight * i) / 4 };
-  });
-
-  // Generate X-axis labels (show max 5)
-  const xLabelIndices = data.length <= 5 
-    ? data.map((_, i) => i)
-    : [0, Math.floor(data.length / 4), Math.floor(data.length / 2), Math.floor(3 * data.length / 4), data.length - 1];
+  // Calculate spacing based on available width
+  const chartPadding = 50; // left padding for y-axis labels
+  const availableWidth = width - chartPadding - 20;
+  const spacing = data.length > 1 ? availableWidth / (data.length - 1) : availableWidth;
 
   return (
-    <View style={[styles.container, { width, height }]}>
-      <Svg width={width} height={height}>
-        <Defs>
-          <LinearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0%" stopColor={lineColor} stopOpacity={0.3} />
-            <Stop offset="100%" stopColor={lineColor} stopOpacity={0} />
-          </LinearGradient>
-        </Defs>
-
-        {/* Grid lines */}
-        {showGrid && yLabels.map((label, i) => (
-          <Line
-            key={`grid-${i}`}
-            x1={padding.left}
-            y1={label.y}
-            x2={width - padding.right}
-            y2={label.y}
-            stroke={colors.border}
-            strokeWidth={1}
-            strokeDasharray="4,4"
-            opacity={0.5}
-          />
-        ))}
-
-        {/* Gradient area */}
-        {showGradient && data.length > 1 && (
-          <Path
-            d={createAreaPath()}
-            fill="url(#areaGradient)"
-          />
-        )}
-
-        {/* Line */}
-        <Path
-          d={createSmoothPath()}
-          stroke={lineColor}
-          strokeWidth={2.5}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-
-        {/* Data points */}
-        {showDots && data.map((point, i) => (
-          <Circle
-            key={`dot-${i}`}
-            cx={getX(i)}
-            cy={getY(point.value)}
-            r={i === data.length - 1 ? 5 : 3}
-            fill={i === data.length - 1 ? lineColor : colors.card}
-            stroke={lineColor}
-            strokeWidth={2}
-          />
-        ))}
-      </Svg>
-
-      {/* Y-axis labels */}
-      {yLabels.map((label, i) => (
-        <Text
-          key={`y-label-${i}`}
-          style={[
-            styles.yLabel,
-            { 
-              color: colors.textSecondary,
-              top: label.y - 8,
-              left: 0,
-            }
-          ]}
-        >
-          {formatYLabel(label.value)}
-        </Text>
-      ))}
-
-      {/* X-axis labels */}
-      {xLabelIndices.map((index) => (
-        <Text
-          key={`x-label-${index}`}
-          style={[
-            styles.xLabel,
-            {
-              color: colors.textSecondary,
-              left: getX(index) - 25,
-              bottom: 4,
-            }
-          ]}
-        >
-          {formatXLabel(data[index].date)}
-        </Text>
-      ))}
+    <View style={[styles.container, { width }]}>
+      <GiftedLineChart
+        data={chartData}
+        width={width - chartPadding}
+        height={height - 40}
+        
+        // Line styling
+        color={lineColor}
+        thickness={2.5}
+        curved={curved}
+        curvature={0.2}
+        
+        // Area/Gradient styling
+        areaChart={areaChart && showGradient}
+        startFillColor={lineColor}
+        endFillColor={lineColor}
+        startOpacity={0.3}
+        endOpacity={0.05}
+        
+        // Data points styling
+        dataPointsColor={lineColor}
+        dataPointsRadius={showDots && !hideDataPoints ? 4 : 0}
+        hideDataPoints={hideDataPoints || !showDots}
+        focusedDataPointColor={lineColor}
+        focusedDataPointRadius={6}
+        
+        // X-axis styling
+        xAxisColor={colors.border}
+        xAxisThickness={0}
+        xAxisLabelTextStyle={{
+          color: colors.textSecondary,
+          fontSize: 9,
+          width: 50,
+          textAlign: 'center',
+        }}
+        rotateLabel={false}
+        
+        // Y-axis styling
+        yAxisColor={colors.border}
+        yAxisThickness={0}
+        yAxisTextStyle={{
+          color: colors.textSecondary,
+          fontSize: 10,
+        }}
+        yAxisOffset={yAxisOffset > 0 ? yAxisOffset : 0}
+        maxValue={calculatedMaxValue - (yAxisOffset > 0 ? yAxisOffset : 0)}
+        noOfSections={4}
+        formatYLabel={(value) => formatYLabel(parseFloat(value) + (yAxisOffset > 0 ? yAxisOffset : 0))}
+        
+        // Grid styling
+        rulesType={showGrid ? 'dashed' : 'solid'}
+        rulesColor={colors.border}
+        dashWidth={4}
+        dashGap={4}
+        hideRules={!showGrid}
+        
+        // Spacing
+        spacing={spacing}
+        initialSpacing={0}
+        endSpacing={0}
+        
+        // Pointer/tooltip configuration
+        pointerConfig={{
+          pointerStripHeight: height - 60,
+          pointerStripColor: colors.border,
+          pointerStripWidth: 1,
+          pointerColor: lineColor,
+          radius: 6,
+          pointerLabelWidth: 100,
+          pointerLabelHeight: 30,
+          activatePointersOnLongPress: false,
+          autoAdjustPointerLabelPosition: true,
+          pointerLabelComponent: (items: any) => {
+            const item = items[0];
+            if (!item) return null;
+            const actualValue = item.value + (yAxisOffset > 0 ? yAxisOffset : 0);
+            return (
+              <View style={[styles.tooltipContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <Text style={[styles.tooltipValue, { color: colors.textPrimary }]}>
+                  {formatYLabel(actualValue)}
+                </Text>
+              </View>
+            );
+          },
+        }}
+        
+        // Animation
+        isAnimated
+        animationDuration={800}
+        animateOnDataChange
+      />
     </View>
   );
 };
@@ -211,16 +184,20 @@ const styles = StyleSheet.create({
     marginTop: 60,
     fontSize: 14,
   },
-  yLabel: {
-    position: 'absolute',
-    fontSize: 10,
-    width: 40,
-    textAlign: 'right',
+  tooltipContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  xLabel: {
-    position: 'absolute',
-    fontSize: 9,
-    width: 50,
+  tooltipValue: {
+    fontSize: 13,
+    fontWeight: '600',
     textAlign: 'center',
   },
 });

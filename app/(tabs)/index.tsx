@@ -1,26 +1,26 @@
 
-import React, { useEffect, useState, useCallback } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
-  View,
-  Text,
+  Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
-  RefreshControl,
-  Pressable,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useFocusEffect } from '@react-navigation/native';
+import { Card, MacroBar, MetricRing, QuickActionCard } from '../../src/components/ui';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { Card, MetricRing, MacroBar, QuickActionCard } from '../../src/components/ui';
 import { localApi } from '../../src/services/localApi';
 import {
   Meal,
-  Workout,
-  UserPreferences,
+  PersonalRecord,
   StreakData,
-  PersonalRecord
+  UserPreferences,
+  Workout
 } from '../../src/types';
 
 export default function HomeScreen() {
