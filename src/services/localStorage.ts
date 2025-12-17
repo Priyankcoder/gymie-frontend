@@ -5,6 +5,8 @@ const STORAGE_KEYS = {
   USER_PREFERENCES: '@gymie_user_preferences',
   WORKOUTS: '@gymie_workouts',
   WORKOUT_TEMPLATES: '@gymie_workout_templates',
+  WORKOUT_PLANS: '@gymie_workout_plans',
+  SCHEDULED_WORKOUTS: '@gymie_scheduled_workouts',
   PERSONAL_RECORDS: '@gymie_personal_records',
   MEALS: '@gymie_meals',
   RECIPES: '@gymie_recipes',

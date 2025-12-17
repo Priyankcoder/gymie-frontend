@@ -3,6 +3,9 @@ import { storage } from './localStorage';
 import {
   Workout,
   WorkoutTemplate,
+  WorkoutPlan,
+  WorkoutPlanDay,
+  ScheduledWorkout,
   TemplateExercise,
   PersonalRecord,
   Meal,
@@ -17,6 +20,7 @@ import {
   StreakData,
   WeightLog,
   ExerciseProgress,
+  PlanRecurrence,
 } from '../types';
 
 // Utility to simulate network delay
@@ -697,11 +701,343 @@ export const localApi = {
     async search(query: string): Promise<ApiResponse<ExerciseInfo[]>> {
       await randomDelay();
       const exercises = await storage.get<ExerciseInfo[]>(storage.keys.EXERCISES) || defaultExercises;
-      const filtered = exercises.filter(e => 
+      const filtered = exercises.filter(e =>
         e.name.toLowerCase().includes(query.toLowerCase()) ||
         e.category.toLowerCase().includes(query.toLowerCase())
       );
       return { success: true, data: filtered };
+    },
+  },
+
+  // ==================== Workout Plans ====================
+  workoutPlans: {
+    async getAll(): Promise<ApiResponse<WorkoutPlan[]>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS);
+      return { success: true, data: plans || [] };
+    },
+
+    async getById(id: string): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const plan = plans.find(p => p.id === id) || null;
+      return { success: true, data: plan };
+    },
+
+    async getActive(): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const activePlan = plans.find(p => p.isActive) || null;
+      return { success: true, data: activePlan };
+    },
+
+    async create(plan: Omit<WorkoutPlan, 'id' | 'createdAt' | 'updatedAt'>): Promise<ApiResponse<WorkoutPlan>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      
+      // If new plan is active, deactivate others
+      if (plan.isActive) {
+        plans.forEach(p => p.isActive = false);
+      }
+      
+      const newPlan: WorkoutPlan = {
+        ...plan,
+        id: generateId(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        days: plan.days.map(day => ({ ...day, id: day.id || generateId() })),
+      };
+      
+      plans.push(newPlan);
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      return { success: true, data: newPlan };
+    },
+
+    async update(id: string, updates: Partial<WorkoutPlan>): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const index = plans.findIndex(p => p.id === id);
+      
+      if (index === -1) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      // If setting this plan as active, deactivate others
+      if (updates.isActive) {
+        plans.forEach(p => p.isActive = false);
+      }
+      
+      plans[index] = {
+        ...plans[index],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+      
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      return { success: true, data: plans[index] };
+    },
+
+    async setActive(id: string): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      
+      // Deactivate all plans
+      plans.forEach(p => p.isActive = false);
+      
+      // Activate the selected plan
+      const index = plans.findIndex(p => p.id === id);
+      if (index === -1) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      plans[index].isActive = true;
+      plans[index].updatedAt = new Date().toISOString();
+      
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      return { success: true, data: plans[index] };
+    },
+
+    async clone(id: string, newName: string): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const original = plans.find(p => p.id === id);
+      
+      if (!original) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      const clonedPlan: WorkoutPlan = {
+        ...original,
+        id: generateId(),
+        name: newName,
+        isActive: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        days: original.days.map(day => ({ ...day, id: generateId() })),
+      };
+      
+      plans.push(clonedPlan);
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      return { success: true, data: clonedPlan };
+    },
+
+    async delete(id: string): Promise<ApiResponse<boolean>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const filtered = plans.filter(p => p.id !== id);
+      await storage.set(storage.keys.WORKOUT_PLANS, filtered);
+      
+      // Also delete scheduled workouts for this plan
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const filteredScheduled = scheduled.filter(s => s.planId !== id);
+      await storage.set(storage.keys.SCHEDULED_WORKOUTS, filteredScheduled);
+      
+      return { success: true, data: true };
+    },
+
+    async updateDay(planId: string, dayId: string, updates: Partial<WorkoutPlanDay>): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const planIndex = plans.findIndex(p => p.id === planId);
+      
+      if (planIndex === -1) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      const dayIndex = plans[planIndex].days.findIndex(d => d.id === dayId);
+      if (dayIndex === -1) {
+        return { success: false, error: 'Day not found' };
+      }
+      
+      plans[planIndex].days[dayIndex] = {
+        ...plans[planIndex].days[dayIndex],
+        ...updates,
+      };
+      plans[planIndex].updatedAt = new Date().toISOString();
+      
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      return { success: true, data: plans[planIndex] };
+    },
+
+    async addDay(planId: string, day: Omit<WorkoutPlanDay, 'id'>): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const index = plans.findIndex(p => p.id === planId);
+      
+      if (index === -1) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      const newDay: WorkoutPlanDay = { ...day, id: generateId() };
+      plans[index].days.push(newDay);
+      plans[index].updatedAt = new Date().toISOString();
+      
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      return { success: true, data: plans[index] };
+    },
+
+    async removeDay(planId: string, dayId: string): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const index = plans.findIndex(p => p.id === planId);
+      
+      if (index === -1) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      plans[index].days = plans[index].days.filter(d => d.id !== dayId);
+      plans[index].updatedAt = new Date().toISOString();
+      
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      return { success: true, data: plans[index] };
+    },
+
+    async setRecurrence(planId: string, recurrence: PlanRecurrence | undefined): Promise<ApiResponse<WorkoutPlan | null>> {
+      await randomDelay();
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const index = plans.findIndex(p => p.id === planId);
+      
+      if (index === -1) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      plans[index].recurrence = recurrence;
+      plans[index].updatedAt = new Date().toISOString();
+      
+      await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      
+      // Generate scheduled workouts if recurrence is set
+      if (recurrence) {
+        await localApi.scheduledWorkouts.generateFromRecurrence(planId, recurrence);
+      }
+      
+      return { success: true, data: plans[index] };
+    },
+  },
+
+  // ==================== Scheduled Workouts ====================
+  scheduledWorkouts: {
+    async getAll(): Promise<ApiResponse<ScheduledWorkout[]>> {
+      await randomDelay();
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS);
+      return { success: true, data: scheduled || [] };
+    },
+
+    async getByDateRange(startDate: string, endDate: string): Promise<ApiResponse<ScheduledWorkout[]>> {
+      await randomDelay();
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const filtered = scheduled.filter(s => s.date >= startDate && s.date <= endDate);
+      return { success: true, data: filtered };
+    },
+
+    async getByDate(date: string): Promise<ApiResponse<ScheduledWorkout[]>> {
+      await randomDelay();
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const filtered = scheduled.filter(s => s.date === date);
+      return { success: true, data: filtered };
+    },
+
+    async getTodaysWorkout(): Promise<ApiResponse<{ scheduled: ScheduledWorkout | null; plan: WorkoutPlan | null; day: WorkoutPlanDay | null }>> {
+      await randomDelay();
+      const today = new Date().toISOString().split('T')[0];
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const todaysScheduled = scheduled.find(s => s.date === today && s.status === 'scheduled');
+      
+      if (!todaysScheduled) {
+        return { success: true, data: { scheduled: null, plan: null, day: null } };
+      }
+      
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const plan = plans.find(p => p.id === todaysScheduled.planId) || null;
+      const day = plan?.days.find(d => d.id === todaysScheduled.planDayId) || null;
+      
+      return { success: true, data: { scheduled: todaysScheduled, plan, day } };
+    },
+
+    async updateStatus(id: string, status: ScheduledWorkout['status'], workoutId?: string): Promise<ApiResponse<ScheduledWorkout | null>> {
+      await randomDelay();
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const index = scheduled.findIndex(s => s.id === id);
+      
+      if (index === -1) {
+        return { success: false, error: 'Scheduled workout not found' };
+      }
+      
+      scheduled[index].status = status;
+      if (workoutId) {
+        scheduled[index].workoutId = workoutId;
+      }
+      
+      await storage.set(storage.keys.SCHEDULED_WORKOUTS, scheduled);
+      return { success: true, data: scheduled[index] };
+    },
+
+    async generateFromRecurrence(planId: string, recurrence: PlanRecurrence): Promise<ApiResponse<ScheduledWorkout[]>> {
+      await randomDelay();
+      
+      const plans = await storage.get<WorkoutPlan[]>(storage.keys.WORKOUT_PLANS) || [];
+      const plan = plans.find(p => p.id === planId);
+      
+      if (!plan) {
+        return { success: false, error: 'Plan not found' };
+      }
+      
+      // Remove existing future scheduled workouts for this plan
+      const existing = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const today = new Date().toISOString().split('T')[0];
+      const filtered = existing.filter(s => s.planId !== planId || s.date < today);
+      
+      // Generate new scheduled workouts for the next 12 weeks
+      const newScheduled: ScheduledWorkout[] = [];
+      const startDate = new Date(recurrence.startDate);
+      const endDate = recurrence.endDate ? new Date(recurrence.endDate) : new Date(startDate.getTime() + 84 * 24 * 60 * 60 * 1000); // 12 weeks
+      
+      let currentDate = new Date(startDate);
+      let dayIndex = 0;
+      const workoutDays = plan.days.filter(d => !d.isRestDay);
+      
+      while (currentDate <= endDate && workoutDays.length > 0) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const dayOfWeek = currentDate.getDay(); // 0=Sunday, 1=Monday, etc.
+        
+        // Skip rest days
+        if (!recurrence.restDays.includes(dayOfWeek) && !recurrence.excludedDates?.includes(dateStr)) {
+          const workoutDay = workoutDays[dayIndex % workoutDays.length];
+          
+          newScheduled.push({
+            id: generateId(),
+            planId,
+            planDayId: workoutDay.id,
+            date: dateStr,
+            status: 'scheduled',
+          });
+          
+          dayIndex++;
+        }
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      const allScheduled = [...filtered, ...newScheduled];
+      await storage.set(storage.keys.SCHEDULED_WORKOUTS, allScheduled);
+      
+      return { success: true, data: newScheduled };
+    },
+
+    async delete(id: string): Promise<ApiResponse<boolean>> {
+      await randomDelay();
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const filtered = scheduled.filter(s => s.id !== id);
+      await storage.set(storage.keys.SCHEDULED_WORKOUTS, filtered);
+      return { success: true, data: true };
+    },
+
+    async clearPlanSchedule(planId: string): Promise<ApiResponse<boolean>> {
+      await randomDelay();
+      const scheduled = await storage.get<ScheduledWorkout[]>(storage.keys.SCHEDULED_WORKOUTS) || [];
+      const filtered = scheduled.filter(s => s.planId !== planId);
+      await storage.set(storage.keys.SCHEDULED_WORKOUTS, filtered);
+      return { success: true, data: true };
     },
   },
 };

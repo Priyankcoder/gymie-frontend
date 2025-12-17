@@ -49,13 +49,74 @@ export interface WorkoutTemplate {
   exercises: TemplateExercise[];
   createdAt: string;
   color?: string;
+  category?: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full' | 'chest' | 'back' | 'shoulders' | 'arms' | 'core' | 'custom';
+  isPrebuilt?: boolean;
 }
 
 export interface TemplateExercise {
   name: string;
   targetSets: number;
-  targetReps: number;
+  targetReps: number | string; // Can be "8-12" range
+  targetWeight?: number;
+  restSeconds?: number;
   notes?: string;
+  supersetWith?: string; // Exercise name to superset with
+}
+
+// ===== WORKOUT PLAN TYPES =====
+
+export interface WorkoutPlan {
+  id: string;
+  name: string;
+  description?: string;
+  type: 'ppl' | 'push_pull' | 'upper_lower' | 'bro_split' | 'full_body' | 'custom';
+  days: WorkoutPlanDay[];
+  recurrence?: PlanRecurrence;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  color?: string;
+}
+
+export interface WorkoutPlanDay {
+  id: string;
+  dayIndex: number; // 0-6 for Monday-Sunday or sequential order
+  name: string; // "Push Day", "Rest", etc.
+  isRestDay: boolean;
+  templateId?: string; // Reference to template
+  exercises: TemplateExercise[];
+  notes?: string;
+}
+
+export interface PlanRecurrence {
+  type: 'weekly' | 'biweekly' | 'monthly' | 'custom';
+  interval: number; // e.g., 1 for every week, 2 for every 2 weeks
+  startDate: string;
+  endDate?: string; // Optional end date
+  restDays: number[]; // Day indices that are rest days (0=Sunday, 1=Monday, etc.)
+  excludedDates?: string[]; // Specific dates to skip
+}
+
+export interface ScheduledWorkout {
+  id: string;
+  planId: string;
+  planDayId: string;
+  date: string;
+  status: 'scheduled' | 'completed' | 'skipped' | 'rescheduled';
+  workoutId?: string; // Reference to completed workout
+  notes?: string;
+}
+
+// Prebuilt template structures
+export interface PrebuiltPlanTemplate {
+  id: string;
+  name: string;
+  description: string;
+  type: WorkoutPlan['type'];
+  daysPerWeek: number;
+  level: 'beginner' | 'intermediate' | 'advanced';
+  goal: 'strength' | 'hypertrophy' | 'endurance' | 'fat_loss' | 'general';
+  days: Omit<WorkoutPlanDay, 'id'>[];
 }
 
 // Personal Record

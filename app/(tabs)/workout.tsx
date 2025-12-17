@@ -1,34 +1,43 @@
-
-import React, { useEffect, useState, useCallback } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Pressable,
-  TextInput,
-  Modal,
+  Alert,
+  Dimensions,
   FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
-  Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
-import { useTheme } from '../../src/contexts/ThemeContext';
-import { Card, Button, MetricRing } from '../../src/components/ui';
-import { localApi } from '../../src/services/localApi';
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Button, Card } from "../../src/components/ui";
+import { useTheme } from "../../src/contexts/ThemeContext";
+import prebuiltPlanTemplates from "../../src/data/prebuiltPlans";
+import { localApi } from "../../src/services/localApi";
 import {
-  Workout,
   Exercise,
-  WorkoutSet,
   ExerciseInfo,
   PersonalRecord,
-  WorkoutTemplate
-} from '../../src/types';
+  PlanRecurrence,
+  ScheduledWorkout,
+  TemplateExercise,
+  Workout,
+  WorkoutPlan,
+  WorkoutPlanDay,
+  WorkoutSet,
+  WorkoutTemplate,
+} from "../../src/types";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const { height: SCREEN_HEIGHT, width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function WorkoutScreen() {
   const { colors, spacing, borderRadius } = useTheme();
@@ -37,15 +46,51 @@ export default function WorkoutScreen() {
   const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
   const [exerciseList, setExerciseList] = useState<ExerciseInfo[]>([]);
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
+  const [workoutPlans, setWorkoutPlans] = useState<WorkoutPlan[]>([]);
+  const [scheduledWorkouts, setScheduledWorkouts] = useState<
+    ScheduledWorkout[]
+  >([]);
+  const [todaysWorkout, setTodaysWorkout] = useState<{
+    scheduled: ScheduledWorkout | null;
+    plan: WorkoutPlan | null;
+    day: WorkoutPlanDay | null;
+  }>({ scheduled: null, plan: null, day: null });
+
   const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
   const [showExerciseModal, setShowExerciseModal] = useState(false);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showPrebuiltPlansModal, setShowPrebuiltPlansModal] = useState(false);
+  const [showPlanDetailsModal, setShowPlanDetailsModal] = useState(false);
+  const [showPlanCustomizationModal, setShowPlanCustomizationModal] =
+    useState(false);
+  const [showDayExercisesModal, setShowDayExercisesModal] = useState(false);
+  const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<WorkoutPlan | null>(null);
+  const [customizingPlan, setCustomizingPlan] = useState<{
+    name: string;
+    description: string;
+    type: WorkoutPlan["type"];
+    days: WorkoutPlanDay[];
+  } | null>(null);
+  const [selectedDayIndex, setSelectedDayIndex] = useState<number>(0);
+  const [customizationScrollY, setCustomizationScrollY] = useState(0);
+  const customizationScrollRef = React.useRef<ScrollView>(null);
+  const [recurrenceSettings, setRecurrenceSettings] = useState<PlanRecurrence>({
+    type: "weekly",
+    interval: 1,
+    startDate: new Date().toISOString().split("T")[0],
+    restDays: [0], // Sunday
+  });
   const [restTime, setRestTime] = useState(90);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTab, setSelectedTab] = useState<'log' | 'templates' | 'history'>('log');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTab, setSelectedTab] = useState<"log" | "plans" | "history">(
+    "log"
+  );
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
+  const [calendarStartDate, setCalendarStartDate] = useState(new Date());
 
   useFocusEffect(
     useCallback(() => {
@@ -54,7 +99,16 @@ export default function WorkoutScreen() {
   );
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    // Restore scroll position when returning to customization modal
+    if (showPlanCustomizationModal && !showDayExercisesModal && customizationScrollRef.current) {
+      setTimeout(() => {
+        customizationScrollRef.current?.scrollTo({ y: customizationScrollY, animated: false });
+      }, 100);
+    }
+  }, [showPlanCustomizationModal, showDayExercisesModal]);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
     if (restTimeLeft > 0) {
       interval = setInterval(() => {
         setRestTimeLeft((prev) => {
@@ -70,50 +124,67 @@ export default function WorkoutScreen() {
   }, [restTimeLeft]);
 
   const loadData = async () => {
-    const [workoutsRes, prsRes, exercisesRes, templatesRes] = await Promise.all([
+    const [
+      workoutsRes,
+      prsRes,
+      exercisesRes,
+      templatesRes,
+      plansRes,
+      scheduledRes,
+      todayRes,
+    ] = await Promise.all([
       localApi.workouts.getAll(),
       localApi.prs.getAll(),
       localApi.exercises.getAll(),
       localApi.templates.getAll(),
+      localApi.workoutPlans.getAll(),
+      localApi.scheduledWorkouts.getAll(),
+      localApi.scheduledWorkouts.getTodaysWorkout(),
     ]);
 
-    if (workoutsRes.data) setWorkouts(workoutsRes.data.sort((a, b) =>
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    ));
+    if (workoutsRes.data)
+      setWorkouts(
+        workoutsRes.data.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+      );
     if (prsRes.data) setPersonalRecords(prsRes.data);
     if (exercisesRes.data) setExerciseList(exercisesRes.data);
     if (templatesRes.data) setTemplates(templatesRes.data);
+    if (plansRes.data) setWorkoutPlans(plansRes.data);
+    if (scheduledRes.data) setScheduledWorkouts(scheduledRes.data);
+    if (todayRes.data) setTodaysWorkout(todayRes.data);
   };
 
   const startNewWorkout = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     setWorkoutStartTime(new Date());
     setActiveWorkout({
-      id: '',
+      id: "",
       date: today,
-      name: 'New Workout',
+      name: "New Workout",
       exercises: [],
       completed: false,
     });
   };
 
   const startFromTemplate = (template: WorkoutTemplate) => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
     setWorkoutStartTime(new Date());
-    
+
     const exercises: Exercise[] = template.exercises.map((te, index) => ({
       id: `ex-${Date.now()}-${index}`,
       name: te.name,
       sets: Array.from({ length: te.targetSets }, (_, i) => ({
         id: `set-${Date.now()}-${index}-${i}`,
-        reps: te.targetReps,
+        reps: typeof te.targetReps === "number" ? te.targetReps : 10,
         weight: 0,
         completed: false,
       })),
     }));
 
     setActiveWorkout({
-      id: '',
+      id: "",
       date: today,
       name: template.name,
       exercises,
@@ -121,6 +192,34 @@ export default function WorkoutScreen() {
       templateId: template.id,
     });
     setShowTemplateModal(false);
+  };
+
+  const startTodaysWorkout = () => {
+    if (!todaysWorkout.day) return;
+
+    const today = new Date().toISOString().split("T")[0];
+    setWorkoutStartTime(new Date());
+
+    const exercises: Exercise[] = todaysWorkout.day.exercises.map(
+      (te, index) => ({
+        id: `ex-${Date.now()}-${index}`,
+        name: te.name,
+        sets: Array.from({ length: te.targetSets }, (_, i) => ({
+          id: `set-${Date.now()}-${index}-${i}`,
+          reps: typeof te.targetReps === "number" ? te.targetReps : 10,
+          weight: te.targetWeight || 0,
+          completed: false,
+        })),
+      })
+    );
+
+    setActiveWorkout({
+      id: "",
+      date: today,
+      name: todaysWorkout.day.name,
+      exercises,
+      completed: false,
+    });
   };
 
   const addExercise = (exercise: ExerciseInfo) => {
@@ -137,7 +236,117 @@ export default function WorkoutScreen() {
       exercises: [...activeWorkout.exercises, newExercise],
     });
     setShowExerciseModal(false);
-    setSearchQuery('');
+    setSearchQuery("");
+  };
+
+  const addExerciseToDay = (exercise: ExerciseInfo) => {
+    if (!customizingPlan) return;
+
+    const newExercise: TemplateExercise = {
+      name: exercise.name,
+      targetSets: 3,
+      targetReps: 10,
+    };
+
+    const updatedDays = [...customizingPlan.days];
+    updatedDays[selectedDayIndex] = {
+      ...updatedDays[selectedDayIndex],
+      exercises: [...updatedDays[selectedDayIndex].exercises, newExercise],
+    };
+
+    setCustomizingPlan({
+      ...customizingPlan,
+      days: updatedDays,
+    });
+    setShowDayExercisesModal(false);
+    setSearchQuery("");
+  };
+
+  const removeExerciseFromDay = (dayIndex: number, exerciseIndex: number) => {
+    if (!customizingPlan) return;
+
+    const updatedDays = [...customizingPlan.days];
+    updatedDays[dayIndex] = {
+      ...updatedDays[dayIndex],
+      exercises: updatedDays[dayIndex].exercises.filter(
+        (_, i) => i !== exerciseIndex
+      ),
+    };
+
+    setCustomizingPlan({
+      ...customizingPlan,
+      days: updatedDays,
+    });
+  };
+
+  const updateDayExercise = (
+    dayIndex: number,
+    exerciseIndex: number,
+    updates: Partial<TemplateExercise>
+  ) => {
+    if (!customizingPlan) return;
+
+    const updatedDays = [...customizingPlan.days];
+    updatedDays[dayIndex] = {
+      ...updatedDays[dayIndex],
+      exercises: updatedDays[dayIndex].exercises.map((ex, i) =>
+        i === exerciseIndex ? { ...ex, ...updates } : ex
+      ),
+    };
+
+    setCustomizingPlan({
+      ...customizingPlan,
+      days: updatedDays,
+    });
+  };
+
+  const toggleDayRestStatus = (dayIndex: number) => {
+    if (!customizingPlan) return;
+
+    const updatedDays = [...customizingPlan.days];
+    updatedDays[dayIndex] = {
+      ...updatedDays[dayIndex],
+      isRestDay: !updatedDays[dayIndex].isRestDay,
+      exercises: !updatedDays[dayIndex].isRestDay
+        ? []
+        : updatedDays[dayIndex].exercises,
+    };
+
+    setCustomizingPlan({
+      ...customizingPlan,
+      days: updatedDays,
+    });
+  };
+
+  const savePlanFromCustomization = async () => {
+    if (!customizingPlan) return;
+
+    const newPlan: Omit<WorkoutPlan, "id" | "createdAt" | "updatedAt"> = {
+      name: customizingPlan.name,
+      description: customizingPlan.description,
+      type: customizingPlan.type,
+      days: customizingPlan.days,
+      isActive: workoutPlans.length === 0,
+      color: "#3B82F6",
+    };
+
+    const result = await localApi.workoutPlans.create(newPlan);
+    setShowPlanCustomizationModal(false);
+    setCustomizingPlan(null);
+
+    // Show recurrence setup modal for the new plan
+    if (result.data) {
+      setSelectedPlan(result.data);
+      setRecurrenceSettings({
+        type: "weekly",
+        interval: 1,
+        startDate: new Date().toISOString().split("T")[0],
+        restDays: [0],
+      });
+      setShowRecurrenceModal(true);
+    }
+
+    loadData();
   };
 
   const addSet = (exerciseId: string) => {
@@ -183,7 +392,11 @@ export default function WorkoutScreen() {
     });
   };
 
-  const updateSet = (exerciseId: string, setId: string, updates: Partial<WorkoutSet>) => {
+  const updateSet = (
+    exerciseId: string,
+    setId: string,
+    updates: Partial<WorkoutSet>
+  ) => {
     if (!activeWorkout) return;
 
     setActiveWorkout({
@@ -214,7 +427,7 @@ export default function WorkoutScreen() {
   const saveWorkout = async () => {
     if (!activeWorkout) return;
 
-    const duration = workoutStartTime 
+    const duration = workoutStartTime
       ? Math.round((new Date().getTime() - workoutStartTime.getTime()) / 60000)
       : 45;
 
@@ -224,7 +437,17 @@ export default function WorkoutScreen() {
       duration,
     };
 
-    await localApi.workouts.create(completedWorkout);
+    const result = await localApi.workouts.create(completedWorkout);
+
+    // Mark today's scheduled workout as completed if it exists
+    if (todaysWorkout.scheduled && result.data) {
+      await localApi.scheduledWorkouts.updateStatus(
+        todaysWorkout.scheduled.id,
+        "completed",
+        result.data.id
+      );
+    }
+
     setActiveWorkout(null);
     setWorkoutStartTime(null);
     loadData();
@@ -235,6 +458,166 @@ export default function WorkoutScreen() {
     setWorkoutStartTime(null);
   };
 
+  const selectPrebuiltPlan = (prebuiltId: string) => {
+    const prebuilt = prebuiltPlanTemplates.find((p) => p.id === prebuiltId);
+    if (!prebuilt) return;
+
+    // Initialize customization with prebuilt template data
+    setCustomizingPlan({
+      name: prebuilt.name,
+      description: prebuilt.description,
+      type: prebuilt.type,
+      days: prebuilt.days.map((day, index) => ({
+        ...day,
+        id: `day-${Date.now()}-${index}`,
+      })),
+    });
+
+    setShowPrebuiltPlansModal(false);
+    setShowPlanCustomizationModal(true);
+  };
+
+  const createPlanFromPrebuilt = async (prebuiltId: string) => {
+    const prebuilt = prebuiltPlanTemplates.find((p) => p.id === prebuiltId);
+    if (!prebuilt) return;
+
+    const newPlan: Omit<WorkoutPlan, "id" | "createdAt" | "updatedAt"> = {
+      name: prebuilt.name,
+      description: prebuilt.description,
+      type: prebuilt.type,
+      days: prebuilt.days.map((day, index) => ({
+        ...day,
+        id: `day-${Date.now()}-${index}`,
+      })),
+      isActive: workoutPlans.length === 0,
+      color: "#3B82F6",
+    };
+
+    const result = await localApi.workoutPlans.create(newPlan);
+    setShowPrebuiltPlansModal(false);
+
+    // Show recurrence setup modal for the new plan
+    if (result.data) {
+      setSelectedPlan(result.data);
+      setRecurrenceSettings({
+        type: "weekly",
+        interval: 1,
+        startDate: new Date().toISOString().split("T")[0],
+        restDays: [0],
+      });
+      setShowRecurrenceModal(true);
+    }
+
+    loadData();
+  };
+
+  const setActivePlan = async (planId: string) => {
+    await localApi.workoutPlans.setActive(planId);
+    loadData();
+  };
+
+  const deletePlan = async (planId: string) => {
+    Alert.alert(
+      "Delete Plan",
+      "Are you sure you want to delete this workout plan?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await localApi.workoutPlans.delete(planId);
+            setShowPlanDetailsModal(false);
+            loadData();
+          },
+        },
+      ]
+    );
+  };
+
+  const clonePlan = async (planId: string) => {
+    const plan = workoutPlans.find((p) => p.id === planId);
+    if (!plan) return;
+
+    await localApi.workoutPlans.clone(planId, `${plan.name} (Copy)`);
+    loadData();
+  };
+
+  const saveRecurrence = async () => {
+    if (!selectedPlan) return;
+
+    await localApi.workoutPlans.setRecurrence(
+      selectedPlan.id,
+      recurrenceSettings
+    );
+    setShowRecurrenceModal(false);
+    setShowPlanDetailsModal(false);
+    loadData();
+  };
+
+  const toggleRestDay = (dayIndex: number) => {
+    setRecurrenceSettings((prev) => ({
+      ...prev,
+      restDays: prev.restDays.includes(dayIndex)
+        ? prev.restDays.filter((d) => d !== dayIndex)
+        : [...prev.restDays, dayIndex],
+    }));
+  };
+
+  const generateCalendarDays = () => {
+    const days: {
+      date: Date;
+      scheduled: ScheduledWorkout | null;
+      isCurrentMonth: boolean;
+    }[] = [];
+    const start = new Date(
+      calendarStartDate.getFullYear(),
+      calendarStartDate.getMonth(),
+      1
+    );
+    const startDay = start.getDay();
+
+    // Add previous month days
+    const prevMonthEnd = new Date(start);
+    prevMonthEnd.setDate(0);
+    for (let i = startDay - 1; i >= 0; i--) {
+      const date = new Date(prevMonthEnd);
+      date.setDate(prevMonthEnd.getDate() - i);
+      days.push({ date, scheduled: null, isCurrentMonth: false });
+    }
+
+    // Add current month days
+    const daysInMonth = new Date(
+      calendarStartDate.getFullYear(),
+      calendarStartDate.getMonth() + 1,
+      0
+    ).getDate();
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(
+        calendarStartDate.getFullYear(),
+        calendarStartDate.getMonth(),
+        i
+      );
+      const dateStr = date.toISOString().split("T")[0];
+      const scheduled =
+        scheduledWorkouts.find((s) => s.date === dateStr) || null;
+      days.push({ date, scheduled, isCurrentMonth: true });
+    }
+
+    // Add next month days to complete the grid
+    const remainingDays = 42 - days.length;
+    for (let i = 1; i <= remainingDays; i++) {
+      const date = new Date(
+        calendarStartDate.getFullYear(),
+        calendarStartDate.getMonth() + 1,
+        i
+      );
+      days.push({ date, scheduled: null, isCurrentMonth: false });
+    }
+
+    return days;
+  };
+
   const filteredExercises = exerciseList.filter((ex) =>
     ex.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -242,27 +625,35 @@ export default function WorkoutScreen() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const renderTabs = () => (
     <View style={[styles.tabContainer, { borderBottomColor: colors.border }]}>
-      {(['log', 'templates', 'history'] as const).map((tab) => (
+      {(["log", "plans", "history"] as const).map((tab) => (
         <Pressable
           key={tab}
           style={[
             styles.tab,
-            selectedTab === tab && { borderBottomColor: colors.accentBlue, borderBottomWidth: 2 },
+            selectedTab === tab && {
+              borderBottomColor: colors.accentBlue,
+              borderBottomWidth: 2,
+            },
           ]}
           onPress={() => setSelectedTab(tab)}
         >
           <Text
             style={[
               styles.tabText,
-              { color: selectedTab === tab ? colors.accentBlue : colors.textSecondary },
+              {
+                color:
+                  selectedTab === tab
+                    ? colors.accentBlue
+                    : colors.textSecondary,
+              },
             ]}
           >
-            {tab === 'log' ? 'Log' : tab === 'templates' ? 'Plans' : 'History'}
+            {tab === "log" ? "Log" : tab === "plans" ? "Plans" : "History"}
           </Text>
         </Pressable>
       ))}
@@ -272,30 +663,99 @@ export default function WorkoutScreen() {
   const renderLogTab = () => (
     <View style={styles.tabContent}>
       {!activeWorkout ? (
-        <View style={styles.startWorkoutContainer}>
-          <Ionicons name="barbell-outline" size={80} color={colors.textSecondary} />
-          <Text style={[styles.startWorkoutTitle, { color: colors.textPrimary }]}>
-            Ready to Train?
-          </Text>
-          <Text style={[styles.startWorkoutSubtitle, { color: colors.textSecondary }]}>
-            Start a new workout or use a template
-          </Text>
-          <View style={styles.startButtons}>
-            <Button 
-              title="Empty Workout" 
-              variant="outline"
-              onPress={startNewWorkout} 
-              style={{ flex: 1 }} 
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Today's Workout Card */}
+          {todaysWorkout.scheduled && todaysWorkout.day && (
+            <Card style={styles.todaysWorkoutCard}>
+              <View style={styles.todaysHeader}>
+                <Ionicons
+                  name="calendar-outline"
+                  size={24}
+                  color={colors.accentBlue}
+                />
+                <Text
+                  style={[styles.todaysTitle, { color: colors.textPrimary }]}
+                >
+                  Today's Workout
+                </Text>
+              </View>
+              <Text style={[styles.todaysName, { color: colors.textPrimary }]}>
+                {todaysWorkout.day.name}
+              </Text>
+              <Text
+                style={[styles.todaysPlan, { color: colors.textSecondary }]}
+              >
+                {todaysWorkout.plan?.name}
+              </Text>
+              <View style={styles.todaysExercises}>
+                {todaysWorkout.day.exercises.slice(0, 3).map((ex, i) => (
+                  <Text
+                    key={i}
+                    style={[
+                      styles.todaysExercise,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    • {ex.name} {ex.targetSets}×{ex.targetReps}
+                  </Text>
+                ))}
+                {todaysWorkout.day.exercises.length > 3 && (
+                  <Text
+                    style={[styles.todaysMore, { color: colors.textSecondary }]}
+                  >
+                    +{todaysWorkout.day.exercises.length - 3} more
+                  </Text>
+                )}
+              </View>
+              <Button
+                title="Start Workout"
+                onPress={startTodaysWorkout}
+                style={{ marginTop: 12 }}
+              />
+            </Card>
+          )}
+
+          <View style={styles.startWorkoutContainer}>
+            <Ionicons
+              name="barbell-outline"
+              size={80}
+              color={colors.textSecondary}
             />
-            <Button 
-              title="Use Template" 
-              onPress={() => setShowTemplateModal(true)} 
-              style={{ flex: 1 }} 
-            />
+            <Text
+              style={[styles.startWorkoutTitle, { color: colors.textPrimary }]}
+            >
+              {todaysWorkout.scheduled
+                ? "Or Start Custom Workout"
+                : "Ready to Train?"}
+            </Text>
+            <Text
+              style={[
+                styles.startWorkoutSubtitle,
+                { color: colors.textSecondary },
+              ]}
+            >
+              Start a new workout or use a template
+            </Text>
+            <View style={styles.startButtons}>
+              <Button
+                title="Empty Workout"
+                variant="outline"
+                onPress={startNewWorkout}
+                style={{ flex: 1 }}
+              />
+              <Button
+                title="Use Template"
+                onPress={() => setShowTemplateModal(true)}
+                style={{ flex: 1 }}
+              />
+            </View>
           </View>
-        </View>
+        </ScrollView>
       ) : (
-        <ScrollView style={styles.workoutContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.workoutContainer}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.workoutHeader}>
             <TextInput
               style={[
@@ -306,7 +766,9 @@ export default function WorkoutScreen() {
                 },
               ]}
               value={activeWorkout.name}
-              onChangeText={(text) => setActiveWorkout({ ...activeWorkout, name: text })}
+              onChangeText={(text) =>
+                setActiveWorkout({ ...activeWorkout, name: text })
+              }
               placeholder="Workout Name"
               placeholderTextColor={colors.textSecondary}
             />
@@ -317,18 +779,48 @@ export default function WorkoutScreen() {
 
           {activeWorkout.exercises.map((exercise) => (
             <Card key={exercise.id} style={styles.exerciseCard}>
-              <Text style={[styles.exerciseName, { color: colors.textPrimary }]}>
+              <Text
+                style={[styles.exerciseName, { color: colors.textPrimary }]}
+              >
                 {exercise.name}
               </Text>
               <View style={styles.setsHeader}>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 30 }]}>SET</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1 }]}>KG</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1 }]}>REPS</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 40 }]}></Text>
+                <Text
+                  style={[
+                    styles.setLabel,
+                    { color: colors.textSecondary, width: 30 },
+                  ]}
+                >
+                  SET
+                </Text>
+                <Text
+                  style={[
+                    styles.setLabel,
+                    { color: colors.textSecondary, flex: 1 },
+                  ]}
+                >
+                  KG
+                </Text>
+                <Text
+                  style={[
+                    styles.setLabel,
+                    { color: colors.textSecondary, flex: 1 },
+                  ]}
+                >
+                  REPS
+                </Text>
+                <Text
+                  style={[
+                    styles.setLabel,
+                    { color: colors.textSecondary, width: 40 },
+                  ]}
+                ></Text>
               </View>
               {exercise.sets.map((set, index) => (
                 <View key={set.id} style={styles.setRow}>
-                  <Text style={[styles.setNumber, { color: colors.textSecondary }]}>
+                  <Text
+                    style={[styles.setNumber, { color: colors.textSecondary }]}
+                  >
                     {index + 1}
                   </Text>
                   <TextInput
@@ -340,9 +832,11 @@ export default function WorkoutScreen() {
                         borderRadius: borderRadius.sm,
                       },
                     ]}
-                    value={set.weight > 0 ? set.weight.toString() : ''}
+                    value={set.weight > 0 ? set.weight.toString() : ""}
                     onChangeText={(text) =>
-                      updateSet(exercise.id, set.id, { weight: parseFloat(text) || 0 })
+                      updateSet(exercise.id, set.id, {
+                        weight: parseFloat(text) || 0,
+                      })
                     }
                     keyboardType="numeric"
                     placeholder="0"
@@ -357,35 +851,46 @@ export default function WorkoutScreen() {
                         borderRadius: borderRadius.sm,
                       },
                     ]}
-                    value={set.reps > 0 ? set.reps.toString() : ''}
+                    value={set.reps > 0 ? set.reps.toString() : ""}
                     onChangeText={(text) =>
-                      updateSet(exercise.id, set.id, { reps: parseInt(text) || 0 })
+                      updateSet(exercise.id, set.id, {
+                        reps: parseInt(text) || 0,
+                      })
                     }
                     keyboardType="numeric"
                     placeholder="0"
                     placeholderTextColor={colors.textSecondary}
                   />
                   <Pressable
-                    onPress={() => set.completed ? null : completeSet(exercise.id, set.id)}
+                    onPress={() =>
+                      set.completed ? null : completeSet(exercise.id, set.id)
+                    }
                     onLongPress={() => removeSet(exercise.id, set.id)}
                     style={[
                       styles.completeButton,
                       {
-                        backgroundColor: set.completed ? colors.success : colors.inputBackground,
+                        backgroundColor: set.completed
+                          ? colors.success
+                          : colors.inputBackground,
                       },
                     ]}
                   >
                     <Ionicons
                       name="checkmark"
                       size={20}
-                      color={set.completed ? '#FFF' : colors.textSecondary}
+                      color={set.completed ? "#FFF" : colors.textSecondary}
                     />
                   </Pressable>
                 </View>
               ))}
-              <Pressable style={styles.addSetButton} onPress={() => addSet(exercise.id)}>
+              <Pressable
+                style={styles.addSetButton}
+                onPress={() => addSet(exercise.id)}
+              >
                 <Ionicons name="add" size={20} color={colors.accentBlue} />
-                <Text style={[styles.addSetText, { color: colors.accentBlue }]}>Add Set</Text>
+                <Text style={[styles.addSetText, { color: colors.accentBlue }]}>
+                  Add Set
+                </Text>
               </Pressable>
             </Card>
           ))}
@@ -397,61 +902,117 @@ export default function WorkoutScreen() {
             style={{ marginVertical: 16 }}
           />
 
-          <Button title="Finish Workout" onPress={saveWorkout} style={{ marginBottom: 100 }} />
+          <Button
+            title="Finish Workout"
+            onPress={saveWorkout}
+            style={{ marginBottom: 100 }}
+          />
         </ScrollView>
       )}
     </View>
   );
 
-  const renderTemplatesTab = () => (
+  const renderPlansTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <Text style={[styles.templatesTitle, { color: colors.textPrimary }]}>
-        Workout Plans
-      </Text>
-      <Text style={[styles.templatesSubtitle, { color: colors.textSecondary }]}>
-        Choose a template to start your workout
-      </Text>
-      
-      {templates.map((template) => (
-        <Card 
-          key={template.id} 
-          style={styles.templateCard}
-          onPress={() => startFromTemplate(template)}
-        >
-          <View style={styles.templateHeader}>
-            <View 
-              style={[
-                styles.templateColor, 
-                { backgroundColor: template.color || colors.accentBlue }
-              ]} 
+      <View style={styles.plansHeader}>
+        <Text style={[styles.plansTitle, { color: colors.textPrimary }]}>
+          Workout Plans
+        </Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Pressable
+            onPress={() => setShowCalendarModal(true)}
+            style={[
+              styles.iconButton,
+              { backgroundColor: colors.inputBackground },
+            ]}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color={colors.textPrimary}
             />
-            <View style={styles.templateInfo}>
-              <Text style={[styles.templateName, { color: colors.textPrimary }]}>
-                {template.name}
-              </Text>
-              {template.description && (
-                <Text style={[styles.templateDesc, { color: colors.textSecondary }]}>
-                  {template.description}
+          </Pressable>
+          <Button
+            title="Create Plan"
+            size="sm"
+            onPress={() => setShowPrebuiltPlansModal(true)}
+          />
+        </View>
+      </View>
+
+      {workoutPlans.length === 0 ? (
+        <View style={styles.emptyPlans}>
+          <Ionicons
+            name="calendar-outline"
+            size={60}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+            No Plans Yet
+          </Text>
+          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+            Create a workout plan to schedule your training
+          </Text>
+        </View>
+      ) : (
+        workoutPlans.map((plan) => (
+          <Card
+            key={plan.id}
+            style={
+              plan.isActive
+                ? { ...styles.planCard, borderColor: colors.accentBlue, borderWidth: 2 }
+                : styles.planCard
+            }
+            onPress={() => {
+              setSelectedPlan(plan);
+              setShowPlanDetailsModal(true);
+            }}
+          >
+            <View style={styles.planHeader}>
+              <View style={styles.planInfo}>
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+                >
+                  <Text
+                    style={[styles.planName, { color: colors.textPrimary }]}
+                  >
+                    {plan.name}
+                  </Text>
+                  {plan.isActive && (
+                    <View
+                      style={[
+                        styles.activeBadge,
+                        { backgroundColor: colors.accentBlue },
+                      ]}
+                    >
+                      <Text style={styles.activeBadgeText}>Active</Text>
+                    </View>
+                  )}
+                </View>
+                {plan.description && (
+                  <Text
+                    style={[styles.planDesc, { color: colors.textSecondary }]}
+                  >
+                    {plan.description}
+                  </Text>
+                )}
+                <Text
+                  style={[styles.planDays, { color: colors.textSecondary }]}
+                >
+                  {plan.days.filter((d) => !d.isRestDay).length} workout days
+                  {plan.recurrence && ` • ${plan.recurrence.type}`}
                 </Text>
-              )}
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={24}
+                color={colors.textSecondary}
+              />
             </View>
-            <Ionicons name="play-circle" size={32} color={colors.accentBlue} />
-          </View>
-          <View style={styles.templateExercises}>
-            {template.exercises.slice(0, 4).map((ex, i) => (
-              <Text key={i} style={[styles.templateExercise, { color: colors.textSecondary }]}>
-                • {ex.name} ({ex.targetSets}×{ex.targetReps})
-              </Text>
-            ))}
-            {template.exercises.length > 4 && (
-              <Text style={[styles.templateMore, { color: colors.textSecondary }]}>
-                +{template.exercises.length - 4} more exercises
-              </Text>
-            )}
-          </View>
-        </Card>
-      ))}
-      
+          </Card>
+        ))
+      )}
+
       <View style={{ height: 100 }} />
     </ScrollView>
   );
@@ -460,8 +1021,14 @@ export default function WorkoutScreen() {
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {workouts.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="calendar-outline" size={60} color={colors.textSecondary} />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No Workouts Yet</Text>
+          <Ionicons
+            name="calendar-outline"
+            size={60}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+            No Workouts Yet
+          </Text>
           <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
             Start logging your workouts to see history here
           </Text>
@@ -471,27 +1038,43 @@ export default function WorkoutScreen() {
           <Card key={workout.id} style={styles.historyCard}>
             <View style={styles.historyHeader}>
               <View>
-                <Text style={[styles.historyName, { color: colors.textPrimary }]}>
+                <Text
+                  style={[styles.historyName, { color: colors.textPrimary }]}
+                >
                   {workout.name}
                 </Text>
-                <Text style={[styles.historyDate, { color: colors.textSecondary }]}>
-                  {new Date(workout.date).toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
+                <Text
+                  style={[styles.historyDate, { color: colors.textSecondary }]}
+                >
+                  {new Date(workout.date).toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
                   })}
                 </Text>
               </View>
               {workout.completed && (
-                <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={colors.success}
+                />
               )}
             </View>
-            <Text style={[styles.historyExercises, { color: colors.textSecondary }]}>
+            <Text
+              style={[styles.historyExercises, { color: colors.textSecondary }]}
+            >
               {workout.exercises.length} exercises • {workout.duration || 0} min
             </Text>
             <View style={styles.historyPreview}>
               {workout.exercises.slice(0, 3).map((ex, i) => (
-                <Text key={i} style={[styles.historyExercise, { color: colors.textSecondary }]}>
+                <Text
+                  key={i}
+                  style={[
+                    styles.historyExercise,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   {ex.name}
                 </Text>
               ))}
@@ -504,26 +1087,34 @@ export default function WorkoutScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+    >
       <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>Workout</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>
+          Workout
+        </Text>
       </View>
 
       {renderTabs()}
 
-      {selectedTab === 'log' && renderLogTab()}
-      {selectedTab === 'templates' && renderTemplatesTab()}
-      {selectedTab === 'history' && renderHistoryTab()}
+      {selectedTab === "log" && renderLogTab()}
+      {selectedTab === "plans" && renderPlansTab()}
+      {selectedTab === "history" && renderHistoryTab()}
 
       {/* Exercise Selection Modal */}
       <Modal visible={showExerciseModal} animationType="slide" transparent>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.modalOverlay}
         >
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Add Exercise</Text>
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                Add Exercise
+              </Text>
               <Pressable onPress={() => setShowExerciseModal(false)}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </Pressable>
@@ -547,13 +1138,26 @@ export default function WorkoutScreen() {
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <Pressable
-                  style={[styles.exerciseItem, { borderBottomColor: colors.border }]}
+                  style={[
+                    styles.exerciseItem,
+                    { borderBottomColor: colors.border },
+                  ]}
                   onPress={() => addExercise(item)}
                 >
-                  <Text style={[styles.exerciseItemName, { color: colors.textPrimary }]}>
+                  <Text
+                    style={[
+                      styles.exerciseItemName,
+                      { color: colors.textPrimary },
+                    ]}
+                  >
                     {item.name}
                   </Text>
-                  <Text style={[styles.exerciseItemCategory, { color: colors.textSecondary }]}>
+                  <Text
+                    style={[
+                      styles.exerciseItemCategory,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
                     {item.category}
                   </Text>
                 </Pressable>
@@ -565,12 +1169,93 @@ export default function WorkoutScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
+      {/* Day Exercises Modal (for plan customization) */}
+      <Modal
+        visible={showDayExercisesModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+          <View style={[styles.modalContent, { backgroundColor: colors.card, flex: 1 }]}>
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                Add Exercise to Day
+              </Text>
+              <Pressable onPress={() => setShowDayExercisesModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+            <TextInput
+              style={[
+                styles.searchInput,
+                {
+                  backgroundColor: colors.inputBackground,
+                  color: colors.textPrimary,
+                  borderRadius: borderRadius.md,
+                },
+              ]}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search exercises..."
+              placeholderTextColor={colors.textSecondary}
+            />
+            <FlatList
+              data={filteredExercises}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <Pressable
+                  style={[
+                    styles.exerciseItem,
+                    { borderBottomColor: colors.border },
+                  ]}
+                  onPress={() => addExerciseToDay(item)}
+                >
+                  <Text
+                    style={[
+                      styles.exerciseItemName,
+                      { color: colors.textPrimary },
+                    ]}
+                  >
+                    {item.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.exerciseItemCategory,
+                      { color: colors.textSecondary },
+                    ]}
+
+
+                  >
+                    {item.category}
+                  </Text>
+                </Pressable>
+              )}
+              style={styles.exerciseList}
+              keyboardShouldPersistTaps="handled"
+            />
+          </View>
+        </SafeAreaView>
+      </Modal>
+
       {/* Template Selection Modal */}
       <Modal visible={showTemplateModal} animationType="slide" transparent>
-        <View style={[styles.modalOverlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-          <View style={[styles.templateModalContent, { backgroundColor: colors.card }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Choose Template</Text>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+        >
+          <View
+            style={[
+              styles.templateModalContent,
+              { backgroundColor: colors.card },
+            ]}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                Choose Template
+              </Text>
               <Pressable onPress={() => setShowTemplateModal(false)}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </Pressable>
@@ -579,20 +1264,33 @@ export default function WorkoutScreen() {
               {templates.map((template) => (
                 <Pressable
                   key={template.id}
-                  style={[styles.templateSelectItem, { borderBottomColor: colors.border }]}
+                  style={[
+                    styles.templateSelectItem,
+                    { borderBottomColor: colors.border },
+                  ]}
                   onPress={() => startFromTemplate(template)}
                 >
-                  <View 
+                  <View
                     style={[
-                      styles.templateSelectColor, 
-                      { backgroundColor: template.color || colors.accentBlue }
-                    ]} 
+                      styles.templateSelectColor,
+                      { backgroundColor: template.color || colors.accentBlue },
+                    ]}
                   />
                   <View style={styles.templateSelectInfo}>
-                    <Text style={[styles.templateSelectName, { color: colors.textPrimary }]}>
+                    <Text
+                      style={[
+                        styles.templateSelectName,
+                        { color: colors.textPrimary },
+                      ]}
+                    >
                       {template.name}
                     </Text>
-                    <Text style={[styles.templateSelectExercises, { color: colors.textSecondary }]}>
+                    <Text
+                      style={[
+                        styles.templateSelectExercises,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
                       {template.exercises.length} exercises
                     </Text>
                   </View>
@@ -603,11 +1301,910 @@ export default function WorkoutScreen() {
         </View>
       </Modal>
 
+      {/* Prebuilt Plans Modal */}
+      <Modal visible={showPrebuiltPlansModal} animationType="slide" transparent>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+        >
+          <View
+            style={[
+              styles.prebuiltModalContent,
+              { backgroundColor: colors.card },
+            ]}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                Choose a Plan
+              </Text>
+              <Pressable onPress={() => setShowPrebuiltPlansModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+            <ScrollView style={styles.prebuiltList}>
+              {prebuiltPlanTemplates.map((plan) => (
+                <Pressable
+                  key={plan.id}
+                  style={[
+                    styles.prebuiltItem,
+                    { borderBottomColor: colors.border },
+                  ]}
+                  onPress={() => selectPrebuiltPlan(plan.id)}
+                >
+                  <View style={styles.prebuiltInfo}>
+                    <Text
+                      style={[
+                        styles.prebuiltName,
+                        { color: colors.textPrimary },
+                      ]}
+                    >
+                      {plan.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.prebuiltDesc,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {plan.description}
+                    </Text>
+                    <View style={styles.prebuiltMeta}>
+                      <Text
+                        style={[
+                          styles.prebuiltMetaText,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        {plan.daysPerWeek} days/week • {plan.level}
+                      </Text>
+                    </View>
+                  </View>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Plan Customization Modal */}
+      <Modal
+        visible={showPlanCustomizationModal && !showDayExercisesModal}
+        animationType="slide"
+        transparent
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+        >
+          <View
+            style={[
+              styles.customizationModalContainer,
+              { backgroundColor: colors.card },
+            ]}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                Customize Plan
+              </Text>
+              <Pressable
+                onPress={() => {
+                  setShowPlanCustomizationModal(false);
+                  setCustomizingPlan(null);
+                }}
+              >
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+
+            <ScrollView
+              ref={customizationScrollRef}
+              style={styles.customizationScrollView}
+              contentContainerStyle={styles.customizationContent}
+              keyboardShouldPersistTaps="always"
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled={true}
+              onScroll={(event) => {
+                setCustomizationScrollY(event.nativeEvent.contentOffset.y);
+              }}
+              scrollEventThrottle={16}
+            >
+              {/* Plan Name */}
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[styles.inputLabel, { color: colors.textSecondary }]}
+                >
+                  PLAN NAME
+                </Text>
+                <TextInput
+                  style={[
+                    styles.customInput,
+                    {
+                      backgroundColor: colors.inputBackground,
+                      borderColor: colors.border,
+                      color: colors.textPrimary,
+                    },
+                  ]}
+                  placeholder="Enter plan name"
+                  placeholderTextColor={colors.textSecondary}
+                  value={customizingPlan?.name || ""}
+                  onChangeText={(text) =>
+                    setCustomizingPlan((prev) =>
+                      prev ? { ...prev, name: text } : null
+                    )
+                  }
+                />
+              </View>
+
+              {/* Plan Description */}
+              <View style={styles.inputGroup}>
+                <Text
+                  style={[styles.inputLabel, { color: colors.textSecondary }]}
+                >
+                  DESCRIPTION (OPTIONAL)
+                </Text>
+                <TextInput
+                  style={[
+                    styles.customInput,
+                    styles.textArea,
+                    {
+                      backgroundColor: colors.inputBackground,
+                      borderColor: colors.border,
+                      color: colors.textPrimary,
+                    },
+                  ]}
+                  placeholder="Add a description"
+                  placeholderTextColor={colors.textSecondary}
+                  value={customizingPlan?.description || ""}
+                  onChangeText={(text) =>
+                    setCustomizingPlan((prev) =>
+                      prev ? { ...prev, description: text } : null
+                    )
+                  }
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+
+              {/* Workout Days Section */}
+              <View style={styles.customizationSectionHeader}>
+                <Text
+                  style={[styles.sectionTitle, { color: colors.textPrimary }]}
+                >
+                  Workout Days
+                </Text>
+                <Text
+                  style={[
+                    styles.sectionSubtitle,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  Customize each day's exercises
+                </Text>
+              </View>
+
+              {customizingPlan?.days.map((day, dayIndex) => (
+                <View
+                  key={day.id}
+                  style={[
+                    styles.customDayCard,
+                    { backgroundColor: colors.inputBackground },
+                  ]}
+                >
+                  <View style={styles.customDayHeader}>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={[
+                          styles.customDayName,
+                          { color: colors.textPrimary },
+                        ]}
+                      >
+                        Day {dayIndex + 1}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.customDayTitle,
+                          { color: colors.textPrimary },
+                        ]}
+                      >
+                        {day.name}
+                      </Text>
+                    </View>
+                    <View style={styles.restToggleContainer}>
+                      <Text
+                        style={[
+                          styles.restToggleLabel,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        Rest
+                      </Text>
+                      <Switch
+                        value={day.isRestDay}
+                        onValueChange={() => toggleDayRestStatus(dayIndex)}
+                        trackColor={{
+                          false: colors.border,
+                          true: colors.accentBlue,
+                        }}
+                        thumbColor={colors.card}
+                      />
+                    </View>
+                  </View>
+
+                  {!day.isRestDay && (
+                    <>
+                      {day.exercises.length > 0 ? (
+                        <View style={styles.customExercisesList}>
+                          {day.exercises.map((exercise, exerciseIndex) => (
+                            <View
+                              key={exerciseIndex}
+                              style={[
+                                styles.customExerciseRow,
+                                {
+                                  borderBottomWidth:
+                                    exerciseIndex < day.exercises.length - 1
+                                      ? 1
+                                      : 0,
+                                  borderBottomColor: colors.border,
+                                },
+                              ]}
+                            >
+                              <View style={styles.customExerciseInfo}>
+                                <Text
+                                  style={[
+                                    styles.customExerciseName,
+                                    { color: colors.textPrimary },
+                                  ]}
+                                >
+                                  {exercise.name}
+                                </Text>
+                                <View style={styles.customTargetInputs}>
+                                  <View style={styles.targetInputGroup}>
+                                    <TextInput
+                                      style={[
+                                        styles.customTargetInput,
+                                        {
+                                          color: colors.textPrimary,
+                                          borderColor: colors.border,
+                                          backgroundColor: colors.card,
+                                        },
+                                      ]}
+                                      keyboardType="number-pad"
+                                      value={String(exercise.targetSets)}
+                                      onChangeText={(text) =>
+                                        updateDayExercise(
+                                          dayIndex,
+                                          exerciseIndex,
+                                          { targetSets: parseInt(text) || 3 }
+                                        )
+                                      }
+                                    />
+                                    <Text
+                                      style={[
+                                        styles.targetInputLabel,
+                                        { color: colors.textSecondary },
+                                      ]}
+                                    >
+                                      sets
+                                    </Text>
+                                  </View>
+                                  <Text
+                                    style={[
+                                      styles.targetSeparator,
+                                      { color: colors.textSecondary },
+                                    ]}
+                                  >
+                                    ×
+                                  </Text>
+                                  <View style={styles.repRangeContainer}>
+                                    <TextInput
+                                      style={[
+                                        styles.repRangeInput,
+                                        {
+                                          color: colors.textPrimary,
+                                          borderColor: colors.border,
+                                          backgroundColor: colors.card,
+                                        },
+                                      ]}
+                                      keyboardType="number-pad"
+                                      value={typeof exercise.targetReps === 'string' && exercise.targetReps.includes('-')
+                                        ? exercise.targetReps.split('-')[0]
+                                        : String(exercise.targetReps)}
+                                      onChangeText={(text) => {
+                                        const minReps = text || '8';
+                                        const currentValue = String(exercise.targetReps);
+                                        const maxReps = currentValue.includes('-')
+                                          ? currentValue.split('-')[1]
+                                          : minReps;
+                                        updateDayExercise(
+                                          dayIndex,
+                                          exerciseIndex,
+                                          { targetReps: minReps === maxReps ? minReps : `${minReps}-${maxReps}` }
+                                        );
+                                      }}
+                                      placeholder="8"
+                                      placeholderTextColor={colors.textSecondary}
+                                    />
+                                    <Text style={[styles.repRangeText, { color: colors.textSecondary }]}>
+                                      to
+                                    </Text>
+                                    <TextInput
+                                      style={[
+                                        styles.repRangeInput,
+                                        {
+                                          color: colors.textPrimary,
+                                          borderColor: colors.border,
+                                          backgroundColor: colors.card,
+                                        },
+                                      ]}
+                                      keyboardType="number-pad"
+                                      value={typeof exercise.targetReps === 'string' && exercise.targetReps.includes('-')
+                                        ? exercise.targetReps.split('-')[1]
+                                        : String(exercise.targetReps)}
+                                      onChangeText={(text) => {
+                                        const maxReps = text || '12';
+                                        const currentValue = String(exercise.targetReps);
+                                        const minReps = currentValue.includes('-')
+                                          ? currentValue.split('-')[0]
+                                          : maxReps;
+                                        updateDayExercise(
+                                          dayIndex,
+                                          exerciseIndex,
+                                          { targetReps: minReps === maxReps ? maxReps : `${minReps}-${maxReps}` }
+                                        );
+                                      }}
+                                      placeholder="12"
+                                      placeholderTextColor={colors.textSecondary}
+                                    />
+                                    <Text
+                                      style={[
+                                        styles.targetInputLabel,
+                                        { color: colors.textSecondary },
+                                      ]}
+                                    >
+                                      reps
+                                    </Text>
+                                  </View>
+                                </View>
+                              </View>
+                              <Pressable
+                                onPress={() =>
+                                  removeExerciseFromDay(dayIndex, exerciseIndex)
+                                }
+                                style={styles.customRemoveBtn}
+                                hitSlop={8}
+                              >
+                                <Ionicons
+                                  name="trash-outline"
+                                  size={20}
+                                  color={colors.error}
+                                />
+                              </Pressable>
+                            </View>
+                          ))}
+                        </View>
+                      ) : (
+                        <View style={styles.emptyExercisesContainer}>
+                          <Ionicons
+                            name="barbell-outline"
+                            size={32}
+                            color={colors.textSecondary}
+                          />
+                          <Text
+                            style={[
+                              styles.emptyExercisesText,
+                              { color: colors.textSecondary },
+                            ]}
+                          >
+                            No exercises yet
+                          </Text>
+                        </View>
+                      )}
+
+                      <Pressable
+                       style={[
+                         styles.customAddExerciseBtn,
+                         { borderColor: colors.accentBlue },
+                       ]}
+                       onPress={() => {
+                         console.log('Add Exercise clicked for day:', dayIndex);
+                         setSelectedDayIndex(dayIndex);
+                         setShowDayExercisesModal(true);
+                       }}
+                     >
+                        <Ionicons
+                          name="add-circle-outline"
+                          size={20}
+                          color={colors.accentBlue}
+                        />
+                        <Text
+                          style={[
+                            styles.customAddExerciseText,
+                            { color: colors.accentBlue },
+                          ]}
+                        >
+                          Add Exercise
+                        </Text>
+                      </Pressable>
+                    </>
+                  )}
+                </View>
+              ))}
+
+              {/* Save Button */}
+              <Button
+                title="Save & Setup Schedule"
+                onPress={savePlanFromCustomization}
+                style={styles.customSaveBtn}
+                disabled={!customizingPlan?.name.trim()}
+              />
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Plan Details Modal */}
+      <Modal visible={showPlanDetailsModal} animationType="slide" transparent>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+        >
+          <View
+            style={[styles.planDetailsModal, { backgroundColor: colors.card }]}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                {selectedPlan?.name}
+              </Text>
+              <Pressable onPress={() => setShowPlanDetailsModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+            <ScrollView style={styles.planDetailsContent}>
+              {selectedPlan?.description && (
+                <Text
+                  style={[
+                    styles.planDetailsDesc,
+                    { color: colors.textSecondary },
+                  ]}
+                >
+                  {selectedPlan.description}
+                </Text>
+              )}
+
+              {/* Recurrence Info */}
+              {selectedPlan?.recurrence && (
+                <Card style={styles.recurrenceCard}>
+                  <View style={styles.recurrenceHeader}>
+                    <Ionicons
+                      name="repeat"
+                      size={20}
+                      color={colors.accentBlue}
+                    />
+                    <Text
+                      style={[
+                        styles.recurrenceTitle,
+                        { color: colors.textPrimary },
+                      ]}
+                    >
+                      Schedule: {selectedPlan.recurrence.type}
+                    </Text>
+
+
+
+                  </View>
+                  <Text
+                    style={[
+                      styles.recurrenceText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Start:{" "}
+                    {new Date(
+                      selectedPlan.recurrence.startDate
+                    ).toLocaleDateString()}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.recurrenceText,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Rest days:{" "}
+                    {selectedPlan.recurrence.restDays
+                      .map((d) => DAYS_OF_WEEK[d])
+                      .join(", ")}
+                  </Text>
+                </Card>
+              )}
+
+              <View style={styles.sectionHeader}>
+                <Text
+                  style={[styles.sectionTitle, { color: colors.textPrimary }]}
+                >
+                  Workout Days
+                </Text>
+                {!selectedPlan?.recurrence && (
+                  <Pressable
+                    onPress={() => {
+                      if (selectedPlan) {
+                        setRecurrenceSettings({
+                          type: "weekly",
+                          interval: 1,
+                          startDate: new Date().toISOString().split("T")[0],
+                          restDays: [0],
+                        });
+                        setShowRecurrenceModal(true);
+                      }
+                    }}
+                  >
+                    <Text
+                      style={[styles.setupLink, { color: colors.accentBlue }]}
+                    >
+                      Setup Schedule
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {selectedPlan?.days.map((day, index) => (
+                <Card key={day.id} style={styles.dayCard}>
+                  <View style={styles.dayHeader}>
+                    <Text
+                      style={[styles.dayName, { color: colors.textPrimary }]}
+                    >
+                      Day {index + 1}: {day.name}
+                    </Text>
+                    {day.isRestDay && (
+                      <Text
+                        style={[
+                          styles.restBadge,
+                          { color: colors.textSecondary },
+                        ]}
+                      >
+                        Rest
+                      </Text>
+                    )}
+                  </View>
+                  {!day.isRestDay && day.exercises.length > 0 && (
+                    <View style={styles.dayExercises}>
+                      {day.exercises.slice(0, 3).map((ex, i) => (
+                        <Text
+                          key={i}
+                          style={[
+                            styles.dayExercise,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          • {ex.name} {ex.targetSets}×{ex.targetReps}
+                        </Text>
+                      ))}
+                      {day.exercises.length > 3 && (
+                        <Text
+                          style={[
+                            styles.dayMore,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          +{day.exercises.length - 3} more
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </Card>
+              ))}
+
+              <View style={styles.planActions}>
+                {!selectedPlan?.isActive && (
+                  <Button
+                    title="Set as Active"
+                    onPress={() => {
+                      if (selectedPlan) {
+                        setActivePlan(selectedPlan.id);
+                        setShowPlanDetailsModal(false);
+                      }
+                    }}
+                  />
+                )}
+                <Button
+                  title="Clone Plan"
+                  variant="outline"
+                  onPress={() => {
+                    if (selectedPlan) {
+                      clonePlan(selectedPlan.id);
+                      setShowPlanDetailsModal(false);
+                    }
+                  }}
+                />
+                <Button
+                  title="Delete Plan"
+                  variant="outline"
+                  onPress={() => {
+                    if (selectedPlan) {
+                      deletePlan(selectedPlan.id);
+                    }
+                  }}
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Recurrence Setup Modal */}
+      <Modal visible={showRecurrenceModal} animationType="slide" transparent>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+        >
+          <View
+            style={[styles.recurrenceModal, { backgroundColor: colors.card }]}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                Setup Schedule
+              </Text>
+              <Pressable onPress={() => setShowRecurrenceModal(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+            <ScrollView style={styles.recurrenceContent}>
+              <Text
+                style={[styles.recurrenceLabel, { color: colors.textPrimary }]}
+              >
+                Recurrence Type
+              </Text>
+              <View style={styles.recurrenceTypeRow}>
+                {(["weekly", "biweekly", "monthly"] as const).map((type) => (
+                  <Pressable
+                    key={type}
+                    style={[
+                      styles.recurrenceTypeButton,
+                      {
+                        backgroundColor:
+                          recurrenceSettings.type === type
+                            ? colors.accentBlue
+                            : colors.inputBackground,
+                      },
+                    ]}
+                    onPress={() =>
+                      setRecurrenceSettings((prev) => ({ ...prev, type }))
+                    }
+                  >
+                    <Text
+                      style={[
+                        styles.recurrenceTypeText,
+                        {
+                          color:
+                            recurrenceSettings.type === type
+                              ? "#FFF"
+                              : colors.textPrimary,
+                        },
+                      ]}
+                    >
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text
+                style={[
+                  styles.recurrenceLabel,
+                  { color: colors.textPrimary, marginTop: 20 },
+                ]}
+              >
+                Start Date
+              </Text>
+              <TextInput
+                style={[
+                  styles.dateInput,
+                  {
+                    backgroundColor: colors.inputBackground,
+                    color: colors.textPrimary,
+                    borderRadius: borderRadius.md,
+                  },
+                ]}
+                value={recurrenceSettings.startDate}
+                onChangeText={(text) =>
+                  setRecurrenceSettings((prev) => ({
+                    ...prev,
+                    startDate: text,
+                  }))
+                }
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={colors.textSecondary}
+              />
+
+              <Text
+                style={[
+                  styles.recurrenceLabel,
+                  { color: colors.textPrimary, marginTop: 20 },
+                ]}
+              >
+                Rest Days
+              </Text>
+              <View style={styles.daysGrid}>
+                {DAYS_OF_WEEK.map((day, index) => (
+                  <Pressable
+                    key={index}
+                    style={[
+                      styles.dayButton,
+                      {
+                        backgroundColor: recurrenceSettings.restDays.includes(
+                          index
+                        )
+                          ? colors.error
+                          : colors.inputBackground,
+                      },
+                    ]}
+                    onPress={() => toggleRestDay(index)}
+                  >
+                    <Text
+                      style={[
+                        styles.dayButtonText,
+                        {
+                          color: recurrenceSettings.restDays.includes(index)
+                            ? "#FFF"
+                            : colors.textPrimary,
+                        },
+                      ]}
+                    >
+                      {day}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={{ marginTop: 32, marginBottom: 20 }}>
+                <Button title="Save Schedule" onPress={saveRecurrence} />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Calendar Modal */}
+      <Modal visible={showCalendarModal} animationType="slide" transparent>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}
+        >
+          <View
+            style={[styles.calendarModal, { backgroundColor: colors.card }]}
+          >
+            <View
+              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
+            >
+              <Pressable
+                onPress={() => {
+                  const newDate = new Date(calendarStartDate);
+                  newDate.setMonth(newDate.getMonth() - 1);
+                  setCalendarStartDate(newDate);
+                }}
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={24}
+                  color={colors.textPrimary}
+                />
+              </Pressable>
+              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                {calendarStartDate.toLocaleDateString("en-US", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </Text>
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <Pressable
+                  onPress={() => {
+                    const newDate = new Date(calendarStartDate);
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    setCalendarStartDate(newDate);
+                  }}
+                >
+                  <Ionicons
+                    name="chevron-forward"
+                    size={24}
+                    color={colors.textPrimary}
+                  />
+                </Pressable>
+                <Pressable onPress={() => setShowCalendarModal(false)}>
+                  <Ionicons
+                    name="close"
+                    size={24}
+                    color={colors.textSecondary}
+                  />
+                </Pressable>
+              </View>
+            </View>
+            <View style={styles.calendarContent}>
+              <View style={styles.calendarHeader}>
+                {DAYS_OF_WEEK.map((day) => (
+                  <Text
+                    key={day}
+                    style={[
+                      styles.calendarHeaderDay,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    {day}
+                  </Text>
+                ))}
+              </View>
+              <View style={styles.calendarGrid}>
+                {generateCalendarDays().map((item, index) => {
+                  const isToday =
+                    item.date.toDateString() === new Date().toDateString();
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        styles.calendarDay,
+                        !item.isCurrentMonth && styles.calendarDayOtherMonth,
+                        isToday && [
+                          styles.calendarDayToday,
+                          { borderColor: colors.accentBlue },
+                        ],
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.calendarDayText,
+                          {
+                            color: item.isCurrentMonth
+                              ? colors.textPrimary
+                              : colors.textSecondary,
+                          },
+                          isToday && {
+                            color: colors.accentBlue,
+                            fontWeight: "700",
+                          },
+                        ]}
+                      >
+                        {item.date.getDate()}
+                      </Text>
+                      {item.scheduled && (
+                        <View
+                          style={[
+                            styles.scheduledDot,
+                            {
+                              backgroundColor:
+                                item.scheduled.status === "completed"
+                                  ? colors.success
+                                  : item.scheduled.status === "skipped"
+                                  ? colors.error
+                                  : colors.accentBlue,
+                            },
+                          ]}
+                        />
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       {/* Rest Timer Modal */}
       <Modal visible={showRestTimer} animationType="fade" transparent>
-        <View style={[styles.timerOverlay, { backgroundColor: 'rgba(0,0,0,0.8)' }]}>
+        <View
+          style={[styles.timerOverlay, { backgroundColor: "rgba(0,0,0,0.8)" }]}
+        >
           <View style={[styles.timerContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.timerLabel, { color: colors.textSecondary }]}>Rest Timer</Text>
+            <Text style={[styles.timerLabel, { color: colors.textSecondary }]}>
+              Rest Timer
+            </Text>
             <Text style={[styles.timerValue, { color: colors.textPrimary }]}>
               {formatTime(restTimeLeft)}
             </Text>
@@ -616,7 +2213,9 @@ export default function WorkoutScreen() {
                 title="-15s"
                 variant="outline"
                 size="sm"
-                onPress={() => setRestTimeLeft((prev) => Math.max(0, prev - 15))}
+                onPress={() =>
+                  setRestTimeLeft((prev) => Math.max(0, prev - 15))
+                }
               />
               <Button
                 title="Skip"
@@ -650,44 +2249,77 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   tabContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
     marginHorizontal: 16,
   },
   tab: {
     flex: 1,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   tabContent: {
     flex: 1,
     paddingHorizontal: 16,
   },
+  todaysWorkoutCard: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  todaysHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+  todaysTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  todaysName: {
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  todaysPlan: {
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  todaysExercises: {
+    gap: 4,
+  },
+  todaysExercise: {
+    fontSize: 13,
+  },
+  todaysMore: {
+    fontSize: 13,
+    fontStyle: "italic",
+  },
   startWorkoutContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingBottom: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
   },
   startWorkoutTitle: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
     marginTop: 20,
   },
   startWorkoutSubtitle: {
     fontSize: 15,
     marginTop: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   startButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
     marginTop: 24,
     paddingHorizontal: 20,
@@ -697,14 +2329,14 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   workoutHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   workoutNameInput: {
     flex: 1,
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: "600",
     paddingVertical: 12,
     borderBottomWidth: 1,
     marginRight: 12,
@@ -714,133 +2346,142 @@ const styles = StyleSheet.create({
   },
   exerciseName: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 12,
   },
   setsHeader: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 8,
     paddingHorizontal: 4,
   },
   setLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
     gap: 8,
   },
   setNumber: {
     width: 30,
     fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   setInput: {
     flex: 1,
     height: 40,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   completeButton: {
     width: 40,
     height: 40,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   addSetButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 12,
     marginTop: 8,
   },
   addSetText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     marginLeft: 6,
   },
-  templatesTitle: {
-    fontSize: 22,
-    fontWeight: '700',
+  plansHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 16,
-  },
-  templatesSubtitle: {
-    fontSize: 14,
-    marginTop: 4,
     marginBottom: 16,
   },
-  templateCard: {
+  plansTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyPlans: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+  },
+  planCard: {
     marginBottom: 12,
   },
-  templateHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  planHeader: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  templateColor: {
-    width: 4,
-    height: 50,
-    borderRadius: 2,
-    marginRight: 12,
-  },
-  templateInfo: {
+  planInfo: {
     flex: 1,
   },
-  templateName: {
-    fontSize: 17,
-    fontWeight: '600',
+  planName: {
+    fontSize: 18,
+    fontWeight: "600",
   },
-  templateDesc: {
+  activeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  activeBadgeText: {
+    color: "#FFF",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  planDesc: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  planDays: {
     fontSize: 13,
-    marginTop: 2,
-  },
-  templateExercises: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
-  },
-  templateExercise: {
-    fontSize: 13,
-    marginBottom: 4,
-  },
-  templateMore: {
-    fontSize: 12,
-    fontStyle: 'italic',
     marginTop: 4,
   },
   emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 80,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
   },
   emptyTitle: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 16,
   },
   emptySubtitle: {
     fontSize: 14,
     marginTop: 8,
-    textAlign: 'center',
+    textAlign: "center",
+    paddingHorizontal: 40,
   },
   historyCard: {
-    marginBottom: 8,
-    marginTop: 8,
+    marginTop: 12,
   },
   historyHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
   },
   historyName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 17,
+    fontWeight: "600",
   },
   historyDate: {
     fontSize: 13,
@@ -848,138 +2489,71 @@ const styles = StyleSheet.create({
   },
   historyExercises: {
     fontSize: 13,
-    marginTop: 8,
-  },
-  historyPreview: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-  },
-  historyExercise: {
-    fontSize: 12,
-  },
-  progressTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginTop: 16,
-  },
-  progressSubtitle: {
-    fontSize: 14,
-    marginTop: 4,
-    marginBottom: 16,
-  },
-  prsSection: {
-    marginBottom: 20,
-  },
-  prsSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  prRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-  },
-  prInfo: {
-    flex: 1,
-  },
-  prExercise: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  prReps: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  prValueContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  prValue: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  prUnit: {
-    fontSize: 14,
-    marginLeft: 4,
-  },
-  exerciseListTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  exerciseProgressItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 14,
     marginBottom: 8,
   },
-  exerciseProgressName: {
-    fontSize: 15,
-    fontWeight: '500',
+  historyPreview: {
+    gap: 2,
+  },
+  historyExercise: {
+    fontSize: 13,
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: SCREEN_HEIGHT * 0.75,
-    paddingBottom: 40,
-  },
-  templateModalContent: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '70%',
-    paddingBottom: 40,
+    height: SCREEN_HEIGHT * 0.7,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
+    marginBottom: 16,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: "700",
   },
   searchInput: {
-    marginHorizontal: 16,
-    marginVertical: 12,
-    paddingHorizontal: 16,
-    height: 44,
+    padding: 12,
     fontSize: 16,
+    marginBottom: 16,
   },
   exerciseList: {
-    paddingHorizontal: 16,
+    flex: 1,
   },
   exerciseItem: {
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderBottomWidth: 1,
   },
   exerciseItemName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "600",
   },
   exerciseItemCategory: {
     fontSize: 13,
     marginTop: 2,
-    textTransform: 'capitalize',
   },
-  templateList: {
+  templateModalContent: {
+    height: SCREEN_HEIGHT * 0.6,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 16,
   },
+  templateList: {
+    flex: 1,
+  },
   templateSelectItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
     borderBottomWidth: 1,
   },
   templateSelectColor: {
@@ -993,36 +2567,408 @@ const styles = StyleSheet.create({
   },
   templateSelectName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   templateSelectExercises: {
     fontSize: 13,
     marginTop: 2,
   },
-  timerOverlay: {
+  prebuiltModalContent: {
+    height: SCREEN_HEIGHT * 0.75,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+  },
+  prebuiltList: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  timerContent: {
-    width: 280,
-    padding: 32,
-    borderRadius: 24,
-    alignItems: 'center',
+  prebuiltItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 16,
+    borderBottomWidth: 1,
   },
-  timerLabel: {
-    fontSize: 16,
-    fontWeight: '500',
+  prebuiltInfo: {
+    flex: 1,
+  },
+  prebuiltName: {
+    fontSize: 17,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  prebuiltDesc: {
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  prebuiltMeta: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  prebuiltMetaText: {
+    fontSize: 12,
+  },
+  planDetailsModal: {
+    height: SCREEN_HEIGHT * 0.85,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+  },
+  planDetailsContent: {
+    flex: 1,
+  },
+  planDetailsDesc: {
+    fontSize: 15,
+    marginBottom: 20,
+  },
+  recurrenceCard: {
+    marginBottom: 20,
+  },
+  recurrenceHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     marginBottom: 8,
   },
+  recurrenceTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  recurrenceText: {
+    fontSize: 14,
+    marginTop: 4,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  setupLink: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  dayCard: {
+    marginBottom: 12,
+  },
+  dayHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  dayName: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  restBadge: {
+    fontSize: 13,
+    fontStyle: "italic",
+  },
+  dayExercises: {
+    gap: 4,
+  },
+  dayExercise: {
+    fontSize: 13,
+  },
+  dayMore: {
+    fontSize: 13,
+    fontStyle: "italic",
+  },
+  planActions: {
+    gap: 12,
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  recurrenceModal: {
+    height: SCREEN_HEIGHT * 0.7,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+  },
+  recurrenceContent: {
+    flex: 1,
+  },
+  recurrenceLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
+  recurrenceTypeRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  recurrenceTypeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  recurrenceTypeText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  dateInput: {
+    padding: 12,
+    fontSize: 16,
+  },
+  daysGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  dayButton: {
+    width: (SCREEN_WIDTH - 64) / 7 - 6,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  dayButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  calendarModal: {
+    height: SCREEN_HEIGHT * 0.75,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 16,
+  },
+  calendarContent: {
+    flex: 1,
+  },
+  calendarHeader: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  calendarHeaderDay: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  calendarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  calendarDay: {
+    width: (SCREEN_WIDTH - 32) / 7,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  calendarDayOtherMonth: {
+    opacity: 0.4,
+  },
+  calendarDayToday: {
+    borderWidth: 2,
+    borderRadius: 8,
+  },
+  calendarDayText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  scheduledDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 2,
+  },
+  timerOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timerContent: {
+    width: SCREEN_WIDTH * 0.8,
+    padding: 32,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  timerLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 12,
+  },
   timerValue: {
-    fontSize: 64,
-    fontWeight: '700',
-    fontFamily: 'monospace',
+    fontSize: 48,
+    fontWeight: "700",
     marginBottom: 24,
   },
   timerButtons: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
+  },
+  // Customization Modal Styles
+  customizationModalContainer: {
+    height: SCREEN_HEIGHT * 0.9,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    overflow: "hidden",
+  },
+  customizationScrollView: {
+    flex: 1,
+  },
+  customizationContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    marginBottom: 8,
+    letterSpacing: 0.8,
+  },
+  customInput: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    fontSize: 16,
+  },
+  textArea: {
+    minHeight: 90,
+    paddingTop: 12,
+    textAlignVertical: "top",
+  },
+  customizationSectionHeader: {
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  sectionSubtitle: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+  customDayCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+  },
+  customDayHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  repRangeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  repRangeInput: {
+    width: 45,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 8,
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    marginRight: 6,
+  },
+  repRangeText: {
+    fontSize: 13,
+    fontWeight: "500",
+    marginHorizontal: 6,
+  },
+  customDayName: {
+    fontSize: 12,
+    fontWeight: "600",
+    opacity: 0.6,
+    marginBottom: 2,
+  },
+  customDayTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  restToggleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  restToggleLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginRight: 8,
+  },
+  customExercisesList: {
+    marginTop: 4,
+  },
+  customExerciseRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+  },
+  customExerciseInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  customExerciseName: {
+    fontSize: 15,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  customTargetInputs: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  targetInputGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  customTargetInput: {
+    width: 52,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 8,
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    marginRight: 6,
+  },
+  targetInputLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  targetSeparator: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginHorizontal: 4,
+  },
+  customRemoveBtn: {
+    padding: 8,
+    marginLeft: 4,
+  },
+  emptyExercisesContainer: {
+    alignItems: "center",
+    paddingVertical: 24,
+  },
+  emptyExercisesText: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginTop: 8,
+  },
+  customAddExerciseBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderWidth: 1.5,
+    borderRadius: 10,
+    borderStyle: "dashed",
+    marginTop: 12,
+  },
+  customAddExerciseText: {
+    fontSize: 15,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  customSaveBtn: {
+    marginTop: 24,
   },
 });
