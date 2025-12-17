@@ -276,6 +276,7 @@ export const seedHealthMetrics: HealthMetrics[] = [
 
 export const seedPreferences: UserPreferences = {
   units: 'kg',
+  heightUnits: 'cm',
   theme: 'dark',
   stepsSync: true,
   calorieGoal: 2200,

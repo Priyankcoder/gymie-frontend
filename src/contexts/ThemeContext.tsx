@@ -65,11 +65,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   const contextValue: ThemeContextType = {
     theme,
-    colors: colors[theme],
+    colors: colors[theme] as ColorScheme,
     typography,
     spacing,
     borderRadius,
-    shadows: shadows[theme],
+    shadows: shadows[theme] as typeof shadows.light | typeof shadows.dark,
     toggleTheme,
     setTheme,
     isDark,

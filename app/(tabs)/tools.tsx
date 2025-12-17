@@ -34,7 +34,7 @@ export default function ToolsScreen() {
   const [stopwatchTime, setStopwatchTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [laps, setLaps] = useState<number[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Plate Calculator Logic
   const availablePlatesKg = [25, 20, 15, 10, 5, 2.5, 1.25];

@@ -1,6 +1,5 @@
 
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import {
@@ -15,6 +14,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, MacroBar, MetricRing, QuickActionCard } from '../../src/components/ui';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { localApi } from '../../src/services/localApi';
+import { useRefreshOnFocus } from '../../src/hooks';
+import { formatDate, getGreeting, getTodayString } from '../../src/utils';
 import {
   Meal,
   PersonalRecord,
@@ -39,15 +40,9 @@ export default function HomeScreen() {
     thisMonth: number;
     allTime: number;
   } | null>(null);
-  const today = new Date().toISOString().split('T')[0];
+  const today = getTodayString();
 
-  useFocusEffect(
-    useCallback(() => {
-      loadData();
-    }, [])
-  );
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [
         prefsRes,
@@ -80,7 +75,10 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Error loading data:', error);
     }
-  };
+  }, [today]);
+
+  // Automatically refetch when screen comes into focus
+  useRefreshOnFocus(loadData);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -104,21 +102,6 @@ export default function HomeScreen() {
   const carbsGoal = preferences?.carbsGoal || 250;
   const fatGoal = preferences?.fatGoal || 70;
 
-  const greeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  };
-
-  const formatDate = () => {
-    return new Date().toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const formatVolume = (volume: number) => {
     if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M`;
     if (volume >= 1000) return `${(volume / 1000).toFixed(1)}K`;
@@ -135,7 +118,11 @@ export default function HomeScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accentBlue} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accentBlue}
+          />
         }
         showsVerticalScrollIndicator={false}
       >
@@ -143,7 +130,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-              {greeting()} 💪
+              {getGreeting()} 💪
             </Text>
             <Text style={[styles.date, { color: colors.textPrimary }]}>
               {formatDate()}
