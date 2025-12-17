@@ -46,6 +46,7 @@ export default function ProgressScreen() {
     preferences,
     progressPhotos: initialPhotos,
     uniqueExercises,
+    loading,
     refetch,
     getDateFilter,
     calculate1RM,
@@ -79,16 +80,20 @@ export default function ProgressScreen() {
   useFocusEffect(
     useCallback(() => {
       refetch();
-      if (!selectedExercise && uniqueExercises.length > 0) {
-        setSelectedExercise(uniqueExercises[0].name);
-      }
-    }, [uniqueExercises])
+    }, [refetch])
   );
+
+  // Auto-select first exercise when data loads
+  React.useEffect(() => {
+    if (!selectedExercise && uniqueExercises.length > 0) {
+      setSelectedExercise(uniqueExercises[0].name);
+    }
+  }, [uniqueExercises, selectedExercise]);
 
   // Update photos state when data refreshes
   React.useEffect(() => {
     setProgressPhotos(initialPhotos);
-  }, [initialPhotos]);
+  }, [initialPhotos, setProgressPhotos]);
 
   // Filter exercises by search query
   const filteredExercises = useMemo(() => {
@@ -495,7 +500,10 @@ export default function ProgressScreen() {
           <View style={[styles.pickerModal, { backgroundColor: colors.card, borderTopLeftRadius: borderRadius.xl, borderTopRightRadius: borderRadius.xl }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Select Exercise</Text>
-              <Pressable onPress={() => setShowExercisePicker(false)}>
+              <Pressable onPress={() => {
+                setShowExercisePicker(false);
+                setSearchQuery('');
+              }}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </Pressable>
             </View>
@@ -508,7 +516,13 @@ export default function ProgressScreen() {
               onChangeText={setSearchQuery}
             />
 
-            {filteredExercises.length > 0 ? (
+            {loading ? (
+              <View style={styles.noExercises}>
+                <Text style={[styles.noExercisesText, { color: colors.textSecondary }]}>
+                  Loading exercises...
+                </Text>
+              </View>
+            ) : filteredExercises.length > 0 ? (
               <FlatList
                 data={filteredExercises}
                 keyExtractor={(item) => item.name}
@@ -537,8 +551,8 @@ export default function ProgressScreen() {
             ) : (
               <View style={styles.noExercises}>
                 <Text style={[styles.noExercisesText, { color: colors.textSecondary }]}>
-                  {uniqueExercises.length === 0 
-                    ? 'Complete some workouts to track progress' 
+                  {uniqueExercises.length === 0
+                    ? 'Complete some workouts to track progress'
                     : 'No exercises match your search'}
                 </Text>
               </View>

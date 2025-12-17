@@ -55,3 +55,17 @@ export const formatDuration = (minutes: number): string => {
   const mins = minutes % 60;
   return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
 };
+
+export const formatRelativeDate = (dateString: string): string => {
+  if (isToday(dateString)) return 'Today';
+  
+  const date = new Date(dateString);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  if (dateString === yesterday.toISOString().split('T')[0]) {
+    return 'Yesterday';
+  }
+  
+  return formatDateShort(dateString);
+};
