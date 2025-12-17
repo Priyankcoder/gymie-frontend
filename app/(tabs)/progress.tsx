@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,20 +9,23 @@ import {
   Modal,
   TextInput,
   Dimensions,
-  KeyboardAvoidingView,
-  Platform,
   FlatList,
-  Image,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { Card, LineChart } from '../../src/components/ui';
-import { localApi } from '../../src/services/localApi';
-import { Workout, WeightLog, UserPreferences, ExerciseInfo, ProgressPhoto } from '../../src/types';
+import { useProgressData } from '../../src/hooks/progress/useProgressData';
+import { usePhotoGallery } from '../../src/hooks/progress/usePhotoGallery';
+import {
+  DateRangeSelector,
+  MetricSelector,
+  ExerciseStatsCard,
+  PhotoGallery,
+  PhotoCompareView,
+} from '../../src/components/features/progress/components';
+import { AddWeightModal } from '../../src/components/features/progress/modals';
 
 type DateRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
 type MetricType = 'weight' | 'reps' | 'volume' | '1rm';
@@ -32,20 +35,36 @@ interface ChartDataPoint {
   value: number;
 }
 
-interface ExerciseStats {
-  maxWeight: number;
-  maxReps: number;
-  maxVolume: number;
-  max1RM: number;
-  totalSessions: number;
-  lastPerformed: string | null;
-  trend: 'up' | 'down' | 'stable';
-}
-
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProgressScreen() {
   const { colors, spacing, borderRadius } = useTheme();
+
+  const {
+    workouts,
+    weightLogs,
+    preferences,
+    progressPhotos: initialPhotos,
+    uniqueExercises,
+    refetch,
+    getDateFilter,
+    calculate1RM,
+    getExerciseStats,
+  } = useProgressData();
+
+  const {
+    progressPhotos,
+    compareMode,
+    selectedPhotos,
+    setProgressPhotos,
+    toggleCompareMode,
+    togglePhotoSelection,
+    pickProgressPhoto,
+    takeProgressPhoto,
+    deletePhoto,
+    groupPhotosByMonth,
+    formatMonthYear,
+  } = usePhotoGallery(initialPhotos);
 
   const [selectedTab, setSelectedTab] = useState<'exercises' | 'weight' | 'photos'>('exercises');
   const [exerciseRange, setExerciseRange] = useState<DateRange>('3M');
@@ -54,90 +73,22 @@ export default function ProgressScreen() {
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
-  const [exercises, setExercises] = useState<ExerciseInfo[]>([]);
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [showWeightModal, setShowWeightModal] = useState(false);
-  const [newWeight, setNewWeight] = useState('');
-  
-  // Photos state
-  const [progressPhotos, setProgressPhotos] = useState<ProgressPhoto[]>([]);
-  const [compareMode, setCompareMode] = useState(false);
-  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
 
-  const dateRanges: DateRange[] = ['1W', '1M', '3M', '6M', '1Y', 'ALL'];
-  const metrics: { key: MetricType; label: string }[] = [
-    { key: 'weight', label: 'Weight' },
-    { key: 'reps', label: 'Reps' },
-    { key: 'volume', label: 'Volume' },
-    { key: '1rm', label: '1RM' },
-  ];
-
+  // Auto-select most frequent exercise
   useFocusEffect(
     useCallback(() => {
-      loadData();
-    }, [])
+      refetch();
+      if (!selectedExercise && uniqueExercises.length > 0) {
+        setSelectedExercise(uniqueExercises[0].name);
+      }
+    }, [uniqueExercises])
   );
 
-  const loadData = async () => {
-    const [workoutsRes, weightRes, exercisesRes, prefsRes, photosRes] = await Promise.all([
-      localApi.workouts.getAll(),
-      localApi.weightLogs.getAll(),
-      localApi.exercises.getAll(),
-      localApi.preferences.get(),
-      localApi.photos.getAll(),
-    ]);
-
-    if (photosRes.data) setProgressPhotos(photosRes.data);
-    if (workoutsRes.data) {
-      setWorkouts(workoutsRes.data);
-      // Auto-select first exercise if none selected
-      if (!selectedExercise && workoutsRes.data.length > 0) {
-        const exerciseMap = new Map<string, number>();
-        workoutsRes.data.forEach(workout => {
-          workout.exercises.forEach(ex => {
-            exerciseMap.set(ex.name, (exerciseMap.get(ex.name) || 0) + 1);
-          });
-        });
-        const sorted = Array.from(exerciseMap.entries()).sort((a, b) => b[1] - a[1]);
-        if (sorted.length > 0) {
-          setSelectedExercise(sorted[0][0]);
-        }
-      }
-    }
-    if (weightRes.data) {
-      const sorted = [...weightRes.data].sort((a, b) => 
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
-      setWeightLogs(sorted);
-    }
-    if (exercisesRes.data) setExercises(exercisesRes.data);
-    if (prefsRes.data) setPreferences(prefsRes.data);
-  };
-
-  // Get unique exercises from workout history
-  const uniqueExercises = useMemo(() => {
-    const exerciseMap = new Map<string, { name: string; count: number; lastDate: string }>();
-    
-    workouts.forEach(workout => {
-      workout.exercises.forEach(ex => {
-        const existing = exerciseMap.get(ex.name);
-        if (existing) {
-          existing.count++;
-          if (workout.date > existing.lastDate) {
-            existing.lastDate = workout.date;
-          }
-        } else {
-          exerciseMap.set(ex.name, { name: ex.name, count: 1, lastDate: workout.date });
-        }
-      });
-    });
-
-    return Array.from(exerciseMap.values())
-      .sort((a, b) => b.count - a.count);
-  }, [workouts]);
+  // Update photos state when data refreshes
+  React.useEffect(() => {
+    setProgressPhotos(initialPhotos);
+  }, [initialPhotos]);
 
   // Filter exercises by search query
   const filteredExercises = useMemo(() => {
@@ -146,25 +97,6 @@ export default function ProgressScreen() {
       ex.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [uniqueExercises, searchQuery]);
-
-  // Calculate date filter
-  const getDateFilter = (range: DateRange): Date => {
-    const now = new Date();
-    switch (range) {
-      case '1W': return new Date(now.setDate(now.getDate() - 7));
-      case '1M': return new Date(now.setMonth(now.getMonth() - 1));
-      case '3M': return new Date(now.setMonth(now.getMonth() - 3));
-      case '6M': return new Date(now.setMonth(now.getMonth() - 6));
-      case '1Y': return new Date(now.setFullYear(now.getFullYear() - 1));
-      case 'ALL': return new Date(0);
-    }
-  };
-
-  // Calculate 1RM using Epley formula
-  const calculate1RM = (weight: number, reps: number): number => {
-    if (reps === 1) return weight;
-    return Math.round(weight * (1 + reps / 30));
-  };
 
   // Get exercise chart data
   const getExerciseChartData = (): ChartDataPoint[] => {
@@ -207,61 +139,6 @@ export default function ProgressScreen() {
     });
 
     return dataPoints;
-  };
-
-  // Get exercise stats
-  const getExerciseStats = (): ExerciseStats | null => {
-    if (!selectedExercise) return null;
-
-    const filterDate = getDateFilter(exerciseRange);
-    let maxWeight = 0;
-    let maxReps = 0;
-    let maxVolume = 0;
-    let max1RM = 0;
-    let totalSessions = 0;
-    let lastPerformed: string | null = null;
-    const values: number[] = [];
-
-    workouts
-      .filter(w => new Date(w.date) >= filterDate)
-      .forEach(workout => {
-        const exercise = workout.exercises.find(
-          ex => ex.name.toLowerCase() === selectedExercise.toLowerCase()
-        );
-
-        if (exercise) {
-          const completedSets = exercise.sets.filter(s => s.completed);
-          if (completedSets.length === 0) return;
-
-          totalSessions++;
-          if (!lastPerformed || workout.date > lastPerformed) {
-            lastPerformed = workout.date;
-          }
-
-          completedSets.forEach(set => {
-            maxWeight = Math.max(maxWeight, set.weight);
-            maxReps = Math.max(maxReps, set.reps);
-            const volume = set.weight * set.reps;
-            maxVolume = Math.max(maxVolume, volume);
-            const oneRM = calculate1RM(set.weight, set.reps);
-            max1RM = Math.max(max1RM, oneRM);
-          });
-
-          // Track max weight for trend
-          values.push(Math.max(...completedSets.map(s => s.weight)));
-        }
-      });
-
-    // Calculate trend
-    let trend: 'up' | 'down' | 'stable' = 'stable';
-    if (values.length >= 3) {
-      const recentAvg = values.slice(-3).reduce((a, b) => a + b, 0) / 3;
-      const olderAvg = values.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
-      if (recentAvg > olderAvg * 1.05) trend = 'up';
-      else if (recentAvg < olderAvg * 0.95) trend = 'down';
-    }
-
-    return { maxWeight, maxReps, maxVolume, max1RM, totalSessions, lastPerformed, trend };
   };
 
   // Get body weight chart data
@@ -312,52 +189,10 @@ export default function ProgressScreen() {
     return { current, highest, lowest, weeklyAvg, monthlyAvg, trend, totalEntries: filtered.length };
   };
 
-  const logWeight = async () => {
-    const weight = parseFloat(newWeight);
-    if (isNaN(weight) || weight <= 0) return;
-
-    await localApi.weightLogs.create({
-      date: new Date().toISOString().split('T')[0],
-      weight,
-      unit: preferences?.units || 'kg',
-    });
-    setNewWeight('');
-    setShowWeightModal(false);
-    loadData();
-  };
-
-  const calculateBMI = (): number => {
-    const weight = weightLogs[0]?.weight;
-    const height = preferences?.height;
-    if (!weight || !height) return 0;
-    
-    // Convert weight to kg if needed
-    const weightKg = preferences?.units === 'lb' ? weight * 0.453592 : weight;
-    // Height is stored in cm, convert to meters
-    const heightM = height / 100;
-    
-    return weightKg / (heightM * heightM);
-  };
-
-  const getBMICategory = (bmi: number): string => {
-    if (bmi < 18.5) return 'Underweight';
-    if (bmi < 25) return 'Normal';
-    if (bmi < 30) return 'Overweight';
-    return 'Obese';
-  };
-
-  const getBMIColor = (bmi: number): string => {
-    if (bmi < 18.5) return colors.warning;
-    if (bmi < 25) return colors.success;
-    if (bmi < 30) return colors.warning;
-    return colors.error;
-  };
-
   const exerciseChartData = getExerciseChartData();
-  const exerciseStats = getExerciseStats();
+  const exerciseStats = selectedExercise ? getExerciseStats(selectedExercise, exerciseRange) : null;
   const weightChartData = getWeightChartData();
   const weightStats = getWeightStats();
-
   const chartWidth = SCREEN_WIDTH - 64;
 
   const renderExercisesTab = () => (
@@ -380,47 +215,13 @@ export default function ProgressScreen() {
           <Card style={styles.chartCard}>
             <Text style={[styles.chartTitle, { color: colors.textPrimary }]}>Performance Trend</Text>
             
-            {/* Date Range Filter */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chartFilterRow}>
-              {dateRanges.map((range) => (
-                <Pressable
-                  key={range}
-                  style={[
-                    styles.chartFilterChip,
-                    {
-                      backgroundColor: exerciseRange === range ? colors.accentBlue : colors.inputBackground,
-                      borderRadius: borderRadius.md,
-                    },
-                  ]}
-                  onPress={() => setExerciseRange(range)}
-                >
-                  <Text style={[styles.chartFilterText, { color: exerciseRange === range ? '#FFF' : colors.textSecondary }]}>
-                    {range}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+            <DateRangeSelector
+              selected={exerciseRange}
+              onSelect={setExerciseRange}
+              color={colors.accentBlue}
+            />
 
-            {/* Metric Toggle */}
-            <View style={[styles.metricToggleContainer, { backgroundColor: colors.inputBackground, borderRadius: borderRadius.md }]}>
-              {metrics.map((metric) => (
-                <Pressable
-                  key={metric.key}
-                  style={[
-                    styles.metricToggle,
-                    {
-                      backgroundColor: selectedMetric === metric.key ? colors.accentBlue : 'transparent',
-                      borderRadius: borderRadius.sm,
-                    },
-                  ]}
-                  onPress={() => setSelectedMetric(metric.key)}
-                >
-                  <Text style={[styles.metricToggleText, { color: selectedMetric === metric.key ? '#FFF' : colors.textSecondary }]}>
-                    {metric.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+            <MetricSelector selected={selectedMetric} onSelect={setSelectedMetric} />
 
             {exerciseChartData.length > 0 ? (
               <LineChart
@@ -445,57 +246,15 @@ export default function ProgressScreen() {
             )}
           </Card>
 
-          {/* Stats Cards - Split into two rows */}
+          {/* Stats Cards */}
           {exerciseStats && exerciseStats.totalSessions > 0 && (
-            <>
-              <View style={styles.statsGrid}>
-                <Card style={styles.statCard}>
-                  <View style={styles.statHeader}>
-                    <Ionicons name="trophy" size={16} color={colors.warning} />
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Max Weight</Text>
-                  </View>
-                  <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                    {exerciseStats.maxWeight} {preferences?.units || 'kg'}
-                  </Text>
-                </Card>
-                <Card style={styles.statCard}>
-                  <View style={styles.statHeader}>
-                    <Ionicons name="flash" size={16} color={colors.accentBlue} />
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Est. 1RM</Text>
-                  </View>
-                  <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                    {exerciseStats.max1RM} {preferences?.units || 'kg'}
-                  </Text>
-                </Card>
-              </View>
-              <View style={styles.statsGrid}>
-                <Card style={styles.statCard}>
-                  <View style={styles.statHeader}>
-                    <Ionicons name="repeat" size={16} color={colors.success} />
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Sessions</Text>
-                  </View>
-                  <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                    {exerciseStats.totalSessions}
-                  </Text>
-                </Card>
-                <Card style={styles.statCard}>
-                  <View style={styles.statHeader}>
-                    <Ionicons
-                      name={exerciseStats.trend === 'up' ? 'trending-up' : exerciseStats.trend === 'down' ? 'trending-down' : 'remove'}
-                      size={16}
-                      color={exerciseStats.trend === 'up' ? colors.success : exerciseStats.trend === 'down' ? colors.error : colors.textSecondary}
-                    />
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Trend</Text>
-                  </View>
-                  <Text style={[
-                    styles.statValue,
-                    { color: exerciseStats.trend === 'up' ? colors.success : exerciseStats.trend === 'down' ? colors.error : colors.textPrimary }
-                  ]}>
-                    {exerciseStats.trend === 'up' ? '↑ Up' : exerciseStats.trend === 'down' ? '↓ Down' : '— Stable'}
-                  </Text>
-                </Card>
-              </View>
-            </>
+            <ExerciseStatsCard
+              maxWeight={exerciseStats.maxWeight}
+              max1RM={exerciseStats.max1RM}
+              totalSessions={exerciseStats.totalSessions}
+              trend={exerciseStats.trend}
+              unit={preferences?.units || 'kg'}
+            />
           )}
 
           {/* Last Performed */}
@@ -538,26 +297,11 @@ export default function ProgressScreen() {
           <Card style={styles.chartCard}>
             <Text style={[styles.chartTitle, { color: colors.textPrimary }]}>Body Weight Trend</Text>
             
-            {/* Date Range Filter */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chartFilterRow}>
-              {dateRanges.map((range) => (
-                <Pressable
-                  key={range}
-                  style={[
-                    styles.chartFilterChip,
-                    {
-                      backgroundColor: weightRange === range ? colors.success : colors.inputBackground,
-                      borderRadius: borderRadius.md,
-                    },
-                  ]}
-                  onPress={() => setWeightRange(range)}
-                >
-                  <Text style={[styles.chartFilterText, { color: weightRange === range ? '#FFF' : colors.textSecondary }]}>
-                    {range}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+            <DateRangeSelector
+              selected={weightRange}
+              onSelect={setWeightRange}
+              color={colors.success}
+            />
 
             <LineChart
               data={weightChartData}
@@ -599,89 +343,6 @@ export default function ProgressScreen() {
                 </Card>
               </View>
 
-              <View style={styles.statsGrid}>
-                <Card style={styles.statCard}>
-                  <View style={styles.statHeader}>
-                    <Ionicons name="arrow-up" size={18} color={colors.error} />
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Highest</Text>
-                  </View>
-                  <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                    {weightStats.highest.toFixed(1)} {preferences?.units || 'kg'}
-                  </Text>
-                </Card>
-                <Card style={styles.statCard}>
-                  <View style={styles.statHeader}>
-                    <Ionicons name="arrow-down" size={18} color={colors.success} />
-                    <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Lowest</Text>
-                  </View>
-                  <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-                    {weightStats.lowest.toFixed(1)} {preferences?.units || 'kg'}
-                  </Text>
-                </Card>
-              </View>
-
-              <Card style={styles.averagesCard}>
-                <Text style={[styles.averagesTitle, { color: colors.textPrimary }]}>Averages</Text>
-                <View style={styles.averagesRow}>
-                  <View style={styles.averageItem}>
-                    <Text style={[styles.averageLabel, { color: colors.textSecondary }]}>Weekly</Text>
-                    <Text style={[styles.averageValue, { color: colors.textPrimary }]}>
-                      {weightStats.weeklyAvg.toFixed(1)} {preferences?.units || 'kg'}
-                    </Text>
-                  </View>
-                  <View style={[styles.averageDivider, { backgroundColor: colors.border }]} />
-                  <View style={styles.averageItem}>
-                    <Text style={[styles.averageLabel, { color: colors.textSecondary }]}>Monthly</Text>
-                    <Text style={[styles.averageValue, { color: colors.textPrimary }]}>
-                      {weightStats.monthlyAvg.toFixed(1)} {preferences?.units || 'kg'}
-                    </Text>
-                  </View>
-                </View>
-              </Card>
-
-              {/* BMI Card */}
-              {preferences?.height && weightStats.current > 0 && (
-                <Card style={styles.bmiCard}>
-                  <View style={styles.bmiHeader}>
-                    <View>
-                      <Text style={[styles.bmiTitle, { color: colors.textPrimary }]}>Body Mass Index</Text>
-                      <Text style={[styles.bmiSubtitle, { color: colors.textSecondary }]}>
-                        Based on {preferences.height} cm height
-                      </Text>
-                    </View>
-                    <View style={[styles.bmiValueContainer, { backgroundColor: getBMIColor(calculateBMI()) + '20' }]}>
-                      <Text style={[styles.bmiValue, { color: getBMIColor(calculateBMI()) }]}>
-                        {calculateBMI().toFixed(1)}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.bmiScale}>
-                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.warning, flex: 18.5 }]} />
-                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.success, flex: 6.5 }]} />
-                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.warning, flex: 5 }]} />
-                    <View style={[styles.bmiScaleSegment, { backgroundColor: colors.error, flex: 10, borderTopRightRadius: 4, borderBottomRightRadius: 4 }]} />
-                    <View
-                      style={[
-                        styles.bmiIndicator,
-                        {
-                          left: `${Math.min(Math.max((calculateBMI() / 40) * 100, 0), 100)}%`,
-                          backgroundColor: colors.textPrimary,
-                        }
-                      ]}
-                    />
-                  </View>
-                  <View style={styles.bmiLabels}>
-                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Underweight</Text>
-                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Normal</Text>
-                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Overweight</Text>
-                    <Text style={[styles.bmiLabel, { color: colors.textSecondary }]}>Obese</Text>
-                  </View>
-                  <Text style={[styles.bmiCategory, { color: getBMIColor(calculateBMI()) }]}>
-                    {getBMICategory(calculateBMI())}
-                  </Text>
-                </Card>
-              )}
-
               <Text style={[styles.totalEntries, { color: colors.textSecondary }]}>
                 {weightStats.totalEntries} entries in selected period
               </Text>
@@ -704,114 +365,6 @@ export default function ProgressScreen() {
     </ScrollView>
   );
 
-  // Photo helper functions
-  const pickProgressPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please allow access to your photo library to add progress photos.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [3, 4],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const newPhoto: ProgressPhoto = {
-        id: Date.now().toString(),
-        uri: result.assets[0].uri,
-        date: new Date().toISOString(),
-        notes: '',
-      };
-
-      const response = await localApi.photos.create(newPhoto);
-      if (response.data) {
-        setProgressPhotos(prev => [response.data!, ...prev]);
-      }
-    }
-  };
-
-  const takeProgressPhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please allow access to your camera to take progress photos.');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [3, 4],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      const newPhoto: ProgressPhoto = {
-        id: Date.now().toString(),
-        uri: result.assets[0].uri,
-        date: new Date().toISOString(),
-        notes: '',
-      };
-
-      const response = await localApi.photos.create(newPhoto);
-      if (response.data) {
-        setProgressPhotos(prev => [response.data!, ...prev]);
-      }
-    }
-  };
-
-  const togglePhotoSelection = (photoId: string) => {
-    setSelectedPhotos(prev => {
-      if (prev.includes(photoId)) {
-        return prev.filter(id => id !== photoId);
-      }
-      if (prev.length < 2) {
-        return [...prev, photoId];
-      }
-      return [prev[1], photoId];
-    });
-  };
-
-  const deletePhoto = async (photoId: string) => {
-    Alert.alert(
-      'Delete Photo',
-      'Are you sure you want to delete this progress photo?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            await localApi.photos.delete(photoId);
-            setProgressPhotos(prev => prev.filter(p => p.id !== photoId));
-            setSelectedPhotos(prev => prev.filter(id => id !== photoId));
-          },
-        },
-      ]
-    );
-  };
-
-  const groupPhotosByMonth = () => {
-    const groups: { [key: string]: ProgressPhoto[] } = {};
-    progressPhotos.forEach(photo => {
-      const date = new Date(photo.date);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      if (!groups[key]) {
-        groups[key] = [];
-      }
-      groups[key].push(photo);
-    });
-    return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]));
-  };
-
-  const formatMonthYear = (key: string) => {
-    const [year, month] = key.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  };
-
   const renderPhotosTab = () => (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       {/* Compare Mode Toggle */}
@@ -824,12 +377,7 @@ export default function ProgressScreen() {
               borderColor: colors.border,
             }
           ]}
-          onPress={() => {
-            setCompareMode(!compareMode);
-            if (!compareMode) {
-              setSelectedPhotos([]);
-            }
-          }}
+          onPress={toggleCompareMode}
         >
           <Ionicons
             name="git-compare-outline"
@@ -862,77 +410,24 @@ export default function ProgressScreen() {
 
       {/* Compare View */}
       {compareMode && selectedPhotos.length > 0 && (
-        <Card style={styles.compareCard}>
-          <View style={styles.compareContainer}>
-            {selectedPhotos.map((photoId, index) => {
-              const photo = progressPhotos.find(p => p.id === photoId);
-              if (!photo) return null;
-              return (
-                <View key={photo.id} style={styles.comparePhoto}>
-                  <Image source={{ uri: photo.uri }} style={styles.compareImage} />
-                  <Text style={[styles.compareDate, { color: colors.textSecondary }]}>
-                    {new Date(photo.date).toLocaleDateString()}
-                  </Text>
-                </View>
-              );
-            })}
-            {selectedPhotos.length === 1 && (
-              <View style={[styles.comparePhoto, styles.comparePlaceholder, { borderColor: colors.border }]}>
-                <Ionicons name="add" size={32} color={colors.textSecondary} />
-                <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
-                  Select another photo
-                </Text>
-              </View>
-            )}
-          </View>
-        </Card>
+        <PhotoCompareView selectedPhotos={selectedPhotos} photos={progressPhotos} />
       )}
 
       {/* Photo Grid */}
       {progressPhotos.length > 0 ? (
-        groupPhotosByMonth().map(([monthKey, photos]) => (
-          <View key={monthKey} style={styles.monthGroup}>
-            <Text style={[styles.monthTitle, { color: colors.textSecondary }]}>
-              {formatMonthYear(monthKey)}
-            </Text>
-            <View style={styles.photoGrid}>
-              {photos.map(photo => (
-                <Pressable
-                  key={photo.id}
-                  style={[
-                    styles.photoItem,
-                    compareMode && selectedPhotos.includes(photo.id) && {
-                      borderColor: colors.accentBlue,
-                      borderWidth: 3,
-                    }
-                  ]}
-                  onPress={() => {
-                    if (compareMode) {
-                      togglePhotoSelection(photo.id);
-                    }
-                  }}
-                  onLongPress={() => deletePhoto(photo.id)}
-                >
-                  <Image source={{ uri: photo.uri }} style={styles.photoThumbnail} />
-                  {compareMode && selectedPhotos.includes(photo.id) && (
-                    <View style={[styles.selectedOverlay, { backgroundColor: colors.accentBlue + '40' }]}>
-                      <View style={[styles.selectedBadge, { backgroundColor: colors.accentBlue }]}>
-                        <Text style={styles.selectedNumber}>
-                          {selectedPhotos.indexOf(photo.id) + 1}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
-                  <View style={[styles.photoDateBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
-                    <Text style={styles.photoDateText}>
-                      {new Date(photo.date).getDate()}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-        ))
+        <PhotoGallery
+          photos={progressPhotos}
+          groupedPhotos={groupPhotosByMonth()}
+          compareMode={compareMode}
+          selectedPhotos={selectedPhotos}
+          onPhotoPress={(photoId) => {
+            if (compareMode) {
+              togglePhotoSelection(photoId);
+            }
+          }}
+          onPhotoLongPress={deletePhoto}
+          formatMonthYear={formatMonthYear}
+        />
       ) : (
         <View style={styles.emptyState}>
           <Ionicons name="camera-outline" size={64} color={colors.textSecondary} />
@@ -996,7 +491,7 @@ export default function ProgressScreen() {
 
       {/* Exercise Picker Modal */}
       <Modal visible={showExercisePicker} animationType="slide" transparent>
-        <View style={[styles.modalOverlay]}>
+        <View style={styles.modalOverlay}>
           <View style={[styles.pickerModal, { backgroundColor: colors.card, borderTopLeftRadius: borderRadius.xl, borderTopRightRadius: borderRadius.xl }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>Select Exercise</Text>
@@ -1053,42 +548,12 @@ export default function ProgressScreen() {
       </Modal>
 
       {/* Weight Log Modal */}
-      <Modal visible={showWeightModal} animationType="fade" transparent>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.weightModalOverlay}
-        >
-          <View style={[styles.weightModalContent, { backgroundColor: colors.card, borderRadius: borderRadius.xl }]}>
-            <Text style={[styles.weightModalTitle, { color: colors.textPrimary }]}>Log Body Weight</Text>
-            <TextInput
-              style={[styles.weightInput, { backgroundColor: colors.inputBackground, color: colors.textPrimary, borderRadius: borderRadius.md }]}
-              value={newWeight}
-              onChangeText={setNewWeight}
-              placeholder={`Enter weight (${preferences?.units || 'kg'})`}
-              placeholderTextColor={colors.textSecondary}
-              keyboardType="numeric"
-              autoFocus
-            />
-            <View style={styles.modalButtons}>
-              <Pressable
-                style={[styles.modalButton, { backgroundColor: colors.inputBackground }]}
-                onPress={() => {
-                  setShowWeightModal(false);
-                  setNewWeight('');
-                }}
-              >
-                <Text style={[styles.modalButtonText, { color: colors.textSecondary }]}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, { backgroundColor: colors.accentBlue }]}
-                onPress={logWeight}
-              >
-                <Text style={[styles.modalButtonText, { color: '#FFF' }]}>Save</Text>
-              </Pressable>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <AddWeightModal
+        visible={showWeightModal}
+        unit={preferences?.units || 'kg'}
+        onClose={() => setShowWeightModal(false)}
+        onSuccess={refetch}
+      />
     </SafeAreaView>
   );
 }
@@ -1128,105 +593,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    marginBottom: 16,
     gap: 12,
   },
   exerciseSelectorText: {
     flex: 1,
     fontSize: 16,
-    fontWeight: '500',
-  },
-  filterRow: {
-    marginVertical: 12,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-  },
-  filterChipText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  metricToggleContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    padding: 4,
-  },
-  metricToggle: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  metricToggleText: {
-    fontSize: 12,
-    fontWeight: '600',
   },
   chartCard: {
     marginBottom: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    marginBottom: 12,
   },
   chartTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    paddingHorizontal: 8,
-    marginBottom: 8,
-  },
-  chartFilterRow: {
     marginBottom: 12,
-    paddingHorizontal: 4,
-  },
-  chartFilterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    marginRight: 8,
-  },
-  chartFilterText: {
-    fontSize: 12,
-    fontWeight: '600',
   },
   emptyChart: {
     height: 200,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyChartText: {
     fontSize: 14,
     marginTop: 12,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
-  },
-  statCard: {
-    flex: 1,
-    padding: 12,
-    marginVertical: 0,
-    minHeight: 80,
-  },
-  statHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 6,
-  },
-  statLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    flexShrink: 1,
-  },
-  statValue: {
-    fontSize: 15,
-    fontWeight: '700',
-    flexWrap: 'wrap',
   },
   lastPerformed: {
     fontSize: 13,
@@ -1235,7 +624,7 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     alignItems: 'center',
-    paddingTop: 60,
+    paddingVertical: 60,
   },
   emptyStateTitle: {
     fontSize: 20,
@@ -1244,15 +633,30 @@ const styles = StyleSheet.create({
   },
   emptyStateSubtitle: {
     fontSize: 14,
-    textAlign: 'center',
     marginTop: 8,
+    textAlign: 'center',
     paddingHorizontal: 40,
+  },
+  emptyStateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  emptyStateButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   addWeightButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 14,
+    padding: 16,
+    marginBottom: 16,
     gap: 8,
   },
   addWeightText: {
@@ -1260,98 +664,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  averagesCard: {
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 12,
     marginBottom: 12,
   },
-  averagesTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 12,
+  statCard: {
+    flex: 1,
   },
-  averagesRow: {
+  statHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+    marginBottom: 8,
   },
-  averageItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  averageLabel: {
+  statLabel: {
     fontSize: 12,
-    fontWeight: '500',
   },
-  averageValue: {
+  statValue: {
     fontSize: 20,
     fontWeight: '700',
-    marginTop: 4,
-  },
-  averageDivider: {
-    width: 1,
-    height: 40,
   },
   totalEntries: {
     fontSize: 13,
     textAlign: 'center',
     marginTop: 8,
   },
-  bmiCard: {
-    marginBottom: 12,
-  },
-  bmiHeader: {
+  photoHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
-  bmiTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  bmiSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  bmiValueContainer: {
+  compareModeToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 12,
+    borderWidth: 1,
   },
-  bmiValue: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  bmiScale: {
-    flexDirection: 'row',
-    height: 8,
-    borderRadius: 4,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  bmiScaleSegment: {
-    height: '100%',
-  },
-  bmiIndicator: {
-    position: 'absolute',
-    top: -4,
-    width: 4,
-    height: 16,
-    borderRadius: 2,
-    marginLeft: -2,
-  },
-  bmiLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 6,
-  },
-  bmiLabel: {
-    fontSize: 9,
-    fontWeight: '500',
-  },
-  bmiCategory: {
+  compareModeText: {
     fontSize: 14,
     fontWeight: '600',
-    textAlign: 'center',
-    marginTop: 12,
+  },
+  photoActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  photoActionButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,
@@ -1360,42 +727,44 @@ const styles = StyleSheet.create({
   },
   pickerModal: {
     maxHeight: '80%',
-    padding: 20,
+    paddingBottom: 40,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
   },
   searchInput: {
-    height: 48,
+    height: 44,
+    margin: 16,
     paddingHorizontal: 16,
     fontSize: 16,
-    marginBottom: 12,
   },
   exerciseList: {
-    maxHeight: 400,
+    flex: 1,
   },
   exerciseItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 14,
+    padding: 16,
     borderBottomWidth: 1,
   },
   exerciseName: {
     fontSize: 16,
-    fontWeight: '500',
+    flex: 1,
   },
   exerciseMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
   exerciseCount: {
     fontSize: 13,
@@ -1407,179 +776,5 @@ const styles = StyleSheet.create({
   noExercisesText: {
     fontSize: 14,
     textAlign: 'center',
-  },
-  weightModalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  weightModalContent: {
-    width: '85%',
-    padding: 24,
-  },
-  weightModalTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  weightInput: {
-    height: 56,
-    fontSize: 24,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  modalButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  // Photo styles
-  photoHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  compareModeToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    gap: 6,
-  },
-  compareModeText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  photoActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  photoActionButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  compareCard: {
-    marginBottom: 16,
-    padding: 12,
-  },
-  compareContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  comparePhoto: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  compareImage: {
-    width: '100%',
-    aspectRatio: 3 / 4,
-    borderRadius: 12,
-  },
-  compareDate: {
-    fontSize: 12,
-    marginTop: 8,
-    fontWeight: '500',
-  },
-  comparePlaceholder: {
-    aspectRatio: 3 / 4,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  placeholderText: {
-    fontSize: 12,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  monthGroup: {
-    marginBottom: 20,
-  },
-  monthTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  photoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 4,
-  },
-  photoItem: {
-    width: (SCREEN_WIDTH - 32 - 8) / 3,
-    aspectRatio: 3 / 4,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  photoThumbnail: {
-    width: '100%',
-    height: '100%',
-  },
-  selectedOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selectedBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selectedNumber: {
-    color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  photoDateBadge: {
-    position: 'absolute',
-    bottom: 4,
-    left: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  photoDateText: {
-    color: '#FFF',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  emptyStateButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
-    marginTop: 16,
-    gap: 8,
-  },
-  emptyStateButtonText: {
-    color: '#FFF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

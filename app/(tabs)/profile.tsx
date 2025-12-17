@@ -1,5 +1,4 @@
 
-
 import React, { useState, useCallback } from 'react';
 import {
   View,
@@ -7,7 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Pressable,
-  Switch,
   TextInput,
   Modal,
   KeyboardAvoidingView,
@@ -17,14 +15,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useAppData } from '../../src/contexts/AppDataContext';
 import { Card } from '../../src/components/ui';
+import { ProfileStatsCard, SettingItem } from '../../src/components/features/profile/components';
 import { localApi } from '../../src/services/localApi';
 import { UserPreferences, WeightLog, StreakData } from '../../src/types';
+import { calculateBMI, getBMICategory } from '../../src/utils/calculations';
 
 export default function ProfileScreen() {
   const { colors, borderRadius, toggleTheme, isDark } = useTheme();
+  const { preferences, updatePreferences } = useAppData();
 
-  const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [streakData, setStreakData] = useState<StreakData | null>(null);
   const [showGoalModal, setShowGoalModal] = useState(false);
@@ -41,13 +42,11 @@ export default function ProfileScreen() {
   );
 
   const loadData = async () => {
-    const [prefsRes, weightRes, streakRes] = await Promise.all([
-      localApi.preferences.get(),
+    const [weightRes, streakRes] = await Promise.all([
       localApi.weightLogs.getAll(),
       localApi.attendance.getStreak(),
     ]);
 
-    if (prefsRes.data) setPreferences(prefsRes.data);
     if (weightRes.data) {
       const sorted = [...weightRes.data].sort((a, b) => 
         new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -57,39 +56,14 @@ export default function ProfileScreen() {
     if (streakRes.data) setStreakData(streakRes.data);
   };
 
-  const updatePreference = async (key: keyof UserPreferences, value: any) => {
-    if (!preferences) return;
-    const updated = { ...preferences, [key]: value };
-    setPreferences(updated);
-    await localApi.preferences.update({ [key]: value });
-  };
-
   const saveGoal = async () => {
     if (!editingGoal) return;
     const value = parseFloat(editingGoal.value);
     if (isNaN(value) || value <= 0) return;
 
-    await updatePreference(editingGoal.key, value);
+    await updatePreferences({ [editingGoal.key]: value });
     setShowGoalModal(false);
     setEditingGoal(null);
-  };
-
-  const calculateBMI = (): number => {
-    const weight = weightLogs[0]?.weight;
-    const height = preferences?.height;
-    if (!weight || !height) return 0;
-    
-    const weightKg = preferences?.units === 'lb' ? weight * 0.453592 : weight;
-    const heightM = height / 100;
-    
-    return weightKg / (heightM * heightM);
-  };
-
-  const getBMICategory = (bmi: number): string => {
-    if (bmi < 18.5) return 'Underweight';
-    if (bmi < 25) return 'Normal';
-    if (bmi < 30) return 'Overweight';
-    return 'Obese';
   };
 
   const getBMIColor = (bmi: number): string => {
@@ -99,6 +73,11 @@ export default function ProfileScreen() {
     return colors.error;
   };
 
+  const currentWeight = weightLogs[0]?.weight;
+  const bmi = currentWeight && preferences?.height 
+    ? calculateBMI(currentWeight, preferences.height, preferences?.units)
+    : 0;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
@@ -107,53 +86,24 @@ export default function ProfileScreen() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Stats Summary */}
-        <Card style={styles.statsCard}>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.warning }]}>
-                🔥 {streakData?.currentStreak || 0}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Current Streak
-              </Text>
-            </View>
-            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.accentBlue }]}>
-                {streakData?.totalWorkouts || 0}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                Total Workouts
-              </Text>
-            </View>
-            <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.success }]}>
-                {streakData?.thisMonthWorkouts || 0}
-              </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-                This Month
-              </Text>
-            </View>
-          </View>
-        </Card>
+        <ProfileStatsCard streakData={streakData} />
 
         {/* Body Stats Section */}
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Body Stats</Text>
         <Card style={styles.settingsCard}>
-          <View style={styles.settingItem}>
-            <View style={styles.settingLabelContainer}>
-              <Ionicons name="scale-outline" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
-                Current Weight
-              </Text>
-            </View>
-            <Text style={[styles.settingValue, { color: colors.accentBlue }]}>
-              {weightLogs[0]?.weight ? `${weightLogs[0].weight} ${preferences?.units || 'kg'}` : '-- --'}
-            </Text>
-          </View>
-          <Pressable
-            style={[styles.settingItem, { borderTopColor: colors.border, borderTopWidth: 1 }]}
+          <SettingItem
+            icon="scale-outline"
+            label="Current Weight"
+            value={currentWeight ? `${currentWeight} ${preferences?.units || 'kg'}` : '-- --'}
+            type="navigation"
+            valueColor={colors.accentBlue}
+          />
+          <SettingItem
+            icon="resize-outline"
+            label="Height"
+            value={preferences?.height ? `${preferences.height} cm` : '-- cm'}
+            type="select"
+            hasBorder
             onPress={() => {
               setEditingGoal({
                 key: 'height',
@@ -162,39 +112,26 @@ export default function ProfileScreen() {
               });
               setShowGoalModal(true);
             }}
-          >
-            <View style={styles.settingLabelContainer}>
-              <Ionicons name="resize-outline" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
-                Height
-              </Text>
-            </View>
-            <View style={styles.settingValueRow}>
-              <Text style={[styles.settingValue, { color: colors.accentBlue }]}>
-                {preferences?.height ? `${preferences.height} cm` : '-- cm'}
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </View>
-          </Pressable>
-          <View style={[styles.settingItem, { borderTopColor: colors.border, borderTopWidth: 1 }]}>
-            <View style={styles.settingLabelContainer}>
+          />
+          <View style={[styles.bmiItem, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+            <View style={styles.bmiLabel}>
               <Ionicons name="body-outline" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
+              <Text style={[styles.label, { color: colors.textPrimary }]}>
                 BMI
               </Text>
             </View>
-            <View style={styles.bmiContainer}>
-              {weightLogs[0]?.weight && preferences?.height ? (
+            <View style={styles.bmiValue}>
+              {currentWeight && preferences?.height ? (
                 <>
-                  <Text style={[styles.settingValue, { color: getBMIColor(calculateBMI()) }]}>
-                    {calculateBMI().toFixed(1)}
+                  <Text style={[styles.value, { color: getBMIColor(bmi) }]}>
+                    {bmi.toFixed(1)}
                   </Text>
-                  <Text style={[styles.bmiCategory, { color: getBMIColor(calculateBMI()) }]}>
-                    {getBMICategory(calculateBMI())}
+                  <Text style={[styles.bmiCategory, { color: getBMIColor(bmi) }]}>
+                    {getBMICategory(bmi)}
                   </Text>
                 </>
               ) : (
-                <Text style={[styles.settingValue, { color: colors.textSecondary }]}>-- --</Text>
+                <Text style={[styles.value, { color: colors.textSecondary }]}>-- --</Text>
               )}
             </View>
           </View>
@@ -203,8 +140,11 @@ export default function ProfileScreen() {
         {/* Goals Section */}
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Daily Goals</Text>
         <Card style={styles.settingsCard}>
-          <Pressable 
-            style={styles.settingItem}
+          <SettingItem
+            icon="flame-outline"
+            label="Calorie Goal"
+            value={`${preferences?.calorieGoal || 2200} kcal`}
+            type="select"
             onPress={() => {
               setEditingGoal({
                 key: 'calorieGoal',
@@ -213,17 +153,14 @@ export default function ProfileScreen() {
               });
               setShowGoalModal(true);
             }}
-          >
-            <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Calorie Goal</Text>
-            <View style={styles.settingValueRow}>
-              <Text style={[styles.settingValue, { color: colors.accentBlue }]}>
-                {preferences?.calorieGoal || 2200} kcal
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </View>
-          </Pressable>
-          <Pressable 
-            style={[styles.settingItem, { borderTopColor: colors.border }]}
+          />
+          <SettingItem
+            icon="nutrition-outline"
+            label="Protein Goal"
+            value={`${preferences?.proteinGoal || 150}g`}
+            type="select"
+            hasBorder
+            valueColor={colors.proteinColor}
             onPress={() => {
               setEditingGoal({
                 key: 'proteinGoal',
@@ -232,17 +169,14 @@ export default function ProfileScreen() {
               });
               setShowGoalModal(true);
             }}
-          >
-            <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Protein Goal</Text>
-            <View style={styles.settingValueRow}>
-              <Text style={[styles.settingValue, { color: colors.proteinColor }]}>
-                {preferences?.proteinGoal || 150}g
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </View>
-          </Pressable>
-          <Pressable 
-            style={[styles.settingItem, { borderTopColor: colors.border }]}
+          />
+          <SettingItem
+            icon="pizza-outline"
+            label="Carbs Goal"
+            value={`${preferences?.carbsGoal || 250}g`}
+            type="select"
+            hasBorder
+            valueColor={colors.carbsColor}
             onPress={() => {
               setEditingGoal({
                 key: 'carbsGoal',
@@ -251,17 +185,14 @@ export default function ProfileScreen() {
               });
               setShowGoalModal(true);
             }}
-          >
-            <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Carbs Goal</Text>
-            <View style={styles.settingValueRow}>
-              <Text style={[styles.settingValue, { color: colors.carbsColor }]}>
-                {preferences?.carbsGoal || 250}g
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </View>
-          </Pressable>
-          <Pressable 
-            style={[styles.settingItem, { borderTopColor: colors.border }]}
+          />
+          <SettingItem
+            icon="water-outline"
+            label="Fat Goal"
+            value={`${preferences?.fatGoal || 70}g`}
+            type="select"
+            hasBorder
+            valueColor={colors.fatColor}
             onPress={() => {
               setEditingGoal({
                 key: 'fatGoal',
@@ -270,38 +201,23 @@ export default function ProfileScreen() {
               });
               setShowGoalModal(true);
             }}
-          >
-            <Text style={[styles.settingLabel, { color: colors.textPrimary }]}>Fat Goal</Text>
-            <View style={styles.settingValueRow}>
-              <Text style={[styles.settingValue, { color: colors.fatColor }]}>
-                {preferences?.fatGoal || 70}g
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-            </View>
-          </Pressable>
+          />
         </Card>
 
         {/* Preferences Section */}
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Preferences</Text>
         <Card style={styles.settingsCard}>
-          <View style={styles.settingItem}>
-            <View style={styles.settingLabelContainer}>
-              <Ionicons name="moon" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
-                Dark Mode
-              </Text>
-            </View>
-            <Switch
-              value={isDark}
-              onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.accentBlue }}
-              thumbColor="#FFF"
-            />
-          </View>
-          <View style={[styles.settingItem, { borderTopColor: colors.border }]}>
-            <View style={styles.settingLabelContainer}>
+          <SettingItem
+            icon="moon"
+            label="Dark Mode"
+            value={isDark}
+            type="toggle"
+            onToggle={toggleTheme}
+          />
+          <View style={[styles.unitSetting, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+            <View style={styles.unitLabel}>
               <Ionicons name="scale" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
+              <Text style={[styles.label, { color: colors.textPrimary }]}>
                 Weight Units
               </Text>
             </View>
@@ -316,7 +232,7 @@ export default function ProfileScreen() {
                       borderRadius: borderRadius.sm,
                     },
                   ]}
-                  onPress={() => updatePreference('units', u)}
+                  onPress={() => updatePreferences({ units: u })}
                 >
                   <Text style={[styles.unitText, { color: preferences?.units === u ? '#FFF' : colors.textSecondary }]}>
                     {u}
@@ -330,24 +246,19 @@ export default function ProfileScreen() {
         {/* About Section */}
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>About</Text>
         <Card style={styles.settingsCard}>
-          <Pressable style={styles.settingItem}>
-            <View style={styles.settingLabelContainer}>
-              <Ionicons name="information-circle" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
-                About Gymie
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </Pressable>
-          <Pressable style={[styles.settingItem, { borderTopColor: colors.border }]}>
-            <View style={styles.settingLabelContainer}>
-              <Ionicons name="star" size={20} color={colors.textSecondary} />
-              <Text style={[styles.settingLabel, { color: colors.textPrimary, marginLeft: 12 }]}>
-                Rate App
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-          </Pressable>
+          <SettingItem
+            icon="information-circle"
+            label="About Gymie"
+            type="navigation"
+            onPress={() => {}}
+          />
+          <SettingItem
+            icon="star"
+            label="Rate App"
+            type="navigation"
+            hasBorder
+            onPress={() => {}}
+          />
         </Card>
 
         <Text style={[styles.versionText, { color: colors.textSecondary }]}>Version 1.0.0</Text>
@@ -418,29 +329,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  statsCard: {
-    marginBottom: 20,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  statLabel: {
-    fontSize: 11,
-    marginTop: 4,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-  },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
@@ -453,30 +341,44 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     padding: 0,
   },
-  settingItem: {
+  bmiItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderTopWidth: 1,
-    borderTopColor: 'transparent',
   },
-  settingLabelContainer: {
+  bmiLabel: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  settingLabel: {
+  label: {
     fontSize: 16,
   },
-  settingValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  bmiValue: {
+    alignItems: 'flex-end',
   },
-  settingValue: {
+  value: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  bmiCategory: {
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  unitSetting: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  unitLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   unitToggle: {
     flexDirection: 'row',
@@ -489,14 +391,6 @@ const styles = StyleSheet.create({
   unitText: {
     fontSize: 14,
     fontWeight: '600',
-  },
-  bmiContainer: {
-    alignItems: 'flex-end',
-  },
-  bmiCategory: {
-    fontSize: 11,
-    fontWeight: '500',
-    marginTop: 2,
   },
   versionText: {
     fontSize: 13,
@@ -532,10 +426,10 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: 44,
     borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalButtonText: {
     fontSize: 16,
