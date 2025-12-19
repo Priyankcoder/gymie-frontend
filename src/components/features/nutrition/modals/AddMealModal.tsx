@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Modal, Pressable, TextInput, Alert } from 'reac
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { localApi } from '../../../../services/localApi';
+import { api } from '../../../../services/api';
 import { Meal } from '../../../../types';
 import { getTodayString } from '../../../../utils/date';
 
@@ -58,7 +58,7 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
         timestamp: Date.now(),
       };
 
-      await localApi.meals.create(newMeal);
+      await api.meals.create(newMeal);
       resetForm();
       onClose();
       onSuccess();

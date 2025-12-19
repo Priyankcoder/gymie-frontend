@@ -10,21 +10,26 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAppData } from '../../src/contexts/AppDataContext';
+import { useAuth } from '../../src/contexts/AuthContext';
 import { Card } from '../../src/components/ui';
 import { ProfileStatsCard, SettingItem } from '../../src/components/features/profile/components';
-import { localApi } from '../../src/services/localApi';
+import { api } from '../../src/services/api';
 import { UserPreferences, WeightLog, StreakData } from '../../src/types';
 import { calculateBMI, getBMICategory } from '../../src/utils/calculations';
 
 export default function ProfileScreen() {
   const { colors, borderRadius, toggleTheme, isDark } = useTheme();
   const { preferences, updatePreferences } = useAppData();
+  const { logout, user } = useAuth();
+  const router = useRouter();
 
   const [weightLogs, setWeightLogs] = useState<WeightLog[]>([]);
   const [streakData, setStreakData] = useState<StreakData | null>(null);
@@ -35,6 +40,24 @@ export default function ProfileScreen() {
     value: string;
   } | null>(null);
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+            router.replace('/(auth)/login');
+          },
+        },
+      ]
+    );
+  };
+
   useFocusEffect(
     useCallback(() => {
       loadData();
@@ -43,8 +66,8 @@ export default function ProfileScreen() {
 
   const loadData = async () => {
     const [weightRes, streakRes] = await Promise.all([
-      localApi.weightLogs.getAll(),
-      localApi.attendance.getStreak(),
+      api.weightLogs.getAll(),
+      api.attendance.getStreak(),
     ]);
 
     if (weightRes.data) {
@@ -258,6 +281,25 @@ export default function ProfileScreen() {
             type="navigation"
             hasBorder
             onPress={() => {}}
+          />
+        </Card>
+
+        {/* Account Section */}
+        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Account</Text>
+        <Card style={styles.settingsCard}>
+          <SettingItem
+            icon="person-circle-outline"
+            label="Logged in as"
+            value={user?.email || 'User'}
+            type="info"
+          />
+          <SettingItem
+            icon="log-out-outline"
+            label="Logout"
+            type="navigation"
+            hasBorder
+            onPress={handleLogout}
+            valueColor={colors.error}
           />
         </Card>
 

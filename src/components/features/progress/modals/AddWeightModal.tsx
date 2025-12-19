@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { localApi } from '../../../../services/localApi';
+import { api } from '../../../../services/api';
 
 interface AddWeightModalProps {
   visible: boolean;
@@ -24,7 +24,7 @@ export const AddWeightModal: React.FC<AddWeightModalProps> = ({
     const weightValue = parseFloat(weight);
     if (isNaN(weightValue) || weightValue <= 0) return;
 
-    await localApi.weightLogs.create({
+    await api.weightLogs.create({
       date: new Date().toISOString().split('T')[0],
       weight: weightValue,
       unit,

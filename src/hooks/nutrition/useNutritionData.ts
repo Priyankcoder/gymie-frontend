@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { localApi } from '../../services/localApi';
+import { api } from '../../services/api';
 import { Meal, UserPreferences } from '../../types';
 import { getTodayString } from '../../utils/date';
 
@@ -39,8 +39,8 @@ export const useNutritionData = (): UseNutritionDataReturn => {
       setError(null);
 
       const [prefsRes, mealsRes] = await Promise.all([
-        localApi.preferences.get(),
-        localApi.meals.getByDate(today),
+        api.preferences.get(),
+        api.meals.getByDate(today),
       ]);
 
       if (prefsRes.data) setPreferences(prefsRes.data);

@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Pressable, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../../contexts/ThemeContext';
 
-type SettingType = 'toggle' | 'select' | 'navigation';
+type SettingType = 'toggle' | 'select' | 'navigation' | 'info';
 
 interface SettingItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -54,11 +54,19 @@ export const SettingItem: React.FC<SettingItemProps> = ({
       );
     }
 
+    if (type === 'info') {
+      return (
+        <Text style={[styles.value, { color: valueColor || colors.textSecondary }]}>
+          {value}
+        </Text>
+      );
+    }
+
     return null;
   };
 
-  const Component = type === 'toggle' ? View : Pressable;
-  const componentProps = type === 'toggle' ? {} : { onPress };
+  const Component = type === 'toggle' || type === 'info' ? View : Pressable;
+  const componentProps = type === 'toggle' || type === 'info' ? {} : { onPress };
 
   return (
     <Component

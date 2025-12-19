@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { localApi } from '../../services/localApi';
+import { api } from '../../services/api';
 import { MealEstimation, Meal } from '../../types';
 import { getTodayString } from '../../utils/date';
 
@@ -28,7 +28,7 @@ export const useAIEstimation = (): UseAIEstimationReturn => {
   const estimateMeal = async (imageUri: string) => {
     setIsEstimating(true);
     try {
-      const response = await localApi.meals.estimateFromImage(imageUri);
+      const response = await api.meals.estimateFromImage(imageUri);
       if (response.data) {
         setAiEstimation(response.data);
       }
@@ -91,7 +91,7 @@ export const useAIEstimation = (): UseAIEstimationReturn => {
         confidence: aiEstimation.confidence,
       };
 
-      await localApi.meals.create(newMeal);
+      await api.meals.create(newMeal);
       clearEstimation();
       onSuccess();
     } catch (error) {

@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, MacroBar, MetricRing, QuickActionCard } from '../../src/components/ui';
 import { useTheme } from '../../src/contexts/ThemeContext';
-import { localApi } from '../../src/services/localApi';
+import { api } from '../../src/services/api';
 import { useRefreshOnFocus } from '../../src/hooks';
 import { formatDate, getGreeting, getTodayString } from '../../src/utils';
 import {
@@ -52,12 +52,12 @@ export default function HomeScreen() {
         prsRes,
         volumeRes,
       ] = await Promise.all([
-        localApi.preferences.get(),
-        localApi.meals.getByDate(today),
-        localApi.workouts.getByDate(today),
-        localApi.attendance.getStreak(),
-        localApi.prs.getAll(),
-        localApi.progress.getVolumeStats(),
+        api.preferences.get(),
+        api.meals.getByDate(today),
+        api.workouts.getByDate ? api.workouts.getByDate(today) : { success: true, data: [] },
+        api.attendance.getStreak(),
+        api.prs.getAll(),
+        api.progress.getVolumeStats(),
       ]);
 
       if (prefsRes.data) setPreferences(prefsRes.data);

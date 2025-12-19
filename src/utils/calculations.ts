@@ -73,12 +73,15 @@ export const calculateRemainingMacros = (
 };
 
 /**
- * Calculate BMI
+ * Calculate BMI with unit support
  */
 export const calculateBMI = (
-  weightKg: number,
-  heightCm: number
+  weight: number,
+  heightCm: number,
+  units: 'kg' | 'lb' = 'kg'
 ): number => {
+  // Convert weight to kg if needed
+  const weightKg = units === 'lb' ? weight * 0.453592 : weight;
   const heightM = heightCm / 100;
   return weightKg / (heightM * heightM);
 };

@@ -5,7 +5,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { localApi } from '../services/localApi';
+import { api } from '../services/api';
 import { UserPreferences } from '../types';
 
 interface AppDataContextType {
@@ -28,7 +28,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
   const loadPreferences = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await localApi.preferences.get();
+      const response = await api.preferences.get();
       if (response.data) {
         setPreferences(response.data);
       }
@@ -41,7 +41,7 @@ export const AppDataProvider: React.FC<AppDataProviderProps> = ({ children }) =>
 
   const updatePreferences = useCallback(async (updates: Partial<UserPreferences>) => {
     try {
-      const response = await localApi.preferences.update(updates);
+      const response = await api.preferences.update(updates);
       if (response.data) {
         setPreferences(response.data);
       }

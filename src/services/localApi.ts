@@ -794,6 +794,12 @@ export const localApi = {
       plans[index].updatedAt = new Date().toISOString();
       
       await storage.set(storage.keys.WORKOUT_PLANS, plans);
+      
+      // If the plan has recurrence settings, regenerate scheduled workouts
+      if (plans[index].recurrence) {
+        await localApi.scheduledWorkouts.generateFromRecurrence(id, plans[index].recurrence);
+      }
+      
       return { success: true, data: plans[index] };
     },
 

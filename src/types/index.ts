@@ -1,4 +1,13 @@
 
+// User Types
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // User Preferences
 export interface UserPreferences {
   units: 'kg' | 'lb';
@@ -180,6 +189,32 @@ export interface DailyNutrition {
   totalProtein: number;
   totalCarbs: number;
   totalFat: number;
+}
+
+// Nutrition Day (for backend API)
+export interface NutritionDay {
+  id: number;
+  userId: number;
+  date: string;
+  meals: Meal[];
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+// Weight Entry (for backend API)
+export interface WeightEntry {
+  id: number;
+  userId: number;
+  date: string;
+  weight: number;
+  unit: 'kg' | 'lb';
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Recipe Types

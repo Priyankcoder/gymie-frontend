@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { localApi } from '../../services/localApi';
+import { api } from '../../services/api';
 import { ProgressPhoto } from '../../types';
 
 interface UsePhotoGalleryReturn {
@@ -67,7 +67,7 @@ export const usePhotoGallery = (
         notes: '',
       };
 
-      const response = await localApi.photos.create(newPhoto);
+      const response = await api.photos.create(newPhoto);
       if (response.data) {
         setProgressPhotos(prev => [response.data!, ...prev]);
       }
@@ -95,7 +95,7 @@ export const usePhotoGallery = (
         notes: '',
       };
 
-      const response = await localApi.photos.create(newPhoto);
+      const response = await api.photos.create(newPhoto);
       if (response.data) {
         setProgressPhotos(prev => [response.data!, ...prev]);
       }
@@ -112,7 +112,7 @@ export const usePhotoGallery = (
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await localApi.photos.delete(photoId);
+            await api.photos.delete(photoId);
             setProgressPhotos(prev => prev.filter(p => p.id !== photoId));
             setSelectedPhotos(prev => prev.filter(id => id !== photoId));
           },

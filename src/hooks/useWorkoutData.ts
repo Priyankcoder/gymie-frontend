@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { localApi } from '../services/localApi';
+import { api } from '../services/api';
 import {
   Workout,
   PersonalRecord,
@@ -66,13 +66,13 @@ export const useWorkoutData = (): UseWorkoutDataResult => {
         scheduledRes,
         todayRes,
       ] = await Promise.all([
-        localApi.workouts.getAll(),
-        localApi.prs.getAll(),
-        localApi.exercises.getAll(),
-        localApi.templates.getAll(),
-        localApi.workoutPlans.getAll(),
-        localApi.scheduledWorkouts.getAll(),
-        localApi.scheduledWorkouts.getTodaysWorkout(),
+        api.workouts.getAll(),
+        api.prs.getAll(),
+        api.exercises.getAll(),
+        api.templates.getAll(),
+        api.workoutPlans.getAll(),
+        api.scheduledWorkouts.getAll(),
+        api.scheduledWorkouts.getTodaysWorkout(),
       ]);
 
       setData({

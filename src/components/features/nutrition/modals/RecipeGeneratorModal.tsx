@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, Alert, ScrollView } from 'react-native';
 import { Card, Button } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { localApi } from '../../../../services/localApi';
+import { api } from '../../../../services/api';
 import { Recipe } from '../../../../types';
 import { RecipeCard } from '../components/RecipeCard';
 
@@ -28,7 +28,7 @@ export const RecipeGeneratorModal: React.FC<RecipeGeneratorModalProps> = ({
     setIsGenerating(true);
     try {
       const ingredientList = ingredients.split(',').map((i) => i.trim());
-      const response = await localApi.recipes.generateFromIngredients(ingredientList);
+      const response = await api.recipes.generateFromIngredients(ingredientList);
       if (response.data) {
         setRecipes(response.data);
         onRecipesGenerated?.(response.data);

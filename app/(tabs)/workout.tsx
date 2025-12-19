@@ -20,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Card } from "../../src/components/ui";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import prebuiltPlanTemplates from "../../src/data/prebuiltPlans";
-import { localApi } from "../../src/services/localApi";
+import { api } from "../../src/services/api";
 import {
   Exercise,
   ExerciseInfo,
@@ -68,6 +68,7 @@ export default function WorkoutScreen() {
   const [showRecurrenceModal, setShowRecurrenceModal] = useState(false);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<WorkoutPlan | null>(null);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [customizingPlan, setCustomizingPlan] = useState<{
     name: string;
     description: string;
@@ -133,13 +134,13 @@ export default function WorkoutScreen() {
       scheduledRes,
       todayRes,
     ] = await Promise.all([
-      localApi.workouts.getAll(),
-      localApi.prs.getAll(),
-      localApi.exercises.getAll(),
-      localApi.templates.getAll(),
-      localApi.workoutPlans.getAll(),
-      localApi.scheduledWorkouts.getAll(),
-      localApi.scheduledWorkouts.getTodaysWorkout(),
+      api.workouts.getAll(),
+      api.prs.getAll(),
+      api.exercises.getAll(),
+      api.templates.getAll(),
+      api.workoutPlans.getAll(),
+      api.scheduledWorkouts.getAll(),
+      api.scheduledWorkouts.getTodaysWorkout(),
     ]);
 
     if (workoutsRes.data)
@@ -157,7 +158,7 @@ export default function WorkoutScreen() {
   };
 
   const startNewWorkout = () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString();
     setWorkoutStartTime(new Date());
     setActiveWorkout({
       id: "",
@@ -169,7 +170,7 @@ export default function WorkoutScreen() {
   };
 
   const startFromTemplate = (template: WorkoutTemplate) => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString();
     setWorkoutStartTime(new Date());
 
     const exercises: Exercise[] = template.exercises.map((te, index) => ({
@@ -195,9 +196,9 @@ export default function WorkoutScreen() {
   };
 
   const startTodaysWorkout = () => {
-    if (!todaysWorkout.day) return;
+    if (!todaysWorkout.day || !todaysWorkout.day.exercises) return;
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString();
     setWorkoutStartTime(new Date());
 
     const exercises: Exercise[] = todaysWorkout.day.exercises.map(
@@ -307,9 +308,7 @@ export default function WorkoutScreen() {
     updatedDays[dayIndex] = {
       ...updatedDays[dayIndex],
       isRestDay: !updatedDays[dayIndex].isRestDay,
-      exercises: !updatedDays[dayIndex].isRestDay
-        ? []
-        : updatedDays[dayIndex].exercises,
+      // Don't remove exercises when toggling to rest day - just hide them
     };
 
     setCustomizingPlan({
@@ -321,32 +320,42 @@ export default function WorkoutScreen() {
   const savePlanFromCustomization = async () => {
     if (!customizingPlan) return;
 
-    const newPlan: Omit<WorkoutPlan, "id" | "createdAt" | "updatedAt"> = {
+    const planData: Omit<WorkoutPlan, "id" | "createdAt" | "updatedAt"> = {
       name: customizingPlan.name,
       description: customizingPlan.description,
       type: customizingPlan.type,
       days: customizingPlan.days,
-      isActive: workoutPlans.length === 0,
+      isActive: editingPlanId ? workoutPlans.find(p => p.id === editingPlanId)?.isActive || false : workoutPlans.length === 0,
       color: "#3B82F6",
     };
 
-    const result = await localApi.workoutPlans.create(newPlan);
-    setShowPlanCustomizationModal(false);
-    setCustomizingPlan(null);
+    if (editingPlanId) {
+      // Update existing plan
+      await api.workoutPlans.update(editingPlanId, planData);
+      setShowPlanCustomizationModal(false);
+      setCustomizingPlan(null);
+      setEditingPlanId(null);
+      loadData();
+    } else {
+      // Create new plan
+      const result = await api.workoutPlans.create(planData);
+      setShowPlanCustomizationModal(false);
+      setCustomizingPlan(null);
 
-    // Show recurrence setup modal for the new plan
-    if (result.data) {
-      setSelectedPlan(result.data);
-      setRecurrenceSettings({
-        type: "weekly",
-        interval: 1,
-        startDate: new Date().toISOString().split("T")[0],
-        restDays: [0],
-      });
-      setShowRecurrenceModal(true);
+      // Show recurrence setup modal for the new plan
+      if (result.data) {
+        setSelectedPlan(result.data);
+        setRecurrenceSettings({
+          type: "weekly",
+          interval: 1,
+          startDate: new Date().toISOString().split("T")[0],
+          restDays: [0],
+        });
+        setShowRecurrenceModal(true);
+      }
+
+      // Don't call loadData() here - wait until recurrence is saved or modal is closed
     }
-
-    loadData();
   };
 
   const addSet = (exerciseId: string) => {
@@ -431,17 +440,20 @@ export default function WorkoutScreen() {
       ? Math.round((new Date().getTime() - workoutStartTime.getTime()) / 60000)
       : 45;
 
+    // Remove id field for new workouts
+    const { id, ...workoutData } = activeWorkout;
+    
     const completedWorkout = {
-      ...activeWorkout,
+      ...workoutData,
       completed: true,
       duration,
     };
 
-    const result = await localApi.workouts.create(completedWorkout);
+    const result = await api.workouts.create(completedWorkout);
 
     // Mark today's scheduled workout as completed if it exists
     if (todaysWorkout.scheduled && result.data) {
-      await localApi.scheduledWorkouts.updateStatus(
+      await api.scheduledWorkouts.updateStatus(
         todaysWorkout.scheduled.id,
         "completed",
         result.data.id
@@ -493,7 +505,7 @@ export default function WorkoutScreen() {
       color: "#3B82F6",
     };
 
-    const result = await localApi.workoutPlans.create(newPlan);
+    const result = await api.workoutPlans.create(newPlan);
     setShowPrebuiltPlansModal(false);
 
     // Show recurrence setup modal for the new plan
@@ -508,11 +520,11 @@ export default function WorkoutScreen() {
       setShowRecurrenceModal(true);
     }
 
-    loadData();
+    // Don't call loadData() here - wait until recurrence is saved or modal is closed
   };
 
   const setActivePlan = async (planId: string) => {
-    await localApi.workoutPlans.setActive(planId);
+    await api.workoutPlans.setActive(planId);
     loadData();
   };
 
@@ -526,7 +538,7 @@ export default function WorkoutScreen() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            await localApi.workoutPlans.delete(planId);
+            await api.workoutPlans.delete(planId);
             setShowPlanDetailsModal(false);
             loadData();
           },
@@ -539,14 +551,26 @@ export default function WorkoutScreen() {
     const plan = workoutPlans.find((p) => p.id === planId);
     if (!plan) return;
 
-    await localApi.workoutPlans.clone(planId, `${plan.name} (Copy)`);
+    await api.workoutPlans.clone(planId, `${plan.name} (Copy)`);
     loadData();
+  };
+
+  const startEditingPlan = (plan: WorkoutPlan) => {
+    setEditingPlanId(plan.id);
+    setCustomizingPlan({
+      name: plan.name,
+      description: plan.description || "",
+      type: plan.type,
+      days: plan.days.map(day => ({ ...day })),
+    });
+    setShowPlanDetailsModal(false);
+    setShowPlanCustomizationModal(true);
   };
 
   const saveRecurrence = async () => {
     if (!selectedPlan) return;
 
-    await localApi.workoutPlans.setRecurrence(
+    await api.workoutPlans.setRecurrence(
       selectedPlan.id,
       recurrenceSettings
     );
@@ -665,7 +689,7 @@ export default function WorkoutScreen() {
       {!activeWorkout ? (
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Today's Workout Card */}
-          {todaysWorkout.scheduled && todaysWorkout.day && (
+          {todaysWorkout.scheduled && todaysWorkout.day && todaysWorkout.day.exercises && (
             <Card style={styles.todaysWorkoutCard}>
               <View style={styles.todaysHeader}>
                 <Ionicons
@@ -1372,7 +1396,7 @@ export default function WorkoutScreen() {
         </View>
       </Modal>
 
-      {/* Plan Customization Modal */}
+      {/* Plan Customization Modal - Improved UI */}
       <Modal
         visible={showPlanCustomizationModal && !showDayExercisesModal}
         animationType="slide"
@@ -1388,16 +1412,25 @@ export default function WorkoutScreen() {
               { backgroundColor: colors.card },
             ]}
           >
+            {/* Enhanced Header */}
             <View
               style={[styles.modalHeader, { borderBottomColor: colors.border }]}
             >
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                Customize Plan
-              </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
+                  {editingPlanId ? "Edit Workout Plan" : "Customize Plan"}
+                </Text>
+                {editingPlanId && customizingPlan && (
+                  <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
+                    {customizingPlan.days.filter(d => !d.isRestDay).length} workout days • {customizingPlan.days.filter(d => d.isRestDay).length} rest days
+                  </Text>
+                )}
+              </View>
               <Pressable
                 onPress={() => {
                   setShowPlanCustomizationModal(false);
                   setCustomizingPlan(null);
+                  setEditingPlanId(null);
                 }}
               >
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
@@ -1473,21 +1506,23 @@ export default function WorkoutScreen() {
                 />
               </View>
 
-              {/* Workout Days Section */}
+              {/* Workout Days Section - Enhanced */}
               <View style={styles.customizationSectionHeader}>
-                <Text
-                  style={[styles.sectionTitle, { color: colors.textPrimary }]}
-                >
-                  Workout Days
-                </Text>
-                <Text
-                  style={[
-                    styles.sectionSubtitle,
-                    { color: colors.textSecondary },
-                  ]}
-                >
-                  Customize each day's exercises
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[styles.sectionTitle, { color: colors.textPrimary }]}
+                  >
+                    Workout Days
+                  </Text>
+                  <Text
+                    style={[
+                      styles.sectionSubtitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
+                    Configure exercises for each day
+                  </Text>
+                </View>
               </View>
 
               {customizingPlan?.days.map((day, dayIndex) => (
@@ -1495,27 +1530,46 @@ export default function WorkoutScreen() {
                   key={day.id}
                   style={[
                     styles.customDayCard,
-                    { backgroundColor: colors.inputBackground },
+                    {
+                      backgroundColor: day.isRestDay ? colors.surface : colors.inputBackground,
+                      borderLeftWidth: 3,
+                      borderLeftColor: day.isRestDay ? colors.textSecondary : colors.accentBlue,
+                    },
                   ]}
                 >
+                  {/* Enhanced Day Header */}
                   <View style={styles.customDayHeader}>
                     <View style={{ flex: 1 }}>
-                      <Text
-                        style={[
-                          styles.customDayName,
-                          { color: colors.textPrimary },
-                        ]}
-                      >
-                        Day {dayIndex + 1}
-                      </Text>
+                      <View style={styles.dayHeaderRow}>
+                        <Text
+                          style={[
+                            styles.customDayName,
+                            { color: colors.textPrimary, fontSize: 16, fontWeight: '600' },
+                          ]}
+                        >
+                          Day {dayIndex + 1}
+                        </Text>
+                        {day.isRestDay && (
+                          <View style={[styles.restBadge, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <Text style={[styles.restBadgeText, { color: colors.textSecondary }]}>
+                              Rest Day
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                       <Text
                         style={[
                           styles.customDayTitle,
-                          { color: colors.textPrimary },
+                          { color: colors.textPrimary, marginTop: 2 },
                         ]}
                       >
                         {day.name}
                       </Text>
+                      {!day.isRestDay && day.exercises.length > 0 && (
+                        <Text style={[styles.exerciseCount, { color: colors.textSecondary }]}>
+                          {day.exercises.length} {day.exercises.length === 1 ? 'exercise' : 'exercises'}
+                        </Text>
+                      )}
                     </View>
                     <View style={styles.restToggleContainer}>
                       <Text
@@ -1524,7 +1578,7 @@ export default function WorkoutScreen() {
                           { color: colors.textSecondary },
                         ]}
                       >
-                        Rest
+                        Rest Day
                       </Text>
                       <Switch
                         value={day.isRestDay}
@@ -1553,23 +1607,27 @@ export default function WorkoutScreen() {
                                       ? 1
                                       : 0,
                                   borderBottomColor: colors.border,
+                                  paddingVertical: 12,
                                 },
                               ]}
                             >
                               <View style={styles.customExerciseInfo}>
-                                <Text
-                                  style={[
-                                    styles.customExerciseName,
-                                    { color: colors.textPrimary },
-                                  ]}
-                                >
-                                  {exercise.name}
-                                </Text>
-                                <View style={styles.customTargetInputs}>
-                                  <View style={styles.targetInputGroup}>
+                                <View style={styles.exerciseNameRow}>
+                                  <Text
+                                    style={[
+                                      styles.customExerciseName,
+                                      { color: colors.textPrimary, fontSize: 15, fontWeight: '500' },
+                                    ]}
+                                  >
+                                    {exerciseIndex + 1}. {exercise.name}
+                                  </Text>
+                                </View>
+                                {/* Simplified Target Inputs */}
+                                <View style={[styles.customTargetInputs, { marginTop: 8 }]}>
+                                  <View style={styles.compactInputGroup}>
                                     <TextInput
                                       style={[
-                                        styles.customTargetInput,
+                                        styles.compactInput,
                                         {
                                           color: colors.textPrimary,
                                           borderColor: colors.border,
@@ -1577,7 +1635,7 @@ export default function WorkoutScreen() {
                                         },
                                       ]}
                                       keyboardType="number-pad"
-                                      value={String(exercise.targetSets)}
+                                      value={String(exercise.targetSets || 3)}
                                       onChangeText={(text) =>
                                         updateDayExercise(
                                           dayIndex,
@@ -1588,7 +1646,7 @@ export default function WorkoutScreen() {
                                     />
                                     <Text
                                       style={[
-                                        styles.targetInputLabel,
+                                        styles.compactInputLabel,
                                         { color: colors.textSecondary },
                                       ]}
                                     >
@@ -1598,74 +1656,37 @@ export default function WorkoutScreen() {
                                   <Text
                                     style={[
                                       styles.targetSeparator,
-                                      { color: colors.textSecondary },
+                                      { color: colors.textSecondary, marginHorizontal: 8 },
                                     ]}
                                   >
                                     ×
                                   </Text>
-                                  <View style={styles.repRangeContainer}>
+                                  <View style={styles.compactInputGroup}>
                                     <TextInput
                                       style={[
-                                        styles.repRangeInput,
+                                        styles.compactInput,
                                         {
                                           color: colors.textPrimary,
                                           borderColor: colors.border,
                                           backgroundColor: colors.card,
+                                          width: 65,
                                         },
                                       ]}
-                                      keyboardType="number-pad"
-                                      value={typeof exercise.targetReps === 'string' && exercise.targetReps.includes('-')
-                                        ? exercise.targetReps.split('-')[0]
-                                        : String(exercise.targetReps)}
-                                      onChangeText={(text) => {
-                                        const minReps = text || '8';
-                                        const currentValue = String(exercise.targetReps);
-                                        const maxReps = currentValue.includes('-')
-                                          ? currentValue.split('-')[1]
-                                          : minReps;
+                                      keyboardType="default"
+                                      value={String(exercise.targetReps || '8-12')}
+                                      onChangeText={(text) =>
                                         updateDayExercise(
                                           dayIndex,
                                           exerciseIndex,
-                                          { targetReps: minReps === maxReps ? minReps : `${minReps}-${maxReps}` }
-                                        );
-                                      }}
-                                      placeholder="8"
-                                      placeholderTextColor={colors.textSecondary}
-                                    />
-                                    <Text style={[styles.repRangeText, { color: colors.textSecondary }]}>
-                                      to
-                                    </Text>
-                                    <TextInput
-                                      style={[
-                                        styles.repRangeInput,
-                                        {
-                                          color: colors.textPrimary,
-                                          borderColor: colors.border,
-                                          backgroundColor: colors.card,
-                                        },
-                                      ]}
-                                      keyboardType="number-pad"
-                                      value={typeof exercise.targetReps === 'string' && exercise.targetReps.includes('-')
-                                        ? exercise.targetReps.split('-')[1]
-                                        : String(exercise.targetReps)}
-                                      onChangeText={(text) => {
-                                        const maxReps = text || '12';
-                                        const currentValue = String(exercise.targetReps);
-                                        const minReps = currentValue.includes('-')
-                                          ? currentValue.split('-')[0]
-                                          : maxReps;
-                                        updateDayExercise(
-                                          dayIndex,
-                                          exerciseIndex,
-                                          { targetReps: minReps === maxReps ? maxReps : `${minReps}-${maxReps}` }
-                                        );
-                                      }}
-                                      placeholder="12"
+                                          { targetReps: text || '8-12' }
+                                        )
+                                      }
+                                      placeholder="8-12"
                                       placeholderTextColor={colors.textSecondary}
                                     />
                                     <Text
                                       style={[
-                                        styles.targetInputLabel,
+                                        styles.compactInputLabel,
                                         { color: colors.textSecondary },
                                       ]}
                                     >
@@ -1678,7 +1699,7 @@ export default function WorkoutScreen() {
                                 onPress={() =>
                                   removeExerciseFromDay(dayIndex, exerciseIndex)
                                 }
-                                style={styles.customRemoveBtn}
+                                style={[styles.customRemoveBtn, { padding: 8 }]}
                                 hitSlop={8}
                               >
                                 <Ionicons
@@ -1691,19 +1712,19 @@ export default function WorkoutScreen() {
                           ))}
                         </View>
                       ) : (
-                        <View style={styles.emptyExercisesContainer}>
+                        <View style={[styles.emptyExercisesContainer, { paddingVertical: 24 }]}>
                           <Ionicons
                             name="barbell-outline"
-                            size={32}
+                            size={36}
                             color={colors.textSecondary}
                           />
                           <Text
                             style={[
                               styles.emptyExercisesText,
-                              { color: colors.textSecondary },
+                              { color: colors.textSecondary, marginTop: 8 },
                             ]}
                           >
-                            No exercises yet
+                            No exercises added yet
                           </Text>
                         </View>
                       )}
@@ -1711,23 +1732,26 @@ export default function WorkoutScreen() {
                       <Pressable
                        style={[
                          styles.customAddExerciseBtn,
-                         { borderColor: colors.accentBlue },
+                         {
+                           borderColor: colors.accentBlue,
+                           backgroundColor: colors.accentBlue + '08',
+                           marginTop: 12,
+                         },
                        ]}
                        onPress={() => {
-                         console.log('Add Exercise clicked for day:', dayIndex);
                          setSelectedDayIndex(dayIndex);
                          setShowDayExercisesModal(true);
                        }}
                      >
                         <Ionicons
-                          name="add-circle-outline"
-                          size={20}
+                          name="add-circle"
+                          size={22}
                           color={colors.accentBlue}
                         />
                         <Text
                           style={[
                             styles.customAddExerciseText,
-                            { color: colors.accentBlue },
+                            { color: colors.accentBlue, fontWeight: '600' },
                           ]}
                         >
                           Add Exercise
@@ -1738,11 +1762,11 @@ export default function WorkoutScreen() {
                 </View>
               ))}
 
-              {/* Save Button */}
+              {/* Enhanced Save Button */}
               <Button
-                title="Save & Setup Schedule"
+                title={editingPlanId ? "Save Changes" : "Save & Setup Schedule"}
                 onPress={savePlanFromCustomization}
-                style={styles.customSaveBtn}
+                style={[styles.customSaveBtn, { paddingVertical: 16 }]}
                 disabled={!customizingPlan?.name.trim()}
               />
             </ScrollView>
@@ -1795,7 +1819,7 @@ export default function WorkoutScreen() {
                         { color: colors.textPrimary },
                       ]}
                     >
-                      Schedule: {selectedPlan.recurrence.type}
+                      Schedule: {selectedPlan.recurrence.type || "Not set"}
                     </Text>
 
 
@@ -1808,9 +1832,11 @@ export default function WorkoutScreen() {
                     ]}
                   >
                     Start:{" "}
-                    {new Date(
-                      selectedPlan.recurrence.startDate
-                    ).toLocaleDateString()}
+                    {selectedPlan.recurrence.startDate
+                      ? new Date(
+                          selectedPlan.recurrence.startDate
+                        ).toLocaleDateString()
+                      : "Not set"}
                   </Text>
                   <Text
                     style={[
@@ -1820,8 +1846,10 @@ export default function WorkoutScreen() {
                   >
                     Rest days:{" "}
                     {selectedPlan.recurrence.restDays
-                      .map((d) => DAYS_OF_WEEK[d])
-                      .join(", ")}
+                      ? selectedPlan.recurrence.restDays
+                          .map((d) => DAYS_OF_WEEK[d])
+                          .join(", ")
+                      : "None"}
                   </Text>
                 </Card>
               )}
@@ -1855,7 +1883,7 @@ export default function WorkoutScreen() {
                 )}
               </View>
 
-              {selectedPlan?.days.map((day, index) => (
+              {selectedPlan?.days?.map((day, index) => (
                 <Card key={day.id} style={styles.dayCard}>
                   <View style={styles.dayHeader}>
                     <Text
@@ -1876,7 +1904,7 @@ export default function WorkoutScreen() {
                   </View>
                   {!day.isRestDay && day.exercises.length > 0 && (
                     <View style={styles.dayExercises}>
-                      {day.exercises.slice(0, 3).map((ex, i) => (
+                      {day.exercises.map((ex, i) => (
                         <Text
                           key={i}
                           style={[
@@ -1887,16 +1915,6 @@ export default function WorkoutScreen() {
                           • {ex.name} {ex.targetSets}×{ex.targetReps}
                         </Text>
                       ))}
-                      {day.exercises.length > 3 && (
-                        <Text
-                          style={[
-                            styles.dayMore,
-                            { color: colors.textSecondary },
-                          ]}
-                        >
-                          +{day.exercises.length - 3} more
-                        </Text>
-                      )}
                     </View>
                   )}
                 </Card>
@@ -1914,6 +1932,15 @@ export default function WorkoutScreen() {
                     }}
                   />
                 )}
+                <Button
+                  title="Edit Plan"
+                  variant="outline"
+                  onPress={() => {
+                    if (selectedPlan) {
+                      startEditingPlan(selectedPlan);
+                    }
+                  }}
+                />
                 <Button
                   title="Clone Plan"
                   variant="outline"
@@ -1953,7 +1980,10 @@ export default function WorkoutScreen() {
               <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
                 Setup Schedule
               </Text>
-              <Pressable onPress={() => setShowRecurrenceModal(false)}>
+              <Pressable onPress={() => {
+                setShowRecurrenceModal(false);
+                loadData(); // Reload to show the new plan even without recurrence
+              }}>
                 <Ionicons name="close" size={24} color={colors.textSecondary} />
               </Pressable>
             </View>
@@ -2065,8 +2095,16 @@ export default function WorkoutScreen() {
                 ))}
               </View>
 
-              <View style={{ marginTop: 32, marginBottom: 20 }}>
+              <View style={{ marginTop: 32, marginBottom: 20, gap: 12 }}>
                 <Button title="Save Schedule" onPress={saveRecurrence} />
+                <Button
+                  title="Skip for Now"
+                  onPress={() => {
+                    setShowRecurrenceModal(false);
+                    loadData(); // Reload to show the new plan without recurrence
+                  }}
+                  variant="outline"
+                />
               </View>
             </ScrollView>
           </View>
@@ -2970,5 +3008,66 @@ const styles = StyleSheet.create({
   },
   customSaveBtn: {
     marginTop: 24,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    marginTop: 4,
+  },
+  dayHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  restBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  restBadgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  exerciseCount: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+  restToggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  restToggleButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  exerciseNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  compactInputGroup: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  compactInput: {
+    width: 50,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 8,
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+    marginRight: 6,
+  },
+  compactInputLabel: {
+    fontSize: 13,
+    fontWeight: "500",
   },
 });

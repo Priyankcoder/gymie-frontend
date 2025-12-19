@@ -1,9 +1,14 @@
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { api } from "../../services/api";
+import {
+  Workout,
+  WeightLog,
+  ExerciseInfo,
+  UserPreferences,
+  ProgressPhoto,
+} from "../../types";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { localApi } from '../../services/localApi';
-import { Workout, WeightLog, ExerciseInfo, UserPreferences, ProgressPhoto } from '../../types';
-
-type DateRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
+type DateRange = "1W" | "1M" | "3M" | "6M" | "1Y" | "ALL";
 
 interface ExerciseStats {
   maxWeight: number;
@@ -12,7 +17,7 @@ interface ExerciseStats {
   max1RM: number;
   totalSessions: number;
   lastPerformed: string | null;
-  trend: 'up' | 'down' | 'stable';
+  trend: "up" | "down" | "stable";
 }
 
 interface UseProgressDataReturn {
@@ -27,7 +32,10 @@ interface UseProgressDataReturn {
   refetch: () => Promise<void>;
   getDateFilter: (range: DateRange) => Date;
   calculate1RM: (weight: number, reps: number) => number;
-  getExerciseStats: (exerciseName: string, range: DateRange) => ExerciseStats | null;
+  getExerciseStats: (
+    exerciseName: string,
+    range: DateRange
+  ) => ExerciseStats | null;
 }
 
 export const useProgressData = (): UseProgressDataReturn => {
@@ -44,18 +52,19 @@ export const useProgressData = (): UseProgressDataReturn => {
       setLoading(true);
       setError(null);
 
-      const [workoutsRes, weightRes, exercisesRes, prefsRes, photosRes] = await Promise.all([
-        localApi.workouts.getAll(),
-        localApi.weightLogs.getAll(),
-        localApi.exercises.getAll(),
-        localApi.preferences.get(),
-        localApi.photos.getAll(),
-      ]);
+      const [workoutsRes, weightRes, exercisesRes, prefsRes, photosRes] =
+        await Promise.all([
+          api.workouts.getAll(),
+          api.weightLogs.getAll(),
+          api.exercises.getAll(),
+          api.preferences.get(),
+          api.photos.getAll(),
+        ]);
 
       if (workoutsRes.data) setWorkouts(workoutsRes.data);
       if (weightRes.data) {
-        const sorted = [...weightRes.data].sort((a, b) => 
-          new Date(a.date).getTime() - new Date(b.date).getTime()
+        const sorted = [...weightRes.data].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
         setWeightLogs(sorted);
       }
@@ -63,8 +72,10 @@ export const useProgressData = (): UseProgressDataReturn => {
       if (prefsRes.data) setPreferences(prefsRes.data);
       if (photosRes.data) setProgressPhotos(photosRes.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load progress data');
-      console.error('Error loading progress data:', err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load progress data"
+      );
+      console.error("Error loading progress data:", err);
     } finally {
       setLoading(false);
     }
@@ -76,21 +87,37 @@ export const useProgressData = (): UseProgressDataReturn => {
 
   // Get unique exercises from workout history
   const uniqueExercises = useMemo(() => {
-    const exerciseMap = new Map<string, { name: string; count: number; lastDate: string }>();
-    
-    workouts.forEach(workout => {
-      workout.exercises.forEach(ex => {
-        const existing = exerciseMap.get(ex.name);
-        if (existing) {
-          existing.count++;
-          if (workout.date > existing.lastDate) {
-            existing.lastDate = workout.date;
+    const exerciseMap = new Map<
+      string,
+      { name: string; count: number; lastDate: string }
+    >();
+
+    // Only include completed workouts with exercises
+    workouts
+      .filter((workout) => workout.completed && workout.exercises?.length > 0)
+      .forEach((workout) => {
+        workout.exercises.forEach((ex) => {
+          // Only count exercises that have at least one set with actual data
+          const hasValidSets = ex.sets && ex.sets.length > 0 &&
+            ex.sets.some(set => (set.weight && set.weight > 0) || (set.reps && set.reps > 0));
+          
+          if (!hasValidSets) return;
+
+          const existing = exerciseMap.get(ex.name);
+          if (existing) {
+            existing.count++;
+            if (workout.date > existing.lastDate) {
+              existing.lastDate = workout.date;
+            }
+          } else {
+            exerciseMap.set(ex.name, {
+              name: ex.name,
+              count: 1,
+              lastDate: workout.date,
+            });
           }
-        } else {
-          exerciseMap.set(ex.name, { name: ex.name, count: 1, lastDate: workout.date });
-        }
+        });
       });
-    });
 
     return Array.from(exerciseMap.values()).sort((a, b) => b.count - a.count);
   }, [workouts]);
@@ -99,12 +126,18 @@ export const useProgressData = (): UseProgressDataReturn => {
   const getDateFilter = useCallback((range: DateRange): Date => {
     const now = new Date();
     switch (range) {
-      case '1W': return new Date(now.setDate(now.getDate() - 7));
-      case '1M': return new Date(now.setMonth(now.getMonth() - 1));
-      case '3M': return new Date(now.setMonth(now.getMonth() - 3));
-      case '6M': return new Date(now.setMonth(now.getMonth() - 6));
-      case '1Y': return new Date(now.setFullYear(now.getFullYear() - 1));
-      case 'ALL': return new Date(0);
+      case "1W":
+        return new Date(now.setDate(now.getDate() - 7));
+      case "1M":
+        return new Date(now.setMonth(now.getMonth() - 1));
+      case "3M":
+        return new Date(now.setMonth(now.getMonth() - 3));
+      case "6M":
+        return new Date(now.setMonth(now.getMonth() - 6));
+      case "1Y":
+        return new Date(now.setFullYear(now.getFullYear() - 1));
+      case "ALL":
+        return new Date(0);
     }
   }, []);
 
@@ -115,59 +148,70 @@ export const useProgressData = (): UseProgressDataReturn => {
   }, []);
 
   // Get exercise stats
-  const getExerciseStats = useCallback((exerciseName: string, range: DateRange): ExerciseStats | null => {
-    if (!exerciseName) return null;
+  const getExerciseStats = useCallback(
+    (exerciseName: string, range: DateRange): ExerciseStats | null => {
+      if (!exerciseName) return null;
 
-    const filterDate = getDateFilter(range);
-    let maxWeight = 0;
-    let maxReps = 0;
-    let maxVolume = 0;
-    let max1RM = 0;
-    let totalSessions = 0;
-    let lastPerformed: string | null = null;
-    const values: number[] = [];
+      const filterDate = getDateFilter(range);
+      let maxWeight = 0;
+      let maxReps = 0;
+      let maxVolume = 0;
+      let max1RM = 0;
+      let totalSessions = 0;
+      let lastPerformed: string | null = null;
+      const values: number[] = [];
 
-    workouts
-      .filter(w => new Date(w.date) >= filterDate)
-      .forEach(workout => {
-        const exercise = workout.exercises.find(
-          ex => ex.name.toLowerCase() === exerciseName.toLowerCase()
-        );
+      workouts
+        .filter((w) => new Date(w.date) >= filterDate)
+        .forEach((workout) => {
+          const exercise = workout.exercises.find(
+            (ex) => ex.name.toLowerCase() === exerciseName.toLowerCase()
+          );
 
-        if (exercise) {
-          const completedSets = exercise.sets.filter(s => s.completed);
-          if (completedSets.length === 0) return;
+          if (exercise) {
+            const completedSets = exercise.sets.filter((s) => s.completed);
+            if (completedSets.length === 0) return;
 
-          totalSessions++;
-          if (!lastPerformed || workout.date > lastPerformed) {
-            lastPerformed = workout.date;
+            totalSessions++;
+            if (!lastPerformed || workout.date > lastPerformed) {
+              lastPerformed = workout.date;
+            }
+
+            completedSets.forEach((set) => {
+              maxWeight = Math.max(maxWeight, set.weight);
+              maxReps = Math.max(maxReps, set.reps);
+              const volume = set.weight * set.reps;
+              maxVolume = Math.max(maxVolume, volume);
+              const oneRM = calculate1RM(set.weight, set.reps);
+              max1RM = Math.max(max1RM, oneRM);
+            });
+
+            // Track max weight for trend
+            values.push(Math.max(...completedSets.map((s) => s.weight)));
           }
+        });
 
-          completedSets.forEach(set => {
-            maxWeight = Math.max(maxWeight, set.weight);
-            maxReps = Math.max(maxReps, set.reps);
-            const volume = set.weight * set.reps;
-            maxVolume = Math.max(maxVolume, volume);
-            const oneRM = calculate1RM(set.weight, set.reps);
-            max1RM = Math.max(max1RM, oneRM);
-          });
+      // Calculate trend
+      let trend: "up" | "down" | "stable" = "stable";
+      if (values.length >= 3) {
+        const recentAvg = values.slice(-3).reduce((a, b) => a + b, 0) / 3;
+        const olderAvg = values.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
+        if (recentAvg > olderAvg * 1.05) trend = "up";
+        else if (recentAvg < olderAvg * 0.95) trend = "down";
+      }
 
-          // Track max weight for trend
-          values.push(Math.max(...completedSets.map(s => s.weight)));
-        }
-      });
-
-    // Calculate trend
-    let trend: 'up' | 'down' | 'stable' = 'stable';
-    if (values.length >= 3) {
-      const recentAvg = values.slice(-3).reduce((a, b) => a + b, 0) / 3;
-      const olderAvg = values.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
-      if (recentAvg > olderAvg * 1.05) trend = 'up';
-      else if (recentAvg < olderAvg * 0.95) trend = 'down';
-    }
-
-    return { maxWeight, maxReps, maxVolume, max1RM, totalSessions, lastPerformed, trend };
-  }, [workouts, getDateFilter, calculate1RM]);
+      return {
+        maxWeight,
+        maxReps,
+        maxVolume,
+        max1RM,
+        totalSessions,
+        lastPerformed,
+        trend,
+      };
+    },
+    [workouts, getDateFilter, calculate1RM]
+  );
 
   return {
     workouts,
