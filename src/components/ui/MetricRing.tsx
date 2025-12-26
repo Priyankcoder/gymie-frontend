@@ -1,8 +1,10 @@
 
-import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ViewStyle, Animated } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { useTheme } from '../../contexts/ThemeContext';
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface MetricRingProps {
   value: number;
@@ -37,9 +39,27 @@ export const MetricRing: React.FC<MetricRingProps> = ({
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const percentage = Math.min((value / maxValue) * 100, 100);
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  const targetStrokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  const displayValue = showPercentage 
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const animatedStrokeDashoffset = useRef(new Animated.Value(circumference)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(animatedValue, {
+        toValue: value,
+        duration: 1500,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedStrokeDashoffset, {
+        toValue: targetStrokeDashoffset,
+        duration: 1500,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [value, targetStrokeDashoffset]);
+
+  const displayValue = showPercentage
     ? `${Math.round(percentage)}%`
     : value.toLocaleString();
 
@@ -56,7 +76,7 @@ export const MetricRing: React.FC<MetricRingProps> = ({
           fill="none"
         />
         {/* Progress Circle */}
-        <Circle
+        <AnimatedCircle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -64,7 +84,7 @@ export const MetricRing: React.FC<MetricRingProps> = ({
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={strokeDashoffset}
+          strokeDashoffset={animatedStrokeDashoffset}
           strokeLinecap="round"
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />

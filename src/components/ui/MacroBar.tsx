@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ViewStyle, Animated } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface MacroBarProps {
@@ -22,6 +22,15 @@ export const MacroBar: React.FC<MacroBarProps> = ({
 }) => {
   const { colors, typography, borderRadius } = useTheme();
   const percentage = Math.min((value / maxValue) * 100, 100);
+  const animatedWidth = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animatedWidth, {
+      toValue: percentage,
+      duration: 1200,
+      useNativeDriver: false,
+    }).start();
+  }, [percentage]);
 
   return (
     <View style={[styles.container, style]}>
@@ -33,20 +42,23 @@ export const MacroBar: React.FC<MacroBarProps> = ({
           {value}{unit} / {maxValue}{unit}
         </Text>
       </View>
-      <View 
+      <View
         style={[
-          styles.track, 
-          { 
+          styles.track,
+          {
             backgroundColor: colors.progressBackground,
             borderRadius: borderRadius.full,
           }
         ]}
       >
-        <View
+        <Animated.View
           style={[
             styles.fill,
             {
-              width: `${percentage}%`,
+              width: animatedWidth.interpolate({
+                inputRange: [0, 100],
+                outputRange: ['0%', '100%'],
+              }),
               backgroundColor: color,
               borderRadius: borderRadius.full,
             },

@@ -22,7 +22,7 @@ import {
   PersonalRecord,
   StreakData,
   UserPreferences,
-  Workout
+  Workout,
 } from '../../src/types';
 
 export default function HomeScreen() {
@@ -45,36 +45,196 @@ export default function HomeScreen() {
 
   const loadData = useCallback(async () => {
     try {
+      console.log('🏠 Home: Loading data...');
       const [
         prefsRes,
         mealsRes,
-        workoutsRes,
-        streakRes,
+        todayWorkoutsRes,
+        allWorkoutsRes,
         prsRes,
-        volumeRes,
       ] = await Promise.all([
         api.preferences.get(),
         api.meals.getByDate(today),
         api.workouts.getByDate ? api.workouts.getByDate(today) : { success: true, data: [] },
-        api.attendance.getStreak(),
+        api.workouts.getAll(),
         api.prs.getAll(),
-        api.progress.getVolumeStats(),
       ]);
 
-      if (prefsRes.data) setPreferences(prefsRes.data);
-      if (mealsRes.data) setTodayMeals(mealsRes.data);
-      if (workoutsRes.data) setTodayWorkouts(workoutsRes.data);
-      if (streakRes.data) setStreakData(streakRes.data);
-      if (prsRes.data) {
+      console.log('🏠 Home: Responses received');
+      console.log('🏠 Prefs:', prefsRes);
+      console.log('🏠 Meals:', mealsRes);
+      console.log('🏠 Today Workouts:', todayWorkoutsRes);
+      console.log('🏠 All Workouts:', allWorkoutsRes);
+      console.log('🏠 PRs:', prsRes);
+
+      // Handle preferences (object, not array)
+      if (prefsRes && !Array.isArray(prefsRes)) {
+        setPreferences(prefsRes.data || prefsRes);
+      }
+
+      // Handle meals
+      if (Array.isArray(mealsRes)) {
+        setTodayMeals(mealsRes);
+      } else if (mealsRes?.data) {
+        setTodayMeals(Array.isArray(mealsRes.data) ? mealsRes.data : []);
+      }
+
+      // Handle today's workouts
+      if (Array.isArray(todayWorkoutsRes)) {
+        setTodayWorkouts(todayWorkoutsRes);
+      } else if (todayWorkoutsRes?.data) {
+        setTodayWorkouts(Array.isArray(todayWorkoutsRes.data) ? todayWorkoutsRes.data : []);
+      }
+
+      // Get all workouts for calculations
+      const allWorkouts: Workout[] = Array.isArray(allWorkoutsRes)
+        ? allWorkoutsRes
+        : (allWorkoutsRes?.data || []);
+
+      console.log('🏠 Processing', allWorkouts.length, 'workouts for stats');
+
+      // Calculate streak from workouts
+      if (allWorkouts.length > 0) {
+        const sortedWorkouts = [...allWorkouts].sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        let currentStreak = 0;
+        let longestStreak = 0;
+        let tempStreak = 0;
+        let lastDate: Date | null = null;
+
+        // Calculate current streak (consecutive days from today backwards)
+        const todayDate = new Date(today);
+        todayDate.setHours(0, 0, 0, 0);
+        
+        for (const workout of sortedWorkouts) {
+          const workoutDate = new Date(workout.date);
+          workoutDate.setHours(0, 0, 0, 0);
+          
+          if (!lastDate) {
+            // First workout
+            const daysDiff = Math.floor((todayDate.getTime() - workoutDate.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysDiff === 0) {
+              currentStreak = 1;
+              tempStreak = 1;
+              lastDate = workoutDate;
+            } else if (daysDiff === 1) {
+              currentStreak = 1;
+              tempStreak = 1;
+              lastDate = workoutDate;
+            }
+          } else {
+            const daysDiff = Math.floor((lastDate.getTime() - workoutDate.getTime()) / (1000 * 60 * 60 * 24));
+            if (daysDiff === 1) {
+              currentStreak++;
+              tempStreak++;
+            } else if (daysDiff === 0) {
+              // Same day, continue
+              tempStreak++;
+            } else {
+              // Streak broken for current, but continue for longest
+              if (tempStreak > longestStreak) {
+                longestStreak = tempStreak;
+              }
+              tempStreak = 1;
+            }
+            lastDate = workoutDate;
+          }
+        }
+        
+        longestStreak = Math.max(longestStreak, tempStreak);
+
+        // Calculate this week's workouts (last 7 days)
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const thisWeekWorkouts = allWorkouts.filter(
+          w => new Date(w.date) >= weekAgo
+        ).length;
+
+        setStreakData({
+          currentStreak,
+          longestStreak,
+          thisWeekWorkouts,
+          lastWorkoutDate: allWorkouts.length > 0 ? allWorkouts[0].date : today,
+        });
+        
+        console.log('✅ Home: Calculated streak data:', {
+          currentStreak,
+          longestStreak,
+          thisWeekWorkouts,
+        });
+      } else {
+        setStreakData({
+          currentStreak: 0,
+          longestStreak: 0,
+          thisWeekWorkouts: 0,
+          lastWorkoutDate: today,
+        });
+      }
+
+      // Calculate volume stats from workouts
+      const now = new Date();
+      const thisWeekStart = new Date(now);
+      thisWeekStart.setDate(now.getDate() - 7);
+      const lastWeekStart = new Date(now);
+      lastWeekStart.setDate(now.getDate() - 14);
+      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      let thisWeekVolume = 0;
+      let lastWeekVolume = 0;
+      let thisMonthVolume = 0;
+      let allTimeVolume = 0;
+
+      allWorkouts.forEach(workout => {
+        const workoutDate = new Date(workout.date);
+        const volume = workout.exercises.reduce((sum, ex) =>
+          sum + ex.sets.reduce((setSum, set) =>
+            set.completed ? setSum + (set.weight * set.reps) : setSum, 0
+          ), 0
+        );
+
+        allTimeVolume += volume;
+
+        if (workoutDate >= thisWeekStart) {
+          thisWeekVolume += volume;
+        }
+        if (workoutDate >= lastWeekStart && workoutDate < thisWeekStart) {
+          lastWeekVolume += volume;
+        }
+        if (workoutDate >= thisMonthStart) {
+          thisMonthVolume += volume;
+        }
+      });
+
+      setVolumeStats({
+        thisWeek: Math.round(thisWeekVolume),
+        lastWeek: Math.round(lastWeekVolume),
+        thisMonth: Math.round(thisMonthVolume),
+        allTime: Math.round(allTimeVolume),
+      });
+
+      console.log('✅ Home: Calculated volume stats:', {
+        thisWeek: thisWeekVolume,
+        lastWeek: lastWeekVolume,
+        thisMonth: thisMonthVolume,
+        allTime: allTimeVolume,
+      });
+
+      // Handle PRs
+      const prsData = Array.isArray(prsRes) ? prsRes : (prsRes?.data || []);
+      if (prsData.length > 0) {
         // Get recent PRs (last 7 days)
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        const recent = prsRes.data.filter(pr => new Date(pr.date) >= weekAgo);
+        const recent = prsData.filter(pr => new Date(pr.date) >= weekAgo);
         setRecentPRs(recent.slice(0, 3));
+        console.log('✅ Home: Set recent PRs:', recent.length);
       }
-      if (volumeRes.data) setVolumeStats(volumeRes.data);
+
+      console.log('✅ Home: Data loaded successfully');
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('❌ Home: Error loading data:', error);
     }
   }, [today]);
 
@@ -258,7 +418,7 @@ export default function HomeScreen() {
                   Recent PRs 🎉
                 </Text>
               </View>
-              <Pressable onPress={() => router.push('/workout')}>
+              <Pressable onPress={() => router.push({ pathname: '/(tabs)/workout', params: { tab: 'history' } })}>
                 <Text style={[styles.sectionAction, { color: colors.accentBlue }]}>
                   View All
                 </Text>
@@ -328,7 +488,7 @@ export default function HomeScreen() {
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               {"Today's Workout"}
             </Text>
-            <Pressable onPress={() => router.push('/workout')}>
+            <Pressable onPress={() => router.push({ pathname: '/(tabs)/workout', params: { tab: 'history' } })}>
               <Text style={[styles.sectionAction, { color: colors.accentBlue }]}>
                 View All
               </Text>
@@ -385,7 +545,7 @@ export default function HomeScreen() {
           title="View Progress"
           subtitle="Check your lifting stats"
           icon={<Ionicons name="stats-chart" size={24} color={colors.accentBlue} />}
-          onPress={() => router.push('/workout')}
+          onPress={() => router.push('/(tabs)/progress')}
           color={colors.accentBlue}
         />
 

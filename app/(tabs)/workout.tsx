@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
+import { useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -41,6 +42,7 @@ const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function WorkoutScreen() {
   const { colors, spacing, borderRadius } = useTheme();
+  const params = useLocalSearchParams();
 
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
@@ -88,7 +90,7 @@ export default function WorkoutScreen() {
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState<"log" | "plans" | "history">(
-    "log"
+    (params.tab as "log" | "plans" | "history") || "log"
   );
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
   const [calendarStartDate, setCalendarStartDate] = useState(new Date());
@@ -111,11 +113,17 @@ export default function WorkoutScreen() {
     totalVolume: number;
     prsAchieved: number;
   } | null>(null);
+  const [showWorkoutDetail, setShowWorkoutDetail] = useState(false);
+  const [selectedWorkoutDetail, setSelectedWorkoutDetail] = useState<Workout | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [])
+      // Check for tab parameter on focus
+      if (params.tab) {
+        setSelectedTab(params.tab as "log" | "plans" | "history");
+      }
+    }, [params.tab])
   );
 
   // Reload data when switching to history tab
@@ -281,9 +289,16 @@ export default function WorkoutScreen() {
             const hasPotentialPR = allLifts.some(lift => lift.weight >= 50); // Threshold for "heavy"
             
             return (
-              <Card key={workout.id} style={[styles.historyCard, { overflow: 'hidden' }]}>
-                {/* Header with gradient accent */}
-                <View style={styles.historyHeader}>
+              <Pressable
+                key={workout.id}
+                onPress={() => {
+                  setSelectedWorkoutDetail(workout);
+                  setShowWorkoutDetail(true);
+                }}
+              >
+                <Card style={[styles.historyCard, { overflow: 'hidden' }]}>
+                  {/* Header with gradient accent */}
+                  <View style={styles.historyHeader}>
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                       <Text
@@ -387,6 +402,7 @@ export default function WorkoutScreen() {
                   </Text>
                 </View>
               </Card>
+              </Pressable>
             );
           })
         )}
@@ -1090,8 +1106,92 @@ export default function WorkoutScreen() {
     <View style={styles.tabContent}>
       {!activeWorkout ? (
         <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Today's Workout Card */}
-          {todaysWorkout.scheduled && todaysWorkout.day && todaysWorkout.day.exercises && (
+          {/* Today's Completed Workouts */}
+          {(() => {
+            const today = new Date().toISOString().split('T')[0];
+            const todaysCompletedWorkouts = workouts.filter(
+              w => w.date.split('T')[0] === today && w.completed
+            );
+
+            return todaysCompletedWorkouts.length > 0 ? (
+              <View style={{ marginBottom: 20, marginTop: 16 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12, paddingHorizontal: 4 }}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                  <Text style={[styles.sectionTitle, { color: colors.textPrimary, fontSize: 16, fontWeight: '600', marginLeft: 8 }]}>
+                    Today's Completed Workouts
+                  </Text>
+                </View>
+                {todaysCompletedWorkouts.map((workout) => {
+                  const totalSets = workout.exercises.reduce(
+                    (sum, ex) => sum + ex.sets.filter(s => s.completed).length,
+                    0
+                  );
+                  const totalVolume = workout.exercises.reduce(
+                    (sum, ex) => sum + ex.sets.reduce(
+                      (setSum, set) => set.completed ? setSum + (set.weight * set.reps) : setSum,
+                      0
+                    ),
+                    0
+                  );
+
+                  return (
+                    <Pressable
+                      key={workout.id}
+                      onPress={() => {
+                        setSelectedWorkoutDetail(workout);
+                        setShowWorkoutDetail(true);
+                      }}
+                    >
+                      <Card style={[styles.completedWorkoutCard, { marginBottom: 12 }]}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                          <View style={[styles.completedBadge, { backgroundColor: colors.success + '15', padding: 6, borderRadius: 8, marginRight: 12 }]}>
+                            <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.completedWorkoutName, { color: colors.textPrimary, fontSize: 16, fontWeight: '600' }]}>
+                              {workout.name}
+                            </Text>
+                            <Text style={[styles.completedWorkoutTime, { color: colors.textSecondary, fontSize: 12, marginTop: 2 }]}>
+                              Completed • {workout.duration || 0} min
+                            </Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                        </View>
+                        
+                        <View style={{ flexDirection: 'row', gap: 16, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.border }}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Ionicons name="fitness-outline" size={14} color={colors.success} style={{ marginRight: 4 }} />
+                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                              {totalSets} sets
+                            </Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Ionicons name="barbell-outline" size={14} color={colors.warning} style={{ marginRight: 4 }} />
+                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                              {Math.round(totalVolume)} kg
+                            </Text>
+                          </View>
+                          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Ionicons name="list-outline" size={14} color={colors.accentBlue} style={{ marginRight: 4 }} />
+                            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                              {workout.exercises.length} exercises
+                            </Text>
+                          </View>
+                        </View>
+                      </Card>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ) : null;
+          })()}
+
+          {/* Today's Workout Card - Only show if NOT completed yet */}
+          {todaysWorkout.scheduled && todaysWorkout.day && todaysWorkout.day.exercises && !workouts.some(w =>
+            w.date.split('T')[0] === new Date().toISOString().split('T')[0] &&
+            w.completed &&
+            w.name === todaysWorkout.day.name
+          ) && (
             <Card style={styles.todaysWorkoutCard}>
               <View style={styles.todaysHeader}>
                 <Ionicons
@@ -1102,7 +1202,7 @@ export default function WorkoutScreen() {
                 <Text
                   style={[styles.todaysTitle, { color: colors.textPrimary }]}
                 >
-                  Today's Workout
+                  Today's Scheduled Workout
                 </Text>
               </View>
               <Text style={[styles.todaysName, { color: colors.textPrimary }]}>
@@ -1141,41 +1241,39 @@ export default function WorkoutScreen() {
             </Card>
           )}
 
-          <View style={styles.startWorkoutContainer}>
+          {/* Start New Workout Section - Only show if no workouts completed today */}
+          {!workouts.some(w => w.date.split('T')[0] === new Date().toISOString().split('T')[0] && w.completed) && (
+            <View style={styles.startWorkoutContainer}>
             <Ionicons
-              name="barbell-outline"
-              size={80}
-              color={colors.textSecondary}
+              name="fitness-outline"
+              size={100}
+              color={colors.accentBlue}
             />
             <Text
-              style={[styles.startWorkoutTitle, { color: colors.textPrimary }]}
+              style={[styles.startWorkoutTitle, { color: colors.textPrimary, fontSize: 24, fontWeight: '700', marginTop: 16 }]}
             >
               {todaysWorkout.scheduled
-                ? "Or Start Custom Workout"
-                : "Ready to Train?"}
+                ? "Or Start a Custom Workout"
+                : "Let's Get Started!"}
             </Text>
             <Text
               style={[
                 styles.startWorkoutSubtitle,
-                { color: colors.textSecondary },
+                { color: colors.textSecondary, fontSize: 15, marginTop: 8, textAlign: 'center', paddingHorizontal: 32 },
               ]}
             >
-              Start a new workout or use a template
+              {todaysWorkout.scheduled
+                ? "Not following your plan today? Start a custom session."
+                : "Tap below to begin your workout session"}
             </Text>
-            <View style={styles.startButtons}>
-              <Button
-                title="Empty Workout"
-                variant="outline"
-                onPress={startNewWorkout}
-                style={{ flex: 1 }}
-              />
-              <Button
-                title="Use Template"
-                onPress={() => setShowTemplateModal(true)}
-                style={{ flex: 1 }}
-              />
+            <Button
+              title="Start Workout"
+              onPress={startNewWorkout}
+              style={{ marginTop: 24, paddingHorizontal: 48, paddingVertical: 16 }}
+              icon={<Ionicons name="play-circle" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />}
+            />
             </View>
-          </View>
+          )}
         </ScrollView>
       ) : (
         <ScrollView
@@ -2923,6 +3021,203 @@ export default function WorkoutScreen() {
           </ScrollView>
         </View>
       </Modal>
+
+      {/* 📋 WORKOUT DETAIL MODAL */}
+      <Modal visible={showWorkoutDetail} animationType="slide" transparent>
+        <View style={[styles.modalOverlay, { backgroundColor: "rgba(0,0,0,0.5)" }]}>
+          <View style={[styles.workoutDetailModal, { backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: SCREEN_HEIGHT * 0.9, marginTop: SCREEN_HEIGHT * 0.1 }]}>
+            {/* Modal Header */}
+            <View style={[styles.modalHeader, { borderBottomColor: colors.border, paddingHorizontal: 20, paddingVertical: 16 }]}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalTitle, { color: colors.textPrimary, fontSize: 22, fontWeight: '700' }]}>
+                  {selectedWorkoutDetail?.name}
+                </Text>
+                <Text style={[styles.modalSubtitle, { color: colors.textSecondary, fontSize: 14, marginTop: 4 }]}>
+                  {selectedWorkoutDetail && new Date(selectedWorkoutDetail.date).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => {
+                  setShowWorkoutDetail(false);
+                  setSelectedWorkoutDetail(null);
+                }}
+                style={{ padding: 8 }}
+              >
+                <Ionicons name="close" size={28} color={colors.textSecondary} />
+              </Pressable>
+            </View>
+
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+              {selectedWorkoutDetail && (
+                <>
+                  {/* Summary Stats */}
+                  <View style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+                    <View style={[styles.summaryStats, { backgroundColor: colors.cardBackground, borderRadius: 16, padding: 16, flexDirection: 'row', gap: 12 }]}>
+                      <View style={{ flex: 1, alignItems: 'center' }}>
+                        <Ionicons name="time-outline" size={24} color={colors.accentBlue} />
+                        <Text style={[styles.summaryValue, { color: colors.textPrimary, fontSize: 20, fontWeight: '700', marginTop: 4 }]}>
+                          {selectedWorkoutDetail.duration || 0}
+                        </Text>
+                        <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: 11 }]}>
+                          minutes
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: 'center' }}>
+                        <Ionicons name="fitness-outline" size={24} color={colors.success} />
+                        <Text style={[styles.summaryValue, { color: colors.textPrimary, fontSize: 20, fontWeight: '700', marginTop: 4 }]}>
+                          {selectedWorkoutDetail.exercises.reduce((sum, ex) => sum + ex.sets.filter(s => s.completed).length, 0)}
+                        </Text>
+                        <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: 11 }]}>
+                          sets
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1, alignItems: 'center' }}>
+                        <Ionicons name="barbell-outline" size={24} color={colors.warning} />
+                        <Text style={[styles.summaryValue, { color: colors.textPrimary, fontSize: 20, fontWeight: '700', marginTop: 4 }]}>
+                          {Math.round(selectedWorkoutDetail.exercises.reduce((sum, ex) =>
+                            sum + ex.sets.reduce((setSum, set) =>
+                              set.completed ? setSum + (set.weight * set.reps) : setSum, 0
+                            ), 0
+                          ))}
+                        </Text>
+                        <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: 11 }]}>
+                          kg volume
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Exercises List */}
+                  <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40 }}>
+                    <Text style={[styles.sectionTitle, { color: colors.textPrimary, fontSize: 16, fontWeight: '600', marginBottom: 12 }]}>
+                      Exercises ({selectedWorkoutDetail.exercises.length})
+                    </Text>
+                    {selectedWorkoutDetail.exercises.map((exercise, exIndex) => (
+                      <View key={exercise.id} style={[styles.exerciseDetailCard, { backgroundColor: colors.cardBackground, borderRadius: 12, padding: 16, marginBottom: 12 }]}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                          <View style={[styles.exerciseNumber, { backgroundColor: colors.accentBlue + '20', width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', marginRight: 12 }]}>
+                            <Text style={{ color: colors.accentBlue, fontWeight: '700', fontSize: 16 }}>
+                              {exIndex + 1}
+                            </Text>
+                          </View>
+                          <Text style={[styles.exerciseDetailName, { color: colors.textPrimary, fontSize: 16, fontWeight: '600', flex: 1 }]}>
+                            {exercise.name}
+                          </Text>
+                          {(() => {
+                            // Check if this exercise has any PR sets
+                            const hasPR = exercise.sets.some(set => {
+                              if (!set.completed || set.weight === 0) return false;
+                              // Calculate 1RM using Epley formula
+                              const estimated1RM = set.weight * (1 + set.reps / 30);
+                              // Check against historical PRs for this exercise
+                              const exercisePRs = personalRecords.filter(pr => pr.exerciseName === exercise.name);
+                              if (exercisePRs.length === 0) return true; // First time doing this exercise
+                              const bestPR = Math.max(...exercisePRs.map(pr => pr.value * (1 + pr.reps / 30)));
+                              return estimated1RM > bestPR;
+                            });
+                            
+                            return hasPR && (
+                              <View style={[styles.prBadgeSmall, { backgroundColor: colors.warning + '20', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginLeft: 8 }]}>
+                                <Text style={{ fontSize: 12, color: colors.warning, fontWeight: '600' }}>🏆 PR</Text>
+                              </View>
+                            );
+                          })()}
+                        </View>
+
+                        {/* Sets Table */}
+                        <View style={[styles.setsTable, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8 }]}>
+                          {/* Table Header */}
+                          <View style={{ flexDirection: 'row', paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+                            <Text style={[styles.tableHeader, { color: colors.textSecondary, fontSize: 11, fontWeight: '600', width: 50 }]}>
+                              SET
+                            </Text>
+                            <Text style={[styles.tableHeader, { color: colors.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, textAlign: 'center' }]}>
+                              WEIGHT
+                            </Text>
+                            <Text style={[styles.tableHeader, { color: colors.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, textAlign: 'center' }]}>
+                              REPS
+                            </Text>
+                            <Text style={[styles.tableHeader, { color: colors.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, textAlign: 'center' }]}>
+                              VOLUME
+                            </Text>
+                          </View>
+
+                          {/* Sets Rows */}
+                          {exercise.sets.map((set, setIndex) => (
+                            <View
+                              key={set.id}
+                              style={[
+                                styles.setRow,
+                                {
+                                  flexDirection: 'row',
+                                  alignItems: 'center',
+                                  paddingVertical: 8,
+                                  opacity: set.completed ? 1 : 0.4,
+                                },
+                              ]}
+                            >
+                              <View style={{ width: 50, flexDirection: 'row', alignItems: 'center' }}>
+                                {set.completed && (
+                                  <Ionicons name="checkmark-circle" size={16} color={colors.success} style={{ marginRight: 4 }} />
+                                )}
+                                <Text style={[styles.setNumber, { color: colors.textPrimary, fontSize: 14, fontWeight: '600' }]}>
+                                  {setIndex + 1}
+                                </Text>
+                              </View>
+                              <Text style={[styles.setValue, { color: colors.textPrimary, fontSize: 14, flex: 1, textAlign: 'center' }]}>
+                                {set.weight} kg
+                              </Text>
+                              <Text style={[styles.setValue, { color: colors.textPrimary, fontSize: 14, flex: 1, textAlign: 'center' }]}>
+                                {set.reps}
+                              </Text>
+                              <Text style={[styles.setValue, { color: colors.textSecondary, fontSize: 14, flex: 1, textAlign: 'center' }]}>
+                                {set.weight * set.reps} kg
+                              </Text>
+                            </View>
+                          ))}
+                        </View>
+
+                        {/* Exercise Summary */}
+                        <View style={[styles.exerciseSummary, { backgroundColor: colors.background, borderRadius: 8, padding: 12, marginTop: 12 }]}>
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View>
+                              <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: 11 }]}>
+                                Total Volume
+                              </Text>
+                              <Text style={[styles.summaryValue, { color: colors.textPrimary, fontSize: 16, fontWeight: '700' }]}>
+                                {exercise.sets.reduce((sum, set) => set.completed ? sum + (set.weight * set.reps) : sum, 0)} kg
+                              </Text>
+                            </View>
+                            <View style={{ alignItems: 'flex-end' }}>
+                              <Text style={[styles.summaryLabel, { color: colors.textSecondary, fontSize: 11 }]}>
+                                Best Set
+                              </Text>
+                              <Text style={[styles.summaryValue, { color: colors.textPrimary, fontSize: 16, fontWeight: '700' }]}>
+                                {(() => {
+                                  const completedSets = exercise.sets.filter(s => s.completed && s.weight > 0);
+                                  if (completedSets.length === 0) return 'N/A';
+                                  const maxWeight = Math.max(...completedSets.map(s => s.weight));
+                                  const bestSet = completedSets.find(s => s.weight === maxWeight);
+                                  return `${maxWeight} kg × ${bestSet?.reps || 0}`;
+                                })()}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -3979,5 +4274,65 @@ const styles = StyleSheet.create({
   compactInputLabel: {
     fontSize: 13,
     fontWeight: "500",
+  },
+  workoutDetailModal: {
+    flex: 1,
+  },
+  summaryStats: {
+    flexDirection: 'row',
+  },
+  summaryValue: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  summaryLabel: {
+    fontSize: 11,
+  },
+  exerciseDetailCard: {
+    marginBottom: 12,
+  },
+  exerciseNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exerciseDetailName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  setsTable: {
+    marginTop: 8,
+  },
+  tableHeader: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  setRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  setNumber: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  setValue: {
+    fontSize: 14,
+  },
+  exerciseSummary: {
+    marginTop: 12,
+  },
+  completedWorkoutCard: {
+    marginBottom: 12,
+  },
+  completedWorkoutName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  completedWorkoutTime: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });

@@ -52,6 +52,7 @@ export const useProgressData = (): UseProgressDataReturn => {
       setLoading(true);
       setError(null);
 
+      console.log('📊 Progress: Loading data...');
       const [workoutsRes, weightRes, exercisesRes, prefsRes, photosRes] =
         await Promise.all([
           api.workouts.getAll(),
@@ -61,21 +62,56 @@ export const useProgressData = (): UseProgressDataReturn => {
           api.photos.getAll(),
         ]);
 
-      if (workoutsRes.data) setWorkouts(workoutsRes.data);
-      if (weightRes.data) {
+      console.log('📊 Progress: Workouts response:', workoutsRes);
+      console.log('📊 Progress: Is array?', Array.isArray(workoutsRes));
+
+      // Handle workouts (can be array or wrapped in .data)
+      if (Array.isArray(workoutsRes)) {
+        console.log('✅ Progress: Setting workouts:', workoutsRes.length);
+        setWorkouts(workoutsRes);
+      } else if (workoutsRes?.data) {
+        console.log('✅ Progress: Setting workouts from .data:', workoutsRes.data.length);
+        setWorkouts(workoutsRes.data);
+      }
+
+      // Handle weight logs
+      if (Array.isArray(weightRes)) {
+        const sorted = [...weightRes].sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+        setWeightLogs(sorted);
+      } else if (weightRes?.data) {
         const sorted = [...weightRes.data].sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
         setWeightLogs(sorted);
       }
-      if (exercisesRes.data) setExercises(exercisesRes.data);
-      if (prefsRes.data) setPreferences(prefsRes.data);
-      if (photosRes.data) setProgressPhotos(photosRes.data);
+
+      // Handle exercises
+      if (Array.isArray(exercisesRes)) {
+        setExercises(exercisesRes);
+      } else if (exercisesRes?.data) {
+        setExercises(exercisesRes.data);
+      }
+
+      // Handle preferences
+      if (prefsRes && !Array.isArray(prefsRes)) {
+        setPreferences(prefsRes.data || prefsRes);
+      }
+
+      // Handle photos
+      if (Array.isArray(photosRes)) {
+        setProgressPhotos(photosRes);
+      } else if (photosRes?.data) {
+        setProgressPhotos(photosRes.data);
+      }
+
+      console.log('✅ Progress: Data loaded successfully');
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load progress data"
       );
-      console.error("Error loading progress data:", err);
+      console.error("❌ Progress: Error loading data:", err);
     } finally {
       setLoading(false);
     }
