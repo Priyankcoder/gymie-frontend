@@ -92,12 +92,38 @@ export default function WorkoutScreen() {
   );
   const [workoutStartTime, setWorkoutStartTime] = useState<Date | null>(null);
   const [calendarStartDate, setCalendarStartDate] = useState(new Date());
+  const [autoRestTimer, setAutoRestTimer] = useState(false); // OFF by default
+  const [showQuickRest, setShowQuickRest] = useState(false);
+  const [celebratingSetId, setCelebratingSetId] = useState<string | null>(null);
+  const [showPRCelebration, setShowPRCelebration] = useState(false);
+  const [prDetails, setPRDetails] = useState<{
+    exerciseName: string;
+    weight: number;
+    reps: number;
+    previousBest?: number;
+  } | null>(null);
+  const [showWorkoutComplete, setShowWorkoutComplete] = useState(false);
+  const [completedWorkoutStats, setCompletedWorkoutStats] = useState<{
+    name: string;
+    duration: number;
+    exerciseCount: number;
+    totalSets: number;
+    totalVolume: number;
+    prsAchieved: number;
+  } | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       loadData();
     }, [])
   );
+
+  // Reload data when switching to history tab
+  useEffect(() => {
+    if (selectedTab === 'history') {
+      loadData();
+    }
+  }, [selectedTab]);
 
   useEffect(() => {
     // Restore scroll position when returning to customization modal
@@ -125,6 +151,7 @@ export default function WorkoutScreen() {
   }, [restTimeLeft]);
 
   const loadData = async () => {
+    console.log('📥 Loading data...');
     const [
       workoutsRes,
       prsRes,
@@ -143,18 +170,229 @@ export default function WorkoutScreen() {
       api.scheduledWorkouts.getTodaysWorkout(),
     ]);
 
-    if (workoutsRes.data)
-      setWorkouts(
-        workoutsRes.data.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        )
+    console.log('📦 Workouts response:', workoutsRes);
+    console.log('📦 Workouts response type:', typeof workoutsRes);
+    console.log('📦 Is array?:', Array.isArray(workoutsRes));
+
+    // The API returns data directly, not wrapped in { data: [...] }
+    if (Array.isArray(workoutsRes)) {
+      const sorted = workoutsRes.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
-    if (prsRes.data) setPersonalRecords(prsRes.data);
-    if (exercisesRes.data) setExerciseList(exercisesRes.data);
-    if (templatesRes.data) setTemplates(templatesRes.data);
-    if (plansRes.data) setWorkoutPlans(plansRes.data);
-    if (scheduledRes.data) setScheduledWorkouts(scheduledRes.data);
-    if (todayRes.data) setTodaysWorkout(todayRes.data);
+      console.log('✅ Setting workouts:', sorted.length, 'workouts');
+      setWorkouts(sorted);
+    } else if (workoutsRes?.data && Array.isArray(workoutsRes.data)) {
+      // Fallback for wrapped response
+      const sorted = workoutsRes.data.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+      console.log('✅ Setting workouts (from .data):', sorted.length, 'workouts');
+      setWorkouts(sorted);
+    } else {
+      console.log('⚠️ No workouts data received or wrong format');
+      setWorkouts([]);
+    }
+
+    // Handle other responses similarly
+    if (Array.isArray(prsRes)) {
+      setPersonalRecords(prsRes);
+    } else if (prsRes?.data) {
+      setPersonalRecords(prsRes.data);
+    }
+
+    if (Array.isArray(exercisesRes)) {
+      setExerciseList(exercisesRes);
+    } else if (exercisesRes?.data) {
+      setExerciseList(exercisesRes.data);
+    }
+
+    if (Array.isArray(templatesRes)) {
+      setTemplates(templatesRes);
+    } else if (templatesRes?.data) {
+      setTemplates(templatesRes.data);
+    }
+
+    if (Array.isArray(plansRes)) {
+      setWorkoutPlans(plansRes);
+    } else if (plansRes?.data) {
+      setWorkoutPlans(plansRes.data);
+    }
+
+    if (Array.isArray(scheduledRes)) {
+      setScheduledWorkouts(scheduledRes);
+    } else if (scheduledRes?.data) {
+      setScheduledWorkouts(scheduledRes.data);
+    }
+
+    if (todayRes) setTodaysWorkout(todayRes);
+  };
+
+  const renderHistoryTab = () => {
+    console.log('🔍 Rendering history tab, workouts:', workouts.length);
+    return (
+      <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+        {workouts.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Ionicons
+              name="calendar-outline"
+              size={60}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
+              No Workouts Yet
+            </Text>
+            <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+              Start logging your workouts to see history here
+            </Text>
+          </View>
+        ) : (
+          workouts.map((workout) => {
+            console.log('📋 Rendering workout:', workout.id, workout.name);
+            
+            // Calculate workout stats
+            const totalSets = workout.exercises.reduce(
+              (sum, ex) => sum + ex.sets.filter(s => s.completed).length,
+              0
+            );
+            const totalVolume = workout.exercises.reduce(
+              (sum, ex) => sum + ex.sets.reduce(
+                (setSum, set) => set.completed ? setSum + (set.weight * set.reps) : setSum,
+                0
+              ),
+              0
+            );
+            
+            // Find top 3 heaviest lifts
+            const allLifts = workout.exercises.flatMap(ex =>
+              ex.sets
+                .filter(s => s.completed && s.weight > 0)
+                .map(s => ({
+                  exercise: ex.name,
+                  weight: s.weight,
+                  reps: s.reps,
+                  volume: s.weight * s.reps
+                }))
+            );
+            const topLifts = allLifts
+              .sort((a, b) => b.weight - a.weight)
+              .slice(0, 3);
+            
+            // Check if any PRs (simplified - just check if this workout has high weights)
+            const hasPotentialPR = allLifts.some(lift => lift.weight >= 50); // Threshold for "heavy"
+            
+            return (
+              <Card key={workout.id} style={[styles.historyCard, { overflow: 'hidden' }]}>
+                {/* Header with gradient accent */}
+                <View style={styles.historyHeader}>
+                  <View style={{ flex: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <Text
+                        style={[styles.historyName, { color: colors.textPrimary, fontSize: 18, fontWeight: '700' }]}
+                      >
+                        {workout.name}
+                      </Text>
+                      {hasPotentialPR && (
+                        <View style={[styles.prBadgeSmall, { backgroundColor: colors.warning + '20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }]}>
+                          <Text style={{ fontSize: 12, color: colors.warning }}>🏆 PR</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text
+                      style={[styles.historyDate, { color: colors.textSecondary, fontSize: 13, marginTop: 2 }]}
+                    >
+                      {new Date(workout.date).toLocaleDateString("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </Text>
+                  </View>
+                  {workout.completed && (
+                    <View style={[styles.completedBadge, { backgroundColor: colors.success + '15', padding: 8, borderRadius: 12 }]}>
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color={colors.success}
+                      />
+                    </View>
+                  )}
+                </View>
+
+                {/* Stats Row */}
+                <View style={[styles.statsRow, { flexDirection: 'row', gap: 12, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }]}>
+                  <View style={[styles.statBox, { flex: 1, alignItems: 'center' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="time-outline" size={16} color={colors.accentBlue} />
+                      <Text style={[styles.statValue, { color: colors.accentBlue, fontSize: 18, fontWeight: '700' }]}>
+                        {workout.duration || 0}
+                      </Text>
+                    </View>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary, fontSize: 11, marginTop: 2 }]}>
+                      minutes
+                    </Text>
+                  </View>
+                  <View style={[styles.statBox, { flex: 1, alignItems: 'center' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="fitness-outline" size={16} color={colors.success} />
+                      <Text style={[styles.statValue, { color: colors.success, fontSize: 18, fontWeight: '700' }]}>
+                        {totalSets}
+                      </Text>
+                    </View>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary, fontSize: 11, marginTop: 2 }]}>
+                      sets
+                    </Text>
+                  </View>
+                  <View style={[styles.statBox, { flex: 1, alignItems: 'center' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name="barbell-outline" size={16} color={colors.warning} />
+                      <Text style={[styles.statValue, { color: colors.warning, fontSize: 18, fontWeight: '700' }]}>
+                        {Math.round(totalVolume)}
+                      </Text>
+                    </View>
+                    <Text style={[styles.statLabel, { color: colors.textSecondary, fontSize: 11, marginTop: 2 }]}>
+                      kg volume
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Top Lifts */}
+                {topLifts.length > 0 && (
+                  <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
+                    <Text style={[styles.sectionLabel, { color: colors.textSecondary, fontSize: 11, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }]}>
+                      💪 Top Lifts
+                    </Text>
+                    {topLifts.map((lift, i) => (
+                      <View key={i} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                        <Text style={[styles.exerciseName, { color: colors.textPrimary, fontSize: 14, flex: 1 }]}>
+                          {i + 1}. {lift.exercise}
+                        </Text>
+                        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                          <Text style={[styles.liftStat, { color: colors.accentBlue, fontSize: 14, fontWeight: '600' }]}>
+                            {lift.weight} kg
+                          </Text>
+                          <Text style={[styles.liftStat, { color: colors.textSecondary, fontSize: 12 }]}>
+                            × {lift.reps}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+
+                {/* Exercise Count */}
+                <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border }}>
+                  <Text style={[styles.exerciseCount, { color: colors.textSecondary, fontSize: 12 }]}>
+                    <Ionicons name="list-outline" size={12} /> {workout.exercises.length} exercise{workout.exercises.length !== 1 ? 's' : ''} completed
+                  </Text>
+                </View>
+              </Card>
+            );
+          })
+        )}
+        <View style={{ height: 100 }} />
+      </ScrollView>
+    );
   };
 
   const startNewWorkout = () => {
@@ -428,41 +666,205 @@ export default function WorkoutScreen() {
   };
 
   const completeSet = (exerciseId: string, setId: string) => {
+    if (!activeWorkout) return;
+    
+    // Get the exercise and set details
+    const exercise = activeWorkout.exercises.find(ex => ex.id === exerciseId);
+    const set = exercise?.sets.find(s => s.id === setId);
+    
+    if (!exercise || !set) return;
+    
     updateSet(exerciseId, setId, { completed: true });
-    setRestTimeLeft(restTime);
-    setShowRestTimer(true);
+    
+    // Check for PR (Personal Record)
+    const isPR = checkForPR(exercise.name, set.weight, set.reps);
+    
+    if (isPR) {
+      // 🏆 EPIC PR CELEBRATION!
+      setPRDetails({
+        exerciseName: exercise.name,
+        weight: set.weight,
+        reps: set.reps,
+        previousBest: isPR.previousBest,
+      });
+      setShowPRCelebration(true);
+      
+      // Update personal records
+      const newPR: PersonalRecord = {
+        id: `pr-${Date.now()}`,
+        exerciseName: exercise.name,
+        weight: set.weight,
+        reps: set.reps,
+        date: new Date().toISOString(),
+      };
+      setPersonalRecords([...personalRecords, newPR]);
+      
+      // Save to API if available
+      if (api.prs?.create) {
+        api.prs.create(newPR).catch(err =>
+          console.log('PR saved to local state only:', err)
+        );
+      }
+    } else {
+      // 🎉 Regular celebration
+      setCelebratingSetId(setId);
+      setTimeout(() => setCelebratingSetId(null), 800);
+      
+      // Only auto-start timer if enabled
+      if (autoRestTimer) {
+        setRestTimeLeft(restTime);
+        setShowRestTimer(true);
+      } else {
+        // Show quick rest actions (non-blocking)
+        setShowQuickRest(true);
+        setTimeout(() => setShowQuickRest(false), 3000);
+      }
+    }
+  };
+  
+  // Check if this is a new PR by scanning ALL previous workouts AND current workout
+  const checkForPR = (exerciseName: string, weight: number, reps: number): { previousBest?: number } | null => {
+    // Calculate estimated 1RM using Epley formula: weight × (1 + reps/30)
+    const current1RM = weight * (1 + reps / 30);
+    
+    // Search through ALL completed workouts to find all instances of this exercise
+    let bestPrevious1RM = 0;
+    let foundPreviousAttempts = false;
+    
+    // 1. Check historical workouts
+    workouts.forEach(workout => {
+      // Skip current workout (not saved yet) and incomplete workouts
+      if (!workout.completed) return;
+      
+      workout.exercises.forEach(exercise => {
+        // Case-insensitive match
+        if (exercise.name.toLowerCase() === exerciseName.toLowerCase()) {
+          // Check all completed sets for this exercise
+          exercise.sets.forEach(set => {
+            if (set.completed && set.weight > 0 && set.reps > 0) {
+              foundPreviousAttempts = true;
+              const set1RM = set.weight * (1 + set.reps / 30);
+              if (set1RM > bestPrevious1RM) {
+                bestPrevious1RM = set1RM;
+              }
+            }
+          });
+        }
+      });
+    });
+    
+    // 2. IMPORTANT: Also check OTHER completed sets in the current active workout
+    if (activeWorkout) {
+      activeWorkout.exercises.forEach(exercise => {
+        if (exercise.name.toLowerCase() === exerciseName.toLowerCase()) {
+          exercise.sets.forEach(set => {
+            // Check completed sets, but exclude the current set being checked
+            if (set.completed && set.weight > 0 && set.reps > 0) {
+              foundPreviousAttempts = true;
+              const set1RM = set.weight * (1 + set.reps / 30);
+              if (set1RM > bestPrevious1RM) {
+                bestPrevious1RM = set1RM;
+              }
+            }
+          });
+        }
+      });
+    }
+    
+    if (!foundPreviousAttempts) {
+      // First time doing this exercise - it's a PR!
+      return { previousBest: undefined };
+    }
+    
+    // Check if current is better (with small threshold to avoid floating point issues)
+    if (current1RM > bestPrevious1RM + 0.5) {
+      return { previousBest: Math.round(bestPrevious1RM) };
+    }
+    
+    return null;
   };
 
   const saveWorkout = async () => {
     if (!activeWorkout) return;
 
-    const duration = workoutStartTime
-      ? Math.round((new Date().getTime() - workoutStartTime.getTime()) / 60000)
-      : 45;
+    try {
+      const duration = workoutStartTime
+        ? Math.round((new Date().getTime() - workoutStartTime.getTime()) / 60000)
+        : 45;
 
-    // Remove id field for new workouts
-    const { id, ...workoutData } = activeWorkout;
-    
-    const completedWorkout = {
-      ...workoutData,
-      completed: true,
-      duration,
-    };
+      // Calculate workout stats
+      const totalSets = activeWorkout.exercises.reduce(
+        (sum, ex) => sum + ex.sets.filter(s => s.completed).length,
+        0
+      );
+      const totalVolume = activeWorkout.exercises.reduce(
+        (sum, ex) => sum + ex.sets.reduce(
+          (setSum, set) => set.completed ? setSum + (set.weight * set.reps) : setSum,
+          0
+        ),
+        0
+      );
 
-    const result = await api.workouts.create(completedWorkout);
+      // Count PRs achieved (check personalRecords added during this session)
+      const prsAchieved = personalRecords.filter(pr =>
+        activeWorkout.exercises.some(ex => ex.name === pr.exerciseName)
+      ).length;
 
-    // Mark today's scheduled workout as completed if it exists
-    if (todaysWorkout.scheduled && result.data) {
-      await api.scheduledWorkouts.updateStatus(
-        todaysWorkout.scheduled.id,
-        "completed",
-        result.data.id
+      // Remove id field for new workouts
+      const { id, ...workoutData } = activeWorkout;
+      
+      const completedWorkout = {
+        ...workoutData,
+        completed: true,
+        duration,
+      };
+
+      console.log('💾 Saving workout:', completedWorkout.name);
+
+      // Save workout and wait for completion
+      const result = await api.workouts.create(completedWorkout);
+      
+      console.log('✅ Workout saved successfully:', result.data?.id);
+
+      // Mark today's scheduled workout as completed if it exists
+      if (todaysWorkout.scheduled && result.data) {
+        await api.scheduledWorkouts.updateStatus(
+          todaysWorkout.scheduled.id,
+          "completed",
+          result.data.id
+        );
+      }
+
+      // Set completion stats
+      setCompletedWorkoutStats({
+        name: completedWorkout.name,
+        duration,
+        exerciseCount: completedWorkout.exercises.length,
+        totalSets,
+        totalVolume: Math.round(totalVolume),
+        prsAchieved,
+      });
+
+      // Clear active workout
+      setActiveWorkout(null);
+      setWorkoutStartTime(null);
+      
+      // IMPORTANT: Reload all data and WAIT for it to complete
+      console.log('🔄 Reloading data...');
+      await loadData();
+      console.log('✅ Data reloaded, workouts count:', workouts.length);
+      
+      // Show game-style completion screen
+      setShowWorkoutComplete(true);
+      
+    } catch (error) {
+      console.error('❌ Error saving workout:', error);
+      Alert.alert(
+        'Error',
+        'Failed to save workout. Please try again.',
+        [{ text: 'OK', style: 'cancel' }]
       );
     }
-
-    setActiveWorkout(null);
-    setWorkoutStartTime(null);
-    loadData();
   };
 
   const cancelWorkout = () => {
@@ -801,6 +1203,22 @@ export default function WorkoutScreen() {
             </Pressable>
           </View>
 
+          {/* Auto-Timer Setting */}
+          <View style={[styles.settingsRow, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
+            <View style={styles.settingsInfo}>
+              <Ionicons name="timer-outline" size={20} color={colors.textPrimary} />
+              <Text style={[styles.settingsText, { color: colors.textPrimary }]}>
+                Auto Rest Timer
+              </Text>
+            </View>
+            <Switch
+              value={autoRestTimer}
+              onValueChange={setAutoRestTimer}
+              trackColor={{ false: colors.border, true: colors.success }}
+              thumbColor="#fff"
+            />
+          </View>
+
           {activeWorkout.exercises.map((exercise) => (
             <Card key={exercise.id} style={styles.exerciseCard}>
               <Text
@@ -897,13 +1315,19 @@ export default function WorkoutScreen() {
                           ? colors.success
                           : colors.inputBackground,
                       },
+                      celebratingSetId === set.id && styles.celebrating,
                     ]}
                   >
                     <Ionicons
                       name="checkmark"
-                      size={20}
+                      size={celebratingSetId === set.id ? 24 : 20}
                       color={set.completed ? "#FFF" : colors.textSecondary}
                     />
+                    {celebratingSetId === set.id && (
+                      <View style={styles.celebrationBadge}>
+                        <Text style={styles.celebrationEmoji}>💪</Text>
+                      </View>
+                    )}
                   </Pressable>
                 </View>
               ))}
@@ -932,6 +1356,53 @@ export default function WorkoutScreen() {
             style={{ marginBottom: 100 }}
           />
         </ScrollView>
+      )}
+
+      {/* Quick Rest Actions - Non-blocking */}
+      {showQuickRest && !showRestTimer && activeWorkout && (
+        <View style={[styles.quickRestBar, { backgroundColor: colors.success }]}>
+          <View style={styles.quickRestContent}>
+            <Text style={styles.quickRestText}>🔥 Great set!</Text>
+            <View style={styles.quickRestButtons}>
+              <Pressable
+                style={[styles.quickRestButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
+                onPress={() => {
+                  setRestTimeLeft(60);
+                  setShowRestTimer(true);
+                  setShowQuickRest(false);
+                }}
+              >
+                <Text style={styles.quickRestButtonText}>1:00</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.quickRestButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
+                onPress={() => {
+                  setRestTimeLeft(90);
+                  setShowRestTimer(true);
+                  setShowQuickRest(false);
+                }}
+              >
+                <Text style={styles.quickRestButtonText}>1:30</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.quickRestButton, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
+                onPress={() => {
+                  setRestTimeLeft(120);
+                  setShowRestTimer(true);
+                  setShowQuickRest(false);
+                }}
+              >
+                <Text style={styles.quickRestButtonText}>2:00</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.quickRestButton, { backgroundColor: 'rgba(255,255,255,0.3)' }]}
+                onPress={() => setShowQuickRest(false)}
+              >
+                <Ionicons name="close" size={18} color="#FFF" />
+              </Pressable>
+            </View>
+          </View>
+        </View>
       )}
     </View>
   );
@@ -1041,74 +1512,6 @@ export default function WorkoutScreen() {
     </ScrollView>
   );
 
-  const renderHistoryTab = () => (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      {workouts.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons
-            name="calendar-outline"
-            size={60}
-            color={colors.textSecondary}
-          />
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
-            No Workouts Yet
-          </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            Start logging your workouts to see history here
-          </Text>
-        </View>
-      ) : (
-        workouts.map((workout) => (
-          <Card key={workout.id} style={styles.historyCard}>
-            <View style={styles.historyHeader}>
-              <View>
-                <Text
-                  style={[styles.historyName, { color: colors.textPrimary }]}
-                >
-                  {workout.name}
-                </Text>
-                <Text
-                  style={[styles.historyDate, { color: colors.textSecondary }]}
-                >
-                  {new Date(workout.date).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </Text>
-              </View>
-              {workout.completed && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={24}
-                  color={colors.success}
-                />
-              )}
-            </View>
-            <Text
-              style={[styles.historyExercises, { color: colors.textSecondary }]}
-            >
-              {workout.exercises.length} exercises • {workout.duration || 0} min
-            </Text>
-            <View style={styles.historyPreview}>
-              {workout.exercises.slice(0, 3).map((ex, i) => (
-                <Text
-                  key={i}
-                  style={[
-                    styles.historyExercise,
-                    { color: colors.textSecondary },
-                  ]}
-                >
-                  {ex.name}
-                </Text>
-              ))}
-            </View>
-          </Card>
-        ))
-      )}
-      <View style={{ height: 100 }} />
-    </ScrollView>
-  );
 
   return (
     <SafeAreaView
@@ -1921,6 +2324,7 @@ export default function WorkoutScreen() {
               ))}
 
               <View style={styles.planActions}>
+                {/* Primary Action */}
                 {!selectedPlan?.isActive && (
                   <Button
                     title="Set as Active"
@@ -1930,36 +2334,52 @@ export default function WorkoutScreen() {
                         setShowPlanDetailsModal(false);
                       }
                     }}
+                    style={{ marginBottom: 8 }}
                   />
                 )}
-                <Button
-                  title="Edit Plan"
-                  variant="outline"
-                  onPress={() => {
-                    if (selectedPlan) {
-                      startEditingPlan(selectedPlan);
-                    }
-                  }}
-                />
-                <Button
-                  title="Clone Plan"
-                  variant="outline"
-                  onPress={() => {
-                    if (selectedPlan) {
-                      clonePlan(selectedPlan.id);
-                      setShowPlanDetailsModal(false);
-                    }
-                  }}
-                />
-                <Button
-                  title="Delete Plan"
-                  variant="outline"
-                  onPress={() => {
-                    if (selectedPlan) {
-                      deletePlan(selectedPlan.id);
-                    }
-                  }}
-                />
+                
+                {/* Secondary Actions Row */}
+                <View style={styles.planActionsRow}>
+                  <Button
+                    title="Edit Plan"
+                    variant="outline"
+                    onPress={() => {
+                      if (selectedPlan) {
+                        startEditingPlan(selectedPlan);
+                      }
+                    }}
+                    style={{ flex: 1 }}
+                  />
+                  <Button
+                    title="Clone Plan"
+                    variant="outline"
+                    onPress={() => {
+                      if (selectedPlan) {
+                        clonePlan(selectedPlan.id);
+                        setShowPlanDetailsModal(false);
+                      }
+                    }}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+                
+                {/* Destructive Action - Separated */}
+                <View style={styles.planDangerZone}>
+                  <Button
+                    title="Delete Plan"
+                    variant="outline"
+                    onPress={() => {
+                      if (selectedPlan) {
+                        deletePlan(selectedPlan.id);
+                      }
+                    }}
+                    style={{
+                      borderColor: colors.error,
+                      backgroundColor: `${colors.error}10`,
+                    }}
+                    textStyle={{ color: colors.error }}
+                  />
+                </View>
               </View>
             </ScrollView>
           </View>
@@ -2273,6 +2693,236 @@ export default function WorkoutScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* 🏆 PR CELEBRATION MODAL - EPIC! */}
+      <Modal visible={showPRCelebration} animationType="fade" transparent>
+        <View style={[styles.prCelebrationOverlay, { backgroundColor: "rgba(0,0,0,0.95)" }]}>
+          {/* Confetti/Sparkles Effect */}
+          <View style={styles.confettiContainer}>
+            {[...Array(20)].map((_, i) => (
+              <Text
+                key={i}
+                style={[
+                  styles.confetti,
+                  {
+                    left: `${(i * 5) % 100}%`,
+                    animationDelay: `${i * 0.1}s`,
+                    fontSize: i % 3 === 0 ? 40 : i % 3 === 1 ? 32 : 24,
+                  },
+                ]}
+              >
+                {i % 4 === 0 ? '🎉' : i % 4 === 1 ? '🔥' : i % 4 === 2 ? '💪' : '⭐'}
+              </Text>
+            ))}
+          </View>
+
+          <View style={styles.prCelebrationContent}>
+            {/* Trophy Icon */}
+            <View style={[styles.prTrophyContainer, { backgroundColor: colors.warning + '20' }]}>
+              <Text style={styles.prTrophy}>🏆</Text>
+            </View>
+
+            {/* Main Message */}
+            <Text style={styles.prTitle}>PERSONAL RECORD!</Text>
+            <Text style={[styles.prSubtitle, { color: colors.textSecondary }]}>
+              You just crushed it!
+            </Text>
+
+            {/* Exercise Details */}
+            {prDetails && (
+              <View style={[styles.prDetailsCard, { backgroundColor: colors.cardBackground }]}>
+                <Text style={[styles.prExerciseName, { color: colors.textPrimary }]}>
+                  {prDetails.exerciseName}
+                </Text>
+                <View style={styles.prStats}>
+                  <View style={styles.prStatItem}>
+                    <Text style={[styles.prStatValue, { color: colors.accentBlue }]}>
+                      {prDetails.weight} kg
+                    </Text>
+                    <Text style={[styles.prStatLabel, { color: colors.textSecondary }]}>
+                      Weight
+                    </Text>
+                  </View>
+                  <View style={styles.prStatDivider} />
+                  <View style={styles.prStatItem}>
+                    <Text style={[styles.prStatValue, { color: colors.accentBlue }]}>
+                      {prDetails.reps}
+                    </Text>
+                    <Text style={[styles.prStatLabel, { color: colors.textSecondary }]}>
+                      Reps
+                    </Text>
+                  </View>
+                  <View style={styles.prStatDivider} />
+                  <View style={styles.prStatItem}>
+                    <Text style={[styles.prStatValue, { color: colors.success }]}>
+                      {Math.round(prDetails.weight * (1 + prDetails.reps / 30))}
+                    </Text>
+                    <Text style={[styles.prStatLabel, { color: colors.textSecondary }]}>
+                      Est. 1RM
+                    </Text>
+                  </View>
+                </View>
+                {prDetails.previousBest && (
+                  <Text style={[styles.prImprovement, { color: colors.success }]}>
+                    +{Math.round(prDetails.weight * (1 + prDetails.reps / 30) - prDetails.previousBest)} kg improvement! 📈
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {/* Motivational Message */}
+            <Text style={[styles.prMotivation, { color: colors.textSecondary }]}>
+              "Strength doesn't come from what you can do.{'\n'}
+              It comes from overcoming what you thought you couldn't."
+            </Text>
+
+            {/* Continue Button */}
+            <Button
+              title="Let's Keep Going! 💪"
+              onPress={() => {
+                setShowPRCelebration(false);
+                setPRDetails(null);
+                // Show quick rest after PR
+                if (!autoRestTimer) {
+                  setShowQuickRest(true);
+                  setTimeout(() => setShowQuickRest(false), 3000);
+                }
+              }}
+              style={{ marginTop: 24, minWidth: 200 }}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* 🎮 WORKOUT COMPLETE MODAL - GAME STYLE! */}
+      <Modal visible={showWorkoutComplete} animationType="fade" transparent>
+        <View style={[styles.prCelebrationOverlay, { backgroundColor: "rgba(0,0,0,0.95)" }]}>
+          {/* Victory Confetti */}
+          <View style={styles.confettiContainer}>
+            {[...Array(30)].map((_, i) => (
+              <Text
+                key={i}
+                style={[
+                  styles.confetti,
+                  {
+                    left: `${(i * 3.33) % 100}%`,
+                    animationDelay: `${i * 0.08}s`,
+                    fontSize: i % 4 === 0 ? 36 : i % 4 === 1 ? 28 : i % 4 === 2 ? 32 : 24,
+                  },
+                ]}
+              >
+                {i % 5 === 0 ? '🎉' : i % 5 === 1 ? '⭐' : i % 5 === 2 ? '💪' : i % 5 === 3 ? '🔥' : '✨'}
+              </Text>
+            ))}
+          </View>
+
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.prCelebrationContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Victory Badge */}
+            <View style={[styles.prTrophyContainer, { backgroundColor: colors.success + '20' }]}>
+              <Text style={styles.prTrophy}>🎯</Text>
+            </View>
+
+            {/* Main Message */}
+            <Text style={styles.prTitle}>WORKOUT COMPLETE!</Text>
+            <Text style={[styles.prSubtitle, { color: colors.textSecondary }]}>
+              Outstanding performance!
+            </Text>
+
+            {/* Workout Name */}
+            {completedWorkoutStats && (
+              <>
+                <Text style={[styles.completedWorkoutName, { color: colors.accentBlue, fontSize: 24, fontWeight: '600', marginTop: 8 }]}>
+                  {completedWorkoutStats.name}
+                </Text>
+
+                {/* Stats Grid */}
+                <View style={[styles.statsGrid, { backgroundColor: colors.cardBackground, borderRadius: 16, padding: 20, marginTop: 24, width: '100%' }]}>
+                  <View style={styles.statRow}>
+                    <View style={styles.prStatItem}>
+                      <Text style={[styles.prStatValue, { color: colors.accentBlue, fontSize: 36 }]}>
+                        {completedWorkoutStats.duration}
+                      </Text>
+                      <Text style={[styles.prStatLabel, { color: colors.textSecondary }]}>
+                        Minutes
+                      </Text>
+                    </View>
+                    <View style={styles.prStatItem}>
+                      <Text style={[styles.prStatValue, { color: colors.success, fontSize: 36 }]}>
+                        {completedWorkoutStats.exerciseCount}
+                      </Text>
+                      <Text style={[styles.prStatLabel, { color: colors.textSecondary }]}>
+                        Exercises
+                      </Text>
+                    </View>
+                  </View>
+                  
+                  <View style={[styles.statDivider, { backgroundColor: colors.border, height: 1, marginVertical: 16 }]} />
+                  
+                  <View style={styles.statRow}>
+                    <View style={styles.prStatItem}>
+                      <Text style={[styles.prStatValue, { color: colors.warning, fontSize: 36 }]}>
+                        {completedWorkoutStats.totalSets}
+                      </Text>
+                      <Text style={[styles.prStatLabel, { color: colors.textSecondary }]}>
+                        Total Sets
+                      </Text>
+                    </View>
+                    <View style={styles.prStatItem}>
+                      <Text style={[styles.prStatValue, { color: colors.error, fontSize: 36 }]}>
+                        {completedWorkoutStats.totalVolume}
+                      </Text>
+                      <Text style={[styles.prStatLabel, { color: colors.textSecondary }]}>
+                        Total Volume (kg)
+                      </Text>
+                    </View>
+                  </View>
+
+                  {completedWorkoutStats.prsAchieved > 0 && (
+                    <>
+                      <View style={[styles.statDivider, { backgroundColor: colors.border, height: 1, marginVertical: 16 }]} />
+                      <View style={[styles.prBadge, { backgroundColor: colors.warning + '20', padding: 12, borderRadius: 12, alignItems: 'center' }]}>
+                        <Text style={{ fontSize: 32 }}>🏆</Text>
+                        <Text style={[styles.prBadgeText, { color: colors.warning, fontSize: 18, fontWeight: '700', marginTop: 4 }]}>
+                          {completedWorkoutStats.prsAchieved} Personal Record{completedWorkoutStats.prsAchieved > 1 ? 's' : ''} Achieved!
+                        </Text>
+                      </View>
+                    </>
+                  )}
+                </View>
+
+                {/* Motivational Quote */}
+                <Text style={[styles.prMotivation, { color: colors.textSecondary, marginTop: 24, marginBottom: 8 }]}>
+                  "Success is the sum of small efforts{'\n'}repeated day in and day out."
+                </Text>
+              </>
+            )}
+
+            {/* Action Buttons */}
+            <View style={{ width: '100%', gap: 12, marginTop: 24, marginBottom: 40 }}>
+              <Button
+                title="View History 📊"
+                onPress={() => {
+                  setShowWorkoutComplete(false);
+                  setCompletedWorkoutStats(null);
+                  setSelectedTab('history');
+                }}
+              />
+              <Button
+                title="Done"
+                variant="outline"
+                onPress={() => {
+                  setShowWorkoutComplete(false);
+                  setCompletedWorkoutStats(null);
+                }}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -2369,7 +3019,25 @@ const styles = StyleSheet.create({
   workoutHeader: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 12,
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
     marginBottom: 16,
+  },
+  settingsInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  settingsText: {
+    fontSize: 14,
+    fontWeight: '500',
   },
   workoutNameInput: {
     flex: 1,
@@ -2422,6 +3090,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+    position: 'relative',
+  },
+  celebrating: {
+    transform: [{ scale: 1.2 }],
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  celebrationBadge: {
+    position: 'absolute',
+    top: -30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  celebrationEmoji: {
+    fontSize: 32,
   },
   addSetButton: {
     flexDirection: "row",
@@ -2534,6 +3220,51 @@ const styles = StyleSheet.create({
   },
   historyExercise: {
     fontSize: 13,
+  },
+  prBadgeSmall: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  completedBadge: {
+    padding: 8,
+    borderRadius: 12,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+    paddingTop: 12,
+  },
+  statBox: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  statLabel: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  exerciseName: {
+    fontSize: 14,
+    flex: 1,
+  },
+  liftStat: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  exerciseCount: {
+    fontSize: 12,
   },
   modalOverlay: {
     flex: 1,
@@ -2721,6 +3452,16 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 40,
   },
+  planActionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  planDangerZone: {
+    marginTop: 8,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#ff000020',
+  },
   recurrenceModal: {
     height: SCREEN_HEIGHT * 0.7,
     borderTopLeftRadius: 20,
@@ -2838,6 +3579,175 @@ const styles = StyleSheet.create({
   timerButtons: {
     flexDirection: "row",
     gap: 12,
+  },
+  // PR Celebration Modal Styles
+  prCelebrationOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  confettiContainer: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  confetti: {
+    position: 'absolute',
+    top: -50,
+    opacity: 0.9,
+  },
+  prCelebrationContent: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    zIndex: 1,
+  },
+  prTrophyContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  prTrophy: {
+    fontSize: 64,
+  },
+  prTitle: {
+    fontSize: 36,
+    fontWeight: '900',
+    color: '#FFD700',
+    textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: 2,
+    textShadowColor: 'rgba(255, 215, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  prSubtitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  prDetailsCard: {
+    width: '100%',
+    padding: 24,
+    borderRadius: 16,
+    marginBottom: 24,
+  },
+  prExerciseName: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  prStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  prStatItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  prStatValue: {
+    fontSize: 32,
+    fontWeight: '900',
+    marginBottom: 4,
+  },
+  prStatLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  prStatDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+  },
+  prImprovement: {
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  prMotivation: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: 16,
+  },
+  completedWorkoutName: {
+    fontSize: 24,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  statsGrid: {
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 24,
+    width: '100%',
+  },
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    gap: 16,
+  },
+  statDivider: {
+    height: 1,
+    marginVertical: 16,
+  },
+  prBadge: {
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  prBadgeText: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 4,
+  },
+  quickRestBar: {
+    position: 'absolute',
+    bottom: 80,
+    left: 16,
+    right: 16,
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  quickRestContent: {
+    gap: 8,
+  },
+  quickRestText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  quickRestButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+  },
+  quickRestButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  quickRestButtonText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   // Customization Modal Styles
   customizationModalContainer: {

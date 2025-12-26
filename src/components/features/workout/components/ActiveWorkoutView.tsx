@@ -23,6 +23,7 @@ interface ActiveWorkoutViewProps {
   onAddExercise: () => void;
   onFinish: () => void;
   onCancel: () => void;
+  celebratingSetId?: string | null;
 }
 
 export const ActiveWorkoutView: React.FC<ActiveWorkoutViewProps> = ({
@@ -36,6 +37,7 @@ export const ActiveWorkoutView: React.FC<ActiveWorkoutViewProps> = ({
   onAddExercise,
   onFinish,
   onCancel,
+  celebratingSetId,
 }) => {
   const { colors } = useTheme();
 
@@ -72,6 +74,7 @@ export const ActiveWorkoutView: React.FC<ActiveWorkoutViewProps> = ({
           onAddSet={onAddSet}
           onCompleteSet={onCompleteSet}
           onRemoveExercise={onRemoveExercise}
+          celebratingSetId={celebratingSetId}
         />
       ))}
 

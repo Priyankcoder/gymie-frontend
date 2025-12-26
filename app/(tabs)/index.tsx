@@ -1,6 +1,7 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
 import {
   Pressable,
@@ -79,6 +80,13 @@ export default function HomeScreen() {
 
   // Automatically refetch when screen comes into focus
   useRefreshOnFocus(loadData);
+
+  // Extra guarantee: refresh on focus
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

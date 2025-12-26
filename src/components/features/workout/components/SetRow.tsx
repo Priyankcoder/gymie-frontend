@@ -17,6 +17,7 @@ interface SetRowProps {
   onRemoveSet: (setId: string) => void;
   onCompleteSet: (setId: string) => void;
   canRemove: boolean;
+  isCelebrating?: boolean;
 }
 
 export const SetRow: React.FC<SetRowProps> = ({
@@ -26,6 +27,7 @@ export const SetRow: React.FC<SetRowProps> = ({
   onRemoveSet,
   onCompleteSet,
   canRemove,
+  isCelebrating = false,
 }) => {
   const { colors, borderRadius } = useTheme();
 
@@ -89,13 +91,19 @@ export const SetRow: React.FC<SetRowProps> = ({
               : colors.inputBackground,
             borderRadius: borderRadius.md,
           },
+          isCelebrating && styles.celebrating,
         ]}
       >
         <Ionicons
           name={set.completed ? 'checkmark' : 'checkmark-outline'}
-          size={20}
+          size={isCelebrating ? 24 : 20}
           color={set.completed ? '#FFF' : colors.textSecondary}
         />
+        {isCelebrating && (
+          <View style={styles.celebration}>
+            <Text style={styles.celebrationText}>💪</Text>
+          </View>
+        )}
       </Pressable>
 
       {canRemove && (
@@ -141,11 +149,29 @@ const styles = StyleSheet.create({
   checkButton: {
     width: 36,
     height: 36,
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
   },
   removeButton: {
     marginLeft: 8,
+  },
+  celebrating: {
+    transform: [{ scale: 1.2 }],
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  celebration: {
+    position: 'absolute',
+    top: -30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  celebrationText: {
+    fontSize: 32,
   },
 });

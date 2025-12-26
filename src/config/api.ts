@@ -2,7 +2,7 @@
 // API Configuration
 export const API_CONFIG = {
   // Set to true to use mock data, false to use real API
-  USE_MOCK: true,
+  USE_MOCK: false,
   
   // API Base URL - update this for production
   BASE_URL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/v1',

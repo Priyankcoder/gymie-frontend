@@ -20,6 +20,7 @@ interface ExerciseCardProps {
   onAddSet: (exerciseId: string) => void;
   onCompleteSet: (exerciseId: string, setId: string) => void;
   onRemoveExercise: (exerciseId: string) => void;
+  celebratingSetId?: string | null;
 }
 
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({
@@ -30,6 +31,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   onAddSet,
   onCompleteSet,
   onRemoveExercise,
+  celebratingSetId,
 }) => {
   const { colors } = useTheme();
 
@@ -77,6 +79,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           onRemoveSet={(setId) => onRemoveSet(exercise.id, setId)}
           onCompleteSet={(setId) => onCompleteSet(exercise.id, setId)}
           canRemove={exercise.sets.length > 1}
+          isCelebrating={celebratingSetId === set.id}
         />
       ))}
 
