@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   RECIPES: '@gymie_recipes',
   HEALTH_METRICS: '@gymie_health_metrics',
   PROGRESS_PHOTOS: '@gymie_progress_photos',
+  PHOTO_SYNC_QUEUE: '@gymie_photo_sync_queue',
   EXERCISES: '@gymie_exercises',
   GYM_ATTENDANCE: '@gymie_gym_attendance',
   WEIGHT_LOGS: '@gymie_weight_logs',

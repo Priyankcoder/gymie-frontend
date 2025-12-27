@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '../services/api';
+import { photoSyncService } from '../services/photoSyncService';
 import { getStoredToken, getStoredUser, storeToken, storeUserData, clearStoredToken, clearStoredUser } from '../services/authStorage';
 
 interface User {
@@ -17,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
+  handleUnauthorized: () => Promise<void>;
   error: string | null;
   clearError: () => void;
 }
@@ -29,9 +31,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleUnauthorized = async () => {
+    console.log('🔐 Token expired or invalid - logging out');
+    await clearStoredToken();
+    await clearStoredUser();
+    setToken(null);
+    setUser(null);
+    setError('Your session has expired. Please login again.');
+  };
+
   // Check for existing auth on mount
   useEffect(() => {
     checkAuth();
+    
+    // Register unauthorized handler for photo sync service
+    photoSyncService.setUnauthorizedHandler(handleUnauthorized);
   }, []);
 
   const checkAuth = async () => {
@@ -127,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
+    handleUnauthorized,
     error,
     clearError,
   };

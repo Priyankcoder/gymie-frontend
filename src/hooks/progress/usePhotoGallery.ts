@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '../../services/api';
+import { photoSyncService } from '../../services/photoSyncService';
 import { ProgressPhoto } from '../../types';
 
 interface UsePhotoGalleryReturn {
@@ -25,6 +26,11 @@ export const usePhotoGallery = (
   const [progressPhotos, setProgressPhotos] = useState<ProgressPhoto[]>(initialPhotos);
   const [compareMode, setCompareMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
+
+  // Initialize photo sync service
+  useEffect(() => {
+    photoSyncService.initialize();
+  }, []);
 
   const toggleCompareMode = () => {
     setCompareMode(!compareMode);
@@ -60,16 +66,60 @@ export const usePhotoGallery = (
     });
 
     if (!result.canceled && result.assets[0]) {
-      const newPhoto: ProgressPhoto = {
-        id: Date.now().toString(),
-        uri: result.assets[0].uri,
-        date: new Date().toISOString(),
-        notes: '',
-      };
+      try {
+        const photoId = Date.now().toString();
+        
+        // Save photo to local file system
+        const localUri = await photoSyncService.savePhotoLocally(
+          result.assets[0].uri,
+          photoId
+        );
 
-      const response = await api.photos.create(newPhoto);
-      if (response.data) {
-        setProgressPhotos(prev => [response.data!, ...prev]);
+        const newPhoto: ProgressPhoto = {
+          id: photoId,
+          uri: localUri, // Use local URI
+          date: new Date().toISOString(),
+          notes: '',
+        };
+
+        // Save to local storage (pass full photo with ID to preserve IndexedDB key)
+        console.log('📝 Saving photo to local storage with ID:', photoId);
+        const response = await api.photos.create(newPhoto);
+        console.log('✅ Photo saved to local storage:', response.data?.id);
+        
+        if (response.data) {
+          setProgressPhotos(prev => [response.data!, ...prev]);
+          
+          // Upload to cloud in background
+          console.log('🚀 Initiating cloud upload for photo:', response.data.id);
+          photoSyncService.uploadPhoto(response.data).then(result => {
+            console.log('📤 Upload result:', result);
+            if (result.success && result.cloudUrl) {
+              console.log('✅ Photo uploaded to cloud:', result.cloudUrl);
+              // Optionally update photo with cloud URL
+            } else if (result.willRetry) {
+              // Upload failed but will retry automatically
+              console.log('⏳ Photo will be synced when connection is available');
+            } else if (result.error?.includes('Authentication')) {
+              // Authentication error - show alert
+              console.error('🔐 Authentication required');
+              Alert.alert(
+                'Login Required',
+                'Please login to sync your photos to the cloud.',
+                [{ text: 'OK' }]
+              );
+            } else {
+              console.log('❌ Upload failed:', result.error);
+            }
+          }).catch(error => {
+            console.error('❌ Upload promise rejected:', error);
+          });
+        } else {
+          console.error('❌ No data returned from api.photos.create');
+        }
+      } catch (error) {
+        console.error('❌ Error saving photo:', error);
+        Alert.alert('Error', 'Failed to save photo. Please try again.');
       }
     }
   };
@@ -88,16 +138,58 @@ export const usePhotoGallery = (
     });
 
     if (!result.canceled && result.assets[0]) {
-      const newPhoto: ProgressPhoto = {
-        id: Date.now().toString(),
-        uri: result.assets[0].uri,
-        date: new Date().toISOString(),
-        notes: '',
-      };
+      try {
+        const photoId = Date.now().toString();
+        
+        // Save photo to local file system
+        const localUri = await photoSyncService.savePhotoLocally(
+          result.assets[0].uri,
+          photoId
+        );
 
-      const response = await api.photos.create(newPhoto);
-      if (response.data) {
-        setProgressPhotos(prev => [response.data!, ...prev]);
+        const newPhoto: ProgressPhoto = {
+          id: photoId,
+          uri: localUri, // Use local URI
+          date: new Date().toISOString(),
+          notes: '',
+        };
+
+        // Save to local storage (pass full photo with ID to preserve IndexedDB key)
+        console.log('📝 Saving camera photo to local storage with ID:', photoId);
+        const response = await api.photos.create(newPhoto);
+        console.log('✅ Camera photo saved to local storage:', response.data?.id);
+        
+        if (response.data) {
+          setProgressPhotos(prev => [response.data!, ...prev]);
+          
+          // Upload to cloud in background
+          console.log('🚀 Initiating cloud upload for camera photo:', response.data.id);
+          photoSyncService.uploadPhoto(response.data).then(result => {
+            console.log('📤 Camera upload result:', result);
+            if (result.success && result.cloudUrl) {
+              console.log('✅ Photo uploaded to cloud:', result.cloudUrl);
+            } else if (result.willRetry) {
+              console.log('⏳ Photo will be synced when connection is available');
+            } else if (result.error?.includes('Authentication')) {
+              // Authentication error - show alert
+              console.error('🔐 Authentication required');
+              Alert.alert(
+                'Login Required',
+                'Please login to sync your photos to the cloud.',
+                [{ text: 'OK' }]
+              );
+            } else {
+              console.log('❌ Upload failed:', result.error);
+            }
+          }).catch(error => {
+            console.error('❌ Camera upload promise rejected:', error);
+          });
+        } else {
+          console.error('❌ No data returned from api.photos.create (camera)');
+        }
+      } catch (error) {
+        console.error('❌ Error taking photo:', error);
+        Alert.alert('Error', 'Failed to save photo. Please try again.');
       }
     }
   };
@@ -112,7 +204,19 @@ export const usePhotoGallery = (
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
+            const photo = progressPhotos.find(p => p.id === photoId);
+            
+            // Delete from local storage
             await api.photos.delete(photoId);
+            
+            // Delete local file
+            if (photo) {
+              await photoSyncService.deletePhotoLocally(photo.uri, photo.id);
+            }
+            
+            // Delete from cloud (if uploaded)
+            await photoSyncService.deletePhotoFromCloud(photoId);
+            
             setProgressPhotos(prev => prev.filter(p => p.id !== photoId));
             setSelectedPhotos(prev => prev.filter(id => id !== photoId));
           },

@@ -244,10 +244,13 @@ export interface HealthMetrics {
 // Progress Photo
 export interface ProgressPhoto {
   id: string;
-  uri: string;
+  uri: string; // Local file path
+  cloudUrl?: string; // Cloud storage URL (if synced)
   date: string;
   weight?: number;
   notes?: string;
+  synced?: boolean; // Whether photo has been uploaded to cloud
+  syncedAt?: string; // When photo was last synced
 }
 
 // Exercise Database

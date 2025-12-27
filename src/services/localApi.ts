@@ -669,10 +669,14 @@ export const localApi = {
       return { success: true, data: photos || [] };
     },
 
-    async create(photo: Omit<ProgressPhoto, 'id'>): Promise<ApiResponse<ProgressPhoto>> {
+    async create(photo: Omit<ProgressPhoto, 'id'> | ProgressPhoto): Promise<ApiResponse<ProgressPhoto>> {
       await randomDelay();
       const photos = await storage.get<ProgressPhoto[]>(storage.keys.PROGRESS_PHOTOS) || [];
-      const newPhoto: ProgressPhoto = { ...photo, id: generateId() };
+      // Preserve existing ID if provided, otherwise generate new one
+      const newPhoto: ProgressPhoto = {
+        ...photo,
+        id: 'id' in photo && photo.id ? photo.id : generateId()
+      };
       photos.push(newPhoto);
       await storage.set(storage.keys.PROGRESS_PHOTOS, photos);
       return { success: true, data: newPhoto };

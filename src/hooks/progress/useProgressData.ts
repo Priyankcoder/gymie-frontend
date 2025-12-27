@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { api } from "../../services/api";
+import { photoSyncService } from "../../services/photoSyncService";
 import {
   Workout,
   WeightLog,
@@ -99,12 +100,17 @@ export const useProgressData = (): UseProgressDataReturn => {
         setPreferences(prefsRes.data || prefsRes);
       }
 
-      // Handle photos
+      // Handle photos - restore blob URLs on web
+      let photos: ProgressPhoto[] = [];
       if (Array.isArray(photosRes)) {
-        setProgressPhotos(photosRes);
+        photos = photosRes;
       } else if (photosRes?.data) {
-        setProgressPhotos(photosRes.data);
+        photos = photosRes.data;
       }
+      
+      // Restore blob URLs from IndexedDB (web only)
+      const restoredPhotos = await photoSyncService.restoreBlobUrls(photos);
+      setProgressPhotos(restoredPhotos);
 
       console.log('✅ Progress: Data loaded successfully');
     } catch (err) {
