@@ -10,14 +10,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useNutritionData } from '../../src/hooks/nutrition/useNutritionData';
-import { useAIEstimation } from '../../src/hooks/nutrition/useAIEstimation';
+import { useOfflineNutrition } from '../../src/hooks/nutrition/useOfflineNutrition';
 import {
   NutritionSummaryCard,
   AIUploadCard,
   MealTypeSection,
 } from '../../src/components/features/nutrition/components';
 import {
-  AIEstimationModal,
+  DishSelectorModal,
   AddMealModal,
   RecipeGeneratorModal,
 } from '../../src/components/features/nutrition/modals';
@@ -35,39 +35,49 @@ export default function NutritionScreen() {
 
   const {
     selectedImage,
-    aiEstimation,
-    isEstimating,
     pickImage,
     takePhoto,
-    saveMealFromAI,
-    clearEstimation,
-  } = useAIEstimation();
+    isSearching,
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    selectedDish,
+    selectedPortion,
+    setSelectedDish,
+    setSelectedPortion,
+    nutritionEstimation,
+    isEstimating,
+    estimateNutrition,
+    saveMeal,
+    reset,
+    stats,
+  } = useOfflineNutrition();
 
   const [selectedTab, setSelectedTab] = useState<'diary' | 'recipes'>('diary');
   const [showAddMealModal, setShowAddMealModal] = useState(false);
-  const [showAIEstimateModal, setShowAIEstimateModal] = useState(false);
+  const [showDishSelectorModal, setShowDishSelectorModal] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('breakfast');
 
   const handlePickImage = async () => {
     await pickImage();
-    setShowAIEstimateModal(true);
+    setShowDishSelectorModal(true);
   };
 
   const handleTakePhoto = async () => {
     await takePhoto();
-    setShowAIEstimateModal(true);
+    setShowDishSelectorModal(true);
   };
 
-  const handleSaveMealFromAI = async () => {
-    await saveMealFromAI(selectedMealType, () => {
-      setShowAIEstimateModal(false);
+  const handleSaveMeal = async (mealType: MealType) => {
+    await saveMeal(mealType, () => {
+      setShowDishSelectorModal(false);
       refetch();
     });
   };
 
-  const handleCloseAIModal = () => {
-    setShowAIEstimateModal(false);
-    clearEstimation();
+  const handleCloseDishSelector = () => {
+    setShowDishSelectorModal(false);
+    reset();
   };
 
   const handleAddMealSuccess = () => {
@@ -148,15 +158,22 @@ export default function NutritionScreen() {
         onSuccess={handleAddMealSuccess}
       />
 
-      <AIEstimationModal
-        visible={showAIEstimateModal}
+      <DishSelectorModal
+        visible={showDishSelectorModal}
         selectedImage={selectedImage}
-        aiEstimation={aiEstimation}
+        searchQuery={searchQuery}
+        searchResults={searchResults}
+        isSearching={isSearching}
+        selectedDish={selectedDish}
+        selectedPortion={selectedPortion}
+        nutritionEstimation={nutritionEstimation}
         isEstimating={isEstimating}
-        selectedMealType={selectedMealType}
-        onClose={handleCloseAIModal}
-        onSave={handleSaveMealFromAI}
-        onSelectMealType={setSelectedMealType}
+        onSearchChange={setSearchQuery}
+        onSelectDish={setSelectedDish}
+        onSelectPortion={setSelectedPortion}
+        onEstimate={estimateNutrition}
+        onSave={handleSaveMeal}
+        onClose={handleCloseDishSelector}
       />
     </SafeAreaView>
   );

@@ -22,10 +22,10 @@ export const AIUploadCard: React.FC<AIUploadCardProps> = ({
         <Ionicons name="camera" size={32} color={colors.accentBlue} />
         <View style={styles.text}>
           <Text style={[styles.title, { color: colors.textPrimary }]}>
-            AI Meal Estimation
+            Offline Nutrition Tracking
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Upload a photo to estimate macros
+            Take a photo and select your dish
           </Text>
         </View>
       </View>
