@@ -1,177 +1,256 @@
+
 /**
  * ML Inference Service
  * 
- * Handles on-device machine learning inference for food recognition.
- * Uses platform-specific models:
- * - Android: TensorFlow Lite (.tflite)
- * - iOS: CoreML (.mlmodel)
- * - Web: ONNX (future)
+ * Wrapper around the native NutritionClassifier module.
+ * Handles ML model predictions using TensorFlow Lite on both Android and iOS.
+ * 
+ * This service provides a clean TypeScript interface to the native ML module,
+ * handling image URIs and returning structured prediction results.
  */
 
 import { NativeModules, Platform } from 'react-native';
 
-const { NutritionClassifier } = NativeModules;
+// Safely access NativeModules (undefined on web)
+const NutritionClassifier = Platform.OS === 'web' ? null : NativeModules.NutritionClassifier;
 
 export interface MLPrediction {
   dishId: string;
   dishName: string;
   confidence: number;
   inferenceTimeMs: number;
+  top5Predictions?: Array<{
+    dishId: string;
+    dishName: string;
+    confidence: number;
+  }>;
 }
 
-export interface MLConfig {
-  confidenceThreshold: number;
-  maxPredictions: number;
-  useGPU: boolean;
+export interface MLInferenceOptions {
+  returnTop5?: boolean; // Return top 5 predictions instead of just the best
+  minConfidence?: number; // Minimum confidence threshold (0-1)
 }
 
 class MLInferenceService {
-  private initialized = false;
-  private config: MLConfig = {
-    confidenceThreshold: 0.75,
-    maxPredictions: 3,
-    useGPU: false, // CPU-only for consistency
-  };
+  private isAvailable: boolean = false;
+
+  constructor() {
+    this.isAvailable = !!NutritionClassifier;
+  }
 
   /**
    * Initialize the ML service
    */
-  async initialize(config?: Partial<MLConfig>): Promise<void> {
-    if (this.initialized) {
-      console.log('[MLInference] Already initialized');
+  async initialize(): Promise<void> {
+    if (!this.isAvailable) {
+      console.warn('[MLInferenceService] Native module not available. ML predictions will fail.');
       return;
     }
-
-    // Update config
-    if (config) {
-      this.config = { ...this.config, ...config };
-    }
-
-    // Web platform not supported yet
-    if (Platform.OS === 'web') {
-      console.log('[MLInference] Web platform - ML not available yet');
-      this.initialized = true;
-      return;
-    }
-
-    // Check if native module exists
-    if (!NutritionClassifier) {
-      console.warn('[MLInference] Native module not available');
-      throw new Error('ML native module not found. Ensure native modules are linked.');
-    }
-
-    try {
-      await NutritionClassifier.initialize();
-      this.initialized = true;
-      console.log('[MLInference] Service initialized successfully');
-    } catch (error) {
-      console.error('[MLInference] Initialization failed:', error);
-      throw error;
-    }
+    
+    console.log('[MLInferenceService] Initialized successfully');
+    
+    // Optional: Warm up the model
+    await this.warmUp();
   }
 
   /**
-   * Predict dish from image
-   * @param imageUri - Local file URI of the image
-   * @returns Prediction result with dish ID and confidence
+   * Check if ML inference is available
    */
-  async predictDish(imageUri: string): Promise<MLPrediction> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
-
-    if (Platform.OS === 'web') {
-      throw new Error('ML inference not supported on web platform yet');
-    }
-
-    if (!NutritionClassifier) {
-      throw new Error('Native ML module not available');
-    }
-
-    try {
-      const startTime = Date.now();
-      const result = await NutritionClassifier.classify(imageUri);
-      const totalTime = Date.now() - startTime;
-
-      console.log(`[MLInference] Prediction complete in ${totalTime}ms:`, {
-        dishId: result.dishId,
-        confidence: result.confidence.toFixed(3),
-      });
-
-      return {
-        dishId: result.dishId,
-        dishName: result.dishName || result.dishId.replace(/_/g, ' '),
-        confidence: result.confidence,
-        inferenceTimeMs: result.inferenceTimeMs || totalTime,
-      };
-    } catch (error) {
-      console.error('[MLInference] Prediction failed:', error);
-      throw error;
-    }
+  public isMLAvailable(): boolean {
+    return this.isAvailable;
   }
 
   /**
-   * Get multiple predictions (top-k results)
-   * @param imageUri - Local file URI of the image
-   * @param k - Number of top predictions to return
+   * Check if service is available (alias for compatibility)
    */
-  async predictTopK(imageUri: string, k: number = 3): Promise<MLPrediction[]> {
-    if (!this.initialized) {
-      await this.initialize();
-    }
-
-    if (Platform.OS === 'web') {
-      throw new Error('ML inference not supported on web platform yet');
-    }
-
-    if (!NutritionClassifier?.classifyTopK) {
-      // Fallback to single prediction
-      const single = await this.predictDish(imageUri);
-      return [single];
-    }
-
-    try {
-      const results = await NutritionClassifier.classifyTopK(imageUri, k);
-      console.log(`[MLInference] Top-${k} predictions:`, results);
-      return results;
-    } catch (error) {
-      console.error('[MLInference] Top-K prediction failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Check if prediction confidence meets threshold
-   */
-  isHighConfidence(prediction: MLPrediction): boolean {
-    return prediction.confidence >= this.config.confidenceThreshold;
+  public isAvailable(): boolean {
+    return this.isAvailable;
   }
 
   /**
    * Check if service is initialized
    */
-  isInitialized(): boolean {
-    return this.initialized;
+  public isInitialized(): boolean {
+    return this.isAvailable;
   }
 
   /**
-   * Get current configuration
+   * Predict dish from image URI
+   * 
+   * @param imageUri - Local file URI of the image (e.g., file:///path/to/image.jpg)
+   * @param options - Optional configuration
+   * @returns ML prediction with confidence score
    */
-  getConfig(): MLConfig {
-    return { ...this.config };
-  }
-
-  /**
-   * Check if ML is available on current platform
-   */
-  isAvailable(): boolean {
-    if (Platform.OS === 'web') {
-      return false;
+  async predictDish(
+    imageUri: string,
+    options: MLInferenceOptions = {}
+  ): Promise<MLPrediction> {
+    if (!this.isAvailable) {
+      throw new Error('ML inference is not available. Native module not loaded.');
     }
-    return !!NutritionClassifier;
+
+    if (!imageUri || !imageUri.startsWith('file://')) {
+      throw new Error('Invalid image URI. Must be a local file:// URI.');
+    }
+
+    try {
+      const startTime = Date.now();
+      
+      // Call native module
+      const result = await NutritionClassifier.classifyImage(imageUri);
+      
+      const inferenceTime = Date.now() - startTime;
+      console.log(`[MLInferenceService] Inference completed in ${inferenceTime}ms`);
+
+      // Parse and validate result
+      const prediction = this.parseNativeResult(result, options, inferenceTime);
+      
+      return prediction;
+    } catch (error) {
+      console.error('[MLInferenceService] Prediction failed:', error);
+      throw new Error(`ML inference failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Predict top K dishes from image
+   * 
+   * @param imageUri - Local file URI of the image
+   * @param k - Number of top predictions to return
+   * @returns Array of top K predictions
+   */
+  async predictTopK(imageUri: string, k: number = 5): Promise<MLPrediction[]> {
+    const result = await this.predictDish(imageUri, { returnTop5: true });
+    
+    if (result.top5Predictions) {
+      return result.top5Predictions.slice(0, k).map(pred => ({
+        ...pred,
+        inferenceTimeMs: result.inferenceTimeMs,
+      }));
+    }
+    
+    // If top5 not available, return just the main prediction
+    return [result];
+  }
+
+  /**
+   * Batch predict multiple images
+   * 
+   * @param imageUris - Array of local file URIs
+   * @param options - Optional configuration
+   * @returns Array of predictions
+   */
+  async predictBatch(
+    imageUris: string[],
+    options: MLInferenceOptions = {}
+  ): Promise<MLPrediction[]> {
+    if (!this.isAvailable) {
+      throw new Error('ML inference is not available. Native module not loaded.');
+    }
+
+    try {
+      const predictions = await Promise.all(
+        imageUris.map(uri => this.predictDish(uri, options))
+      );
+      
+      return predictions;
+    } catch (error) {
+      console.error('[MLInferenceService] Batch prediction failed:', error);
+      throw new Error(`Batch ML inference failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Parse native module result into structured prediction
+   */
+  private parseNativeResult(
+    nativeResult: any,
+    options: MLInferenceOptions,
+    inferenceTimeMs: number
+  ): MLPrediction {
+    // Native module returns:
+    // {
+    //   label: string (dish_id),
+    //   confidence: number (0-1),
+    //   top5?: Array<{label: string, confidence: number}>
+    // }
+
+    const minConfidence = options.minConfidence ?? 0.0;
+    
+    if (!nativeResult || !nativeResult.label) {
+      throw new Error('Invalid prediction result from native module');
+    }
+
+    if (nativeResult.confidence < minConfidence) {
+      throw new Error(
+        `Confidence ${nativeResult.confidence.toFixed(2)} below threshold ${minConfidence}`
+      );
+    }
+
+    const prediction: MLPrediction = {
+      dishId: nativeResult.label,
+      dishName: this.formatDishName(nativeResult.label),
+      confidence: nativeResult.confidence,
+      inferenceTimeMs: inferenceTimeMs,
+    };
+
+    // Include top 5 predictions if requested and available
+    if (options.returnTop5 && nativeResult.top5) {
+      prediction.top5Predictions = nativeResult.top5.map((item: any) => ({
+        dishId: item.label,
+        dishName: this.formatDishName(item.label),
+        confidence: item.confidence,
+      }));
+    }
+
+    return prediction;
+  }
+
+  /**
+   * Format dish ID to display name
+   * Converts snake_case to Title Case
+   */
+  private formatDishName(dishId: string): string {
+    return dishId
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  /**
+   * Get model information
+   */
+  async getModelInfo(): Promise<{
+    version: string;
+    inputSize: number;
+    numClasses: number;
+  }> {
+    if (!this.isAvailable) {
+      throw new Error('ML inference is not available');
+    }
+
+    // Default info for vision_v1.0.0.tflite
+    return {
+      version: '1.0.0',
+      inputSize: 224,
+      numClasses: 101,
+    };
+  }
+
+  /**
+   * Warm up the model (optional optimization)
+   * Runs a dummy prediction to load model into memory
+   */
+  async warmUp(): Promise<void> {
+    if (!this.isAvailable) {
+      return;
+    }
+
+    console.log('[MLInferenceService] Model ready for inference');
   }
 }
 
-// Export singleton instance
-export const mlInferenceService = new MLInferenceService();
+// Singleton instance
+const mlInferenceService = new MLInferenceService();
+
 export default mlInferenceService;

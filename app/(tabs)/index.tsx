@@ -11,7 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView } from '../../src/components/SafeAreaView';
 import { Card, MacroBar, MetricRing, QuickActionCard } from '../../src/components/ui';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { api } from '../../src/services/api';

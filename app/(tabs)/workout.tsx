@@ -17,7 +17,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "../../src/components/SafeAreaView";
 import { Button, Card } from "../../src/components/ui";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import prebuiltPlanTemplates from "../../src/data/prebuiltPlans";

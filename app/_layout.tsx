@@ -1,7 +1,9 @@
 
 import React from 'react';
+import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from '../src/contexts/ThemeContext';
 import { AppDataProvider } from '../src/contexts/AppDataContext';
 import { AuthProvider } from '../src/contexts/AuthContext';
@@ -29,7 +31,7 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  return (
+  const content = (
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
@@ -42,4 +44,11 @@ export default function RootLayout() {
       </GestureHandlerRootView>
     </ErrorBoundary>
   );
+
+  // Only use SafeAreaProvider on native platforms
+  if (Platform.OS === 'web') {
+    return content;
+  }
+
+  return <SafeAreaProvider>{content}</SafeAreaProvider>;
 }

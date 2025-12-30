@@ -143,7 +143,7 @@ export const usePhotoGallery = (
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow access to your camera to take progress photos.');
-      return;
+      return null;
     }
 
     const result = await ImagePicker.launchCameraAsync({
@@ -156,48 +156,6 @@ export const usePhotoGallery = (
       return result.assets[0].uri;
     }
     return null;
-  };
-          notes: '',
-        };
-
-        // Save to local storage (pass full photo with ID to preserve IndexedDB key)
-        console.log('📝 Saving camera photo to local storage with ID:', photoId);
-        const response = await api.photos.create(newPhoto);
-        console.log('✅ Camera photo saved to local storage:', response.data?.id);
-        
-        if (response.data) {
-          setProgressPhotos(prev => [response.data!, ...prev]);
-          
-          // Upload to cloud in background
-          console.log('🚀 Initiating cloud upload for camera photo:', response.data.id);
-          photoSyncService.uploadPhoto(response.data).then(result => {
-            console.log('📤 Camera upload result:', result);
-            if (result.success && result.cloudUrl) {
-              console.log('✅ Photo uploaded to cloud:', result.cloudUrl);
-            } else if (result.willRetry) {
-              console.log('⏳ Photo will be synced when connection is available');
-            } else if (result.error?.includes('Authentication')) {
-              // Authentication error - show alert
-              console.error('🔐 Authentication required');
-              Alert.alert(
-                'Login Required',
-                'Please login to sync your photos to the cloud.',
-                [{ text: 'OK' }]
-              );
-            } else {
-              console.log('❌ Upload failed:', result.error);
-            }
-          }).catch(error => {
-            console.error('❌ Camera upload promise rejected:', error);
-          });
-        } else {
-          console.error('❌ No data returned from api.photos.create (camera)');
-        }
-      } catch (error) {
-        console.error('❌ Error taking photo:', error);
-        Alert.alert('Error', 'Failed to save photo. Please try again.');
-      }
-    }
   };
 
   const deletePhoto = (photoId: string) => {

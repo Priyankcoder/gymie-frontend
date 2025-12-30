@@ -8,9 +8,7 @@
  * Based on: OFFLINE_FIRST_NUTRITION_ARCHITECTURE.md
  */
 
-import SQLite from 'react-native-sqlite-storage';
-
-SQLite.enablePromise(true);
+import * as SQLite from 'expo-sqlite';
 
 export interface DishMaster {
   dish_id: string;
@@ -83,11 +81,8 @@ class NutritionDatabaseService {
     }
 
     try {
-      this.db = await SQLite.openDatabase({
-        name: this.DB_NAME,
-        location: 'default',
-      });
-
+      this.db = await SQLite.openDatabaseAsync(this.DB_NAME);
+      
       await this.createTables();
       await this.initializeMetadata();
       
@@ -154,7 +149,7 @@ class NutritionDatabaseService {
     ];
 
     for (const sql of tables) {
-      await this.db.executeSql(sql);
+      await this.db.execAsync(sql);
     }
 
     // Create indexes
@@ -165,7 +160,7 @@ class NutritionDatabaseService {
     ];
 
     for (const sql of indexes) {
-      await this.db.executeSql(sql);
+      await this.db.execAsync(sql);
     }
 
     console.log('[NutritionDB] Tables created successfully');
@@ -195,7 +190,7 @@ class NutritionDatabaseService {
     ];
 
     for (const meta of metadata) {
-      await this.db.executeSql(
+      await this.db.runAsync(
         `INSERT OR REPLACE INTO model_metadata (model_type, version, checksum, size_bytes, updated_at)
          VALUES (?, ?, ?, ?, ?)`,
         [meta.model_type, meta.version, meta.checksum, meta.size_bytes, meta.updated_at]
@@ -210,17 +205,16 @@ class NutritionDatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     try {
-      const [results] = await this.db.executeSql(
+      const result = await this.db.getFirstAsync<DishMaster>(
         'SELECT * FROM dish_master WHERE dish_id = ?',
         [dishId]
       );
 
-      if (results.rows.length === 0) return null;
+      if (!result) return null;
 
-      const row = results.rows.item(0);
       return {
-        ...row,
-        aliases: row.aliases ? JSON.parse(row.aliases) : [],
+        ...result,
+        aliases: result.aliases ? JSON.parse(result.aliases as any) : [],
       };
     } catch (error) {
       console.error('[NutritionDB] Error fetching dish:', error);
@@ -235,14 +229,12 @@ class NutritionDatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     try {
-      const [results] = await this.db.executeSql(
+      const result = await this.db.getFirstAsync<DishNutrition>(
         'SELECT * FROM dish_nutrition WHERE dish_id = ?',
         [dishId]
       );
 
-      if (results.rows.length === 0) return null;
-
-      return results.rows.item(0);
+      return result || null;
     } catch (error) {
       console.error('[NutritionDB] Error fetching nutrition:', error);
       return null;
@@ -283,7 +275,7 @@ class NutritionDatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     try {
-      const [result] = await this.db.executeSql(
+      const result = await this.db.runAsync(
         `INSERT INTO user_corrections 
          (image_hash, predicted_dish_id, corrected_dish_id, predicted_portion, corrected_portion, confidence, synced, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -299,8 +291,8 @@ class NutritionDatabaseService {
         ]
       );
 
-      console.log('[NutritionDB] Correction saved:', result.insertId);
-      return result.insertId;
+      console.log('[NutritionDB] Correction saved:', result.lastInsertRowId);
+      return result.lastInsertRowId;
     } catch (error) {
       console.error('[NutritionDB] Error saving correction:', error);
       throw error;
@@ -314,16 +306,11 @@ class NutritionDatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     try {
-      const [results] = await this.db.executeSql(
+      const results = await this.db.getAllAsync<UserCorrection>(
         'SELECT * FROM user_corrections WHERE synced = 0 ORDER BY created_at DESC'
       );
 
-      const corrections: UserCorrection[] = [];
-      for (let i = 0; i < results.rows.length; i++) {
-        corrections.push(results.rows.item(i));
-      }
-
-      return corrections;
+      return results;
     } catch (error) {
       console.error('[NutritionDB] Error fetching unsynced corrections:', error);
       return [];
@@ -338,7 +325,7 @@ class NutritionDatabaseService {
 
     try {
       const placeholders = ids.map(() => '?').join(',');
-      await this.db.executeSql(
+      await this.db.runAsync(
         `UPDATE user_corrections SET synced = 1 WHERE id IN (${placeholders})`,
         ids
       );
@@ -358,7 +345,7 @@ class NutritionDatabaseService {
 
     try {
       const searchQuery = `%${query.toLowerCase()}%`;
-      const [results] = await this.db.executeSql(
+      const results = await this.db.getAllAsync<DishMaster>(
         `SELECT * FROM dish_master 
          WHERE LOWER(display_name) LIKE ? 
          OR LOWER(aliases) LIKE ?
@@ -366,16 +353,10 @@ class NutritionDatabaseService {
         [searchQuery, searchQuery, limit]
       );
 
-      const dishes: DishMaster[] = [];
-      for (let i = 0; i < results.rows.length; i++) {
-        const row = results.rows.item(i);
-        dishes.push({
-          ...row,
-          aliases: row.aliases ? JSON.parse(row.aliases) : [],
-        });
-      }
-
-      return dishes;
+      return results.map(row => ({
+        ...row,
+        aliases: row.aliases ? JSON.parse(row.aliases as any) : [],
+      }));
     } catch (error) {
       console.error('[NutritionDB] Error searching dishes:', error);
       return [];
@@ -389,14 +370,12 @@ class NutritionDatabaseService {
     if (!this.db) throw new Error('Database not initialized');
 
     try {
-      const [results] = await this.db.executeSql(
+      const result = await this.db.getFirstAsync<ModelMetadata>(
         'SELECT * FROM model_metadata WHERE model_type = ?',
         [modelType]
       );
 
-      if (results.rows.length === 0) return null;
-
-      return results.rows.item(0);
+      return result || null;
     } catch (error) {
       console.error('[NutritionDB] Error fetching metadata:', error);
       return null;
@@ -408,7 +387,7 @@ class NutritionDatabaseService {
    */
   async close(): Promise<void> {
     if (this.db) {
-      await this.db.close();
+      await this.db.closeAsync();
       this.db = null;
       this.initialized = false;
       console.log('[NutritionDB] Database closed');

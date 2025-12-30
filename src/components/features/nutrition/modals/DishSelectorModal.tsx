@@ -19,7 +19,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { DishSearchResult, PortionSize } from '../../../../services/nutritionDatabase';
-import { NutritionEstimation } from '../../../../services/offlineNutritionService';
+
+// TODO: Update when OfflineNutritionService interface is finalized
+interface NutritionEstimation {
+  dishName: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  confidence: number;
+  imageHash?: string;
+}
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 

@@ -6,11 +6,22 @@
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { offlineNutritionService, NutritionEstimation } from '../../services/offlineNutritionService';
+import offlineNutritionService from '../../services/OfflineNutritionService';
 import { DishSearchResult, PortionSize } from '../../services/nutritionDatabase';
 import { api } from '../../services/api';
 import { Meal } from '../../types';
 import { getTodayString } from '../../utils/date';
+
+// TODO: Update types when OfflineNutritionService interface is finalized
+interface NutritionEstimation {
+  dishName: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  confidence: number;
+  imageHash?: string;
+}
 
 type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 

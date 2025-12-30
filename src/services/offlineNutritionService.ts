@@ -20,7 +20,6 @@ import mlInferenceService, { MLPrediction } from './MLInferenceService';
 import portionEstimationService, { PortionSize, PortionEstimateResult } from './PortionEstimationService';
 import nutritionDatabaseService, { NutritionResult } from './NutritionDatabaseService';
 import { Image } from 'react-native';
-import crypto from 'crypto-js';
 
 export interface FoodRecognitionResult {
   // ML Prediction
@@ -353,9 +352,15 @@ class OfflineNutritionService {
   private async generateImageHash(imageUri: string): Promise<string> {
     try {
       // Simple hash based on URI and timestamp
-      // In production, could hash actual image data
+      // Using a basic string hash since crypto-js is not needed in React Native
       const data = `${imageUri}_${Date.now()}`;
-      return crypto.SHA256(data).toString();
+      let hash = 0;
+      for (let i = 0; i < data.length; i++) {
+        const char = data.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      return `img_${Math.abs(hash).toString(36)}_${Date.now()}`;
     } catch (error) {
       console.warn('[OfflineNutrition] Failed to generate hash:', error);
       return `hash_${Date.now()}`;
@@ -375,6 +380,46 @@ class OfflineNutritionService {
    */
   isInitialized(): boolean {
     return this.initialized;
+  }
+
+  /**
+   * Get all dishes (for compatibility with existing hooks)
+   */
+  async getAllDishes() {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    return await nutritionDatabaseService.searchDishes('', 1000);
+  }
+
+  /**
+   * Get statistics (for compatibility with existing hooks)
+   */
+  async getStatistics() {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    const totalDishes = (await nutritionDatabaseService.searchDishes('', 1000)).length;
+    const unsyncedCorrections = (await nutritionDatabaseService.getUnsyncedCorrections()).length;
+
+    return {
+      totalDishes,
+      unsyncedCorrections,
+    };
+  }
+
+  /**
+   * Estimate from image (for compatibility with existing hooks)
+   * Returns minimal result with image hash
+   */
+  async estimateFromImage(imageUri: string) {
+    const imageHash = await this.generateImageHash(imageUri);
+    
+    return {
+      imageHash,
+    };
   }
 }
 
