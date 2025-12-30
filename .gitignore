@@ -48,3 +48,5 @@ coverage/
 *.lcov
 
 coreml-env
+
+coreml-only-env

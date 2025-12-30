@@ -50,7 +50,7 @@ function withAndroidNutritionClassifier(config) {
 }
 
 /**
- * Add Swift bridging header to iOS project
+ * Add Swift bridging header and TensorFlow Lite pod to iOS project
  */
 function withIOSNutritionClassifier(config) {
   return withDangerousMod(config, [
@@ -92,6 +92,29 @@ function withIOSNutritionClassifier(config) {
           
           fs.writeFileSync(pbxprojPath, content);
           console.log('✅ Added bridging header to Xcode project');
+        }
+      }
+
+      // Add TensorFlow Lite pod to Podfile
+      const podfilePath = path.join(
+        config.modRequest.platformProjectRoot,
+        'Podfile'
+      );
+
+      if (fs.existsSync(podfilePath)) {
+        let podfileContent = fs.readFileSync(podfilePath, 'utf-8');
+        
+        // Check if TensorFlowLiteSwift is already added
+        if (!podfileContent.includes('TensorFlowLiteSwift')) {
+          // Add TensorFlow Lite pod before the 'use_expo_modules!' line
+          podfileContent = podfileContent.replace(
+            /(use_expo_modules!)/,
+            `# TensorFlow Lite for ML inference\n  pod 'TensorFlowLiteSwift', '~> 2.14.0'\n\n  $1`
+          );
+          
+          fs.writeFileSync(podfilePath, podfileContent);
+          console.log('✅ Added TensorFlowLiteSwift pod to Podfile');
+          console.log('⚠️  Run "cd ios && pod install" to install the pod');
         }
       }
 
