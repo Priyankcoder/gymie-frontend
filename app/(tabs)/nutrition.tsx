@@ -8,6 +8,7 @@ import {
   Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useNutritionData } from '../../src/hooks/nutrition/useNutritionData';
 import { useOfflineNutrition } from '../../src/hooks/nutrition/useOfflineNutrition';
@@ -26,6 +27,9 @@ type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export default function NutritionScreen() {
   const { colors } = useTheme();
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  
   const {
     nutritionTotals,
     calorieGoal,
@@ -57,6 +61,15 @@ export default function NutritionScreen() {
   const [showAddMealModal, setShowAddMealModal] = useState(false);
   const [showDishSelectorModal, setShowDishSelectorModal] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('breakfast');
+
+  // Handle route params to trigger scanner
+  React.useEffect(() => {
+    if (params.action === 'scan') {
+      handleTakePhoto();
+      // Clear the param
+      router.setParams({ action: undefined });
+    }
+  }, [params.action]);
 
   const handlePickImage = async () => {
     await pickImage();

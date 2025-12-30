@@ -25,7 +25,7 @@ import {
   PhotoGallery,
   PhotoCompareView,
 } from '../../src/components/features/progress/components';
-import { AddWeightModal } from '../../src/components/features/progress/modals';
+import { AddWeightModal, AddProgressPhotoModal, PhotoCompareModal } from '../../src/components/features/progress/modals';
 
 type DateRange = '1W' | '1M' | '3M' | '6M' | '1Y' | 'ALL';
 type MetricType = 'weight' | 'reps' | 'volume' | '1rm';
@@ -62,6 +62,7 @@ export default function ProgressScreen() {
     togglePhotoSelection,
     pickProgressPhoto,
     takeProgressPhoto,
+    saveProgressPhoto,
     deletePhoto,
     groupPhotosByMonth,
     formatMonthYear,
@@ -75,6 +76,37 @@ export default function ProgressScreen() {
   const [showExercisePicker, setShowExercisePicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showWeightModal, setShowWeightModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [pendingPhotoUri, setPendingPhotoUri] = useState<string | null>(null);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+
+  // Handle photo capture from camera
+  const handleTakePhoto = async () => {
+    const uri = await takeProgressPhoto();
+    if (uri) {
+      setPendingPhotoUri(uri);
+      setShowPhotoModal(true);
+    }
+  };
+
+  // Handle photo selection from gallery
+  const handlePickPhoto = async () => {
+    const uri = await pickProgressPhoto();
+    if (uri) {
+      setPendingPhotoUri(uri);
+      setShowPhotoModal(true);
+    }
+  };
+
+  // Save photo with weight and notes
+  const handleSavePhoto = async (weight?: number, notes?: string) => {
+    if (pendingPhotoUri) {
+      await saveProgressPhoto(pendingPhotoUri, weight, notes);
+      setShowPhotoModal(false);
+      setPendingPhotoUri(null);
+      refetch(); // Refresh to show new photo
+    }
+  };
 
   // Auto-select most frequent exercise
   useFocusEffect(
@@ -400,13 +432,13 @@ export default function ProgressScreen() {
         <View style={styles.photoActions}>
           <Pressable
             style={[styles.photoActionButton, { backgroundColor: colors.card }]}
-            onPress={takeProgressPhoto}
+            onPress={handleTakePhoto}
           >
             <Ionicons name="camera" size={20} color={colors.accentBlue} />
           </Pressable>
           <Pressable
             style={[styles.photoActionButton, { backgroundColor: colors.card }]}
-            onPress={pickProgressPhoto}
+            onPress={handlePickPhoto}
           >
             <Ionicons name="images" size={20} color={colors.accentBlue} />
           </Pressable>
@@ -414,8 +446,16 @@ export default function ProgressScreen() {
       </View>
 
       {/* Compare View */}
-      {compareMode && selectedPhotos.length > 0 && (
-        <PhotoCompareView selectedPhotos={selectedPhotos} photos={progressPhotos} />
+      {compareMode && selectedPhotos.length === 2 && (
+        <View style={styles.compareActions}>
+          <Pressable
+            style={[styles.compareButton, { backgroundColor: colors.accentBlue }]}
+            onPress={() => setShowCompareModal(true)}
+          >
+            <Ionicons name="git-compare" size={20} color="#FFF" />
+            <Text style={styles.compareButtonText}>Compare Photos</Text>
+          </Pressable>
+        </View>
       )}
 
       {/* Photo Grid */}
@@ -444,7 +484,7 @@ export default function ProgressScreen() {
           </Text>
           <Pressable
             style={[styles.emptyStateButton, { backgroundColor: colors.accentBlue }]}
-            onPress={takeProgressPhoto}
+            onPress={handleTakePhoto}
           >
             <Ionicons name="camera" size={20} color="#FFF" />
             <Text style={styles.emptyStateButtonText}>Take First Photo</Text>
@@ -567,6 +607,26 @@ export default function ProgressScreen() {
         unit={preferences?.units || 'kg'}
         onClose={() => setShowWeightModal(false)}
         onSuccess={refetch}
+      />
+
+      {/* Progress Photo Modal */}
+      <AddProgressPhotoModal
+        visible={showPhotoModal}
+        photoUri={pendingPhotoUri}
+        units={preferences?.units || 'kg'}
+        onClose={() => {
+          setShowPhotoModal(false);
+          setPendingPhotoUri(null);
+        }}
+        onSave={handleSavePhoto}
+      />
+
+      {/* Photo Compare Modal */}
+      <PhotoCompareModal
+        visible={showCompareModal}
+        photos={progressPhotos}
+        selectedPhotoIds={selectedPhotos}
+        onClose={() => setShowCompareModal(false)}
       />
     </SafeAreaView>
   );
@@ -733,6 +793,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  compareActions: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  compareButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  compareButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,

@@ -46,3 +46,5 @@ app-example
 # Test coverage
 coverage/
 *.lcov
+
+coreml-env

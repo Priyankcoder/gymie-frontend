@@ -84,7 +84,24 @@ export default function ProfileScreen() {
     const value = parseFloat(editingGoal.value);
     if (isNaN(value) || value <= 0) return;
 
-    await updatePreferences({ [editingGoal.key]: value });
+    // If updating weight, also create a weight log entry to keep them in sync
+    if (editingGoal.key === 'weight') {
+      try {
+        await api.weightLogs.create({
+          weight: value,
+          date: new Date().toISOString(),
+          notes: 'Updated from profile',
+        });
+        console.log('✅ Weight log created:', value);
+        // Reload weight logs to update current weight display
+        await loadData();
+      } catch (error) {
+        console.error('❌ Error creating weight log:', error);
+      }
+    } else {
+      await updatePreferences({ [editingGoal.key]: value });
+    }
+    
     setShowGoalModal(false);
     setEditingGoal(null);
   };
@@ -118,8 +135,16 @@ export default function ProfileScreen() {
             icon="scale-outline"
             label="Current Weight"
             value={currentWeight ? `${currentWeight} ${preferences?.units || 'kg'}` : '-- --'}
-            type="navigation"
+            type="select"
             valueColor={colors.accentBlue}
+            onPress={() => {
+              setEditingGoal({
+                key: 'weight',
+                label: `Current Weight (${preferences?.units || 'kg'})`,
+                value: (currentWeight || 70).toString(),
+              });
+              setShowGoalModal(true);
+            }}
           />
           <SettingItem
             icon="resize-outline"

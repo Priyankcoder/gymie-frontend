@@ -39,7 +39,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "./plugins/withNutritionClassifier.js"
     ],
     "experiments": {
       "typedRoutes": true,

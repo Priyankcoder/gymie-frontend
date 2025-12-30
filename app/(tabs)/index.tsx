@@ -450,9 +450,28 @@ export default function HomeScreen() {
               unit="kcal"
             />
             <View style={styles.caloriesDetails}>
-              <Text style={[styles.caloriesTitle, { color: colors.textPrimary }]}>
-                Daily Nutrition
-              </Text>
+              <View style={styles.nutritionHeader}>
+                <Text style={[styles.caloriesTitle, { color: colors.textPrimary }]}>
+                  Daily Nutrition
+                </Text>
+                <View style={styles.nutritionActions}>
+                  <Pressable
+                    style={[styles.iconButton, { backgroundColor: colors.accentBlue + '15' }]}
+                    onPress={() => {
+                      // Navigate to nutrition tab and trigger camera
+                      router.push({ pathname: '/(tabs)/nutrition', params: { action: 'scan' } });
+                    }}
+                  >
+                    <Ionicons name="camera" size={18} color={colors.accentBlue} />
+                  </Pressable>
+                  <Pressable
+                    style={[styles.iconButton, { backgroundColor: colors.accentBlue + '15' }]}
+                    onPress={() => router.push('/(tabs)/nutrition')}
+                  >
+                    <Ionicons name="create-outline" size={18} color={colors.accentBlue} />
+                  </Pressable>
+                </View>
+              </View>
               <Text style={[styles.caloriesSubtitle, { color: colors.textSecondary }]}>
                 {calorieGoal - nutritionTotals.calories > 0
                   ? `${calorieGoal - nutritionTotals.calories} kcal remaining`
@@ -735,10 +754,26 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 16,
   },
+  nutritionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  nutritionActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   caloriesTitle: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 4,
   },
   caloriesSubtitle: {
     fontSize: 12,

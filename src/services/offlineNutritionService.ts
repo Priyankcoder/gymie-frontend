@@ -6,6 +6,7 @@
  */
 
 import { nutritionDatabase, DishSearchResult, ScaledNutrition, PortionSize } from './nutritionDatabase';
+import { mlInferenceService } from './mlInferenceService';
 import { Platform } from 'react-native';
 
 export interface NutritionEstimation {
@@ -46,6 +47,18 @@ class OfflineNutritionService {
 
     try {
       await nutritionDatabase.initialize();
+      
+      // Initialize ML model (only on native platforms)
+      if (Platform.OS !== 'web') {
+        try {
+          await mlInferenceService.initialize();
+          console.log('[OfflineNutrition] ML model initialized');
+        } catch (mlError) {
+          console.warn('[OfflineNutrition] ML initialization failed, will use manual selection:', mlError);
+          // Continue without ML - app will fall back to manual selection
+        }
+      }
+      
       this.initialized = true;
       console.log('[OfflineNutrition] Service initialized');
     } catch (error) {
@@ -56,21 +69,62 @@ class OfflineNutritionService {
 
   /**
    * Estimate nutrition from an image
-   * For now, this returns a dish selection interface
-   * In Phase 2, this will use ML model
+   * Uses ML model when available, falls back to manual selection
    */
   async estimateFromImage(imageUri: string): Promise<{
     needsManualSelection: boolean;
     suggestions: DishSearchResult[];
     imageHash: string;
+    mlPrediction?: {
+      dishId: string;
+      dishName: string;
+      confidence: number;
+      inferenceTimeMs: number;
+    };
   }> {
     if (!this.initialized) await this.initialize();
 
     // Generate hash for the image (for correction tracking)
     const imageHash = await this.hashImage(imageUri);
 
-    // Phase 1: Return suggestions for manual selection
-    // Phase 2: This will use ML model to predict dish
+    // Try ML inference if available (native platforms only)
+    if (Platform.OS !== 'web' && mlInferenceService.isAvailable()) {
+      try {
+        const mlResult = await mlInferenceService.classifyImage(imageUri);
+        
+        // Get top 5 predictions as suggestions
+        const topPredictions = await mlInferenceService.classifyTopK(imageUri, 5);
+        
+        // Convert ML predictions to DishSearchResult format
+        const suggestions: DishSearchResult[] = [];
+        for (const pred of topPredictions) {
+          const dishDetails = await nutritionDatabase.getDishDetails(pred.dishId);
+          if (dishDetails) {
+            suggestions.push({
+              dish_id: pred.dishId,
+              display_name: dishDetails.display_name,
+              category: dishDetails.category,
+              cuisine: dishDetails.cuisine,
+            });
+          }
+        }
+
+        // If high confidence (>70%), suggest it as primary prediction
+        const needsManualSelection = mlResult.confidence < 0.7;
+
+        return {
+          needsManualSelection,
+          suggestions,
+          imageHash,
+          mlPrediction: mlResult,
+        };
+      } catch (mlError) {
+        console.warn('[OfflineNutrition] ML inference failed, falling back to manual selection:', mlError);
+        // Fall through to manual selection
+      }
+    }
+
+    // Fallback: Manual selection with popular dishes
     const suggestions = await nutritionDatabase.searchDishes('', 10);
 
     return {
