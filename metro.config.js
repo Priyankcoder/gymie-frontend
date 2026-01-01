@@ -10,9 +10,36 @@ config.resolver.assetExts.push('wasm', 'onnx');
 config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 
 // Ensure platform-specific extensions are resolved in the correct order
-// Platform-specific extensions (e.g., .web.ts) should be checked before generic ones
-config.resolver.sourceExts = ['js', 'jsx', 'json', 'ts', 'tsx', 'cjs', 'mjs'];
-config.resolver.resolverMainFields = ['react-native', 'browser', 'main'];
+// Platform-specific  extensions MUST be checked before generic ones
+// This ensures .web.tsx takes precedence over .tsx when building for web
+// and .native.tsx takes precedence for native platforms
+config.resolver.sourceExts = [
+  // Platform-specific extensions first (highest priority)
+  'web.tsx',
+  'web.ts',
+  'web.jsx',
+  'web.js',
+  'native.tsx',
+  'native.ts',
+  'native.jsx',
+  'native.js',
+  'ios.tsx',
+  'ios.ts',
+  'ios.jsx',
+  'ios.js',
+  'android.tsx',
+  'android.ts',
+  'android.jsx',
+  'android.js',
+  // Generic extensions (lower priority)
+  'tsx',
+  'ts',
+  'jsx',
+  'js',
+  'json',
+  'cjs',
+  'mjs',
+];
 
 // Configure transformer to handle ONNX Runtime Web
 config.transformer = {
