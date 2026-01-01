@@ -39,8 +39,8 @@ yarn-error.*
 app-example
 
 # generated native folders
-/ios
-/android
+# /ios
+# /android
 
 
 # Test coverage
@@ -50,3 +50,9 @@ coverage/
 coreml-env
 
 coreml-only-env
+
+android/app/build/
+android/build/
+android/.gradle/
+ios/build/
+ios/Pods/
