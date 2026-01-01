@@ -3,7 +3,7 @@
  * Allows users to manually select a dish and portion size for offline nutrition tracking
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { useAppData } from '../../../../contexts/AppDataContext';
 import { DishSearchResult, PortionSize } from '../../../../services/nutritionDatabase';
 
 // TODO: Update when OfflineNutritionService interface is finalized
@@ -47,7 +48,7 @@ interface DishSelectorModalProps {
   onSelectDish: (dish: DishSearchResult) => void;
   onSelectPortion: (portion: PortionSize) => void;
   onEstimate: () => void;
-  onSave: (mealType: MealType) => void;
+  onSave: (mealType: MealType, editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; portionGrams: number }) => void;
   onClose: () => void;
 }
 
@@ -69,7 +70,71 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
   onClose,
 }) => {
   const { colors } = useTheme();
+  const { preferences } = useAppData();
   const [selectedMealType, setSelectedMealType] = useState<MealType>('lunch');
+  
+  // Portion size in grams (small: 100g, medium: 150g, large: 200g)
+  const PORTION_GRAMS = { small: 100, medium: 150, large: 200 };
+  const [portionGrams, setPortionGrams] = useState(PORTION_GRAMS.medium);
+  const [sliderValue, setSliderValue] = useState(1); // 0=small, 1=medium, 2=large
+  
+  // Editable nutrition values
+  const [editedCalories, setEditedCalories] = useState('');
+  const [editedProtein, setEditedProtein] = useState('');
+  const [editedCarbs, setEditedCarbs] = useState('');
+  const [editedFat, setEditedFat] = useState('');
+  
+  // Unit preference (default to 'g' for grams)
+  const weightUnit = preferences?.units === 'lb' ? 'oz' : 'g';
+  
+  // Initialize editable values when nutrition estimation changes
+  useEffect(() => {
+    if (nutritionEstimation) {
+      setEditedCalories(Math.round(nutritionEstimation.calories).toString());
+      setEditedProtein(nutritionEstimation.protein.toFixed(2));
+      setEditedCarbs(nutritionEstimation.carbs.toFixed(2));
+      setEditedFat(nutritionEstimation.fat.toFixed(2));
+    }
+  }, [nutritionEstimation]);
+  
+  // Update portion when slider changes
+  const handleSliderChange = (value: number) => {
+    const roundedValue = Math.round(value);
+    setSliderValue(roundedValue);
+    
+    let newPortion: PortionSize;
+    let grams: number;
+    
+    if (roundedValue === 0) {
+      newPortion = 'small';
+      grams = PORTION_GRAMS.small;
+    } else if (roundedValue === 2) {
+      newPortion = 'large';
+      grams = PORTION_GRAMS.large;
+    } else {
+      newPortion = 'medium';
+      grams = PORTION_GRAMS.medium;
+    }
+    
+    setPortionGrams(grams);
+    onSelectPortion(newPortion);
+  };
+  
+  // Get portion label
+  const getPortionLabel = () => {
+    if (sliderValue <= 0.5) return 'Small';
+    if (sliderValue >= 1.5) return 'Large';
+    return 'Medium';
+  };
+  
+  // Convert grams to ounces if needed
+  const convertWeight = (grams: number): string => {
+    if (weightUnit === 'oz') {
+      const oz = (grams * 0.035274).toFixed(1);
+      return `${oz} oz`;
+    }
+    return `${grams}g`;
+  };
 
   const renderDishItem = ({ item }: { item: DishSearchResult }) => (
     <Pressable
@@ -89,10 +154,10 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
         </Text>
         <View style={styles.dishMeta}>
           <Text style={[styles.dishCategory, { color: colors.textSecondary }]}>
-            {item.category}
+            {item.category || 'other'}
           </Text>
           <Text style={[styles.dishCuisine, { color: colors.textSecondary }]}>
-            • {item.cuisine}
+            • {item.cuisine || 'international'}
           </Text>
         </View>
       </View>
@@ -219,52 +284,209 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
             <>
               {/* Nutrition Results */}
               <View style={styles.nutritionContainer}>
-                <View style={[styles.confidenceBadge, { backgroundColor: colors.success + '20' }]}>
-                  <Ionicons name="checkmark-circle" size={20} color={colors.success} />
-                  <Text style={[styles.confidenceText, { color: colors.success }]}>
-                    Manual Selection
-                  </Text>
-                </View>
+                {/* Confidence Badge */}
+                {nutritionEstimation.confidence !== undefined && (
+                  <View style={[
+                    styles.confidenceBadge,
+                    { backgroundColor: nutritionEstimation.confidence >= 0.7
+                      ? colors.success + '20'
+                      : nutritionEstimation.confidence >= 0.5
+                        ? colors.warning + '20'
+                        : colors.error + '20'
+                    }
+                  ]}>
+                    <Ionicons
+                      name={nutritionEstimation.confidence >= 0.7 ? "checkmark-circle" : "information-circle"}
+                      size={20}
+                      color={nutritionEstimation.confidence >= 0.7
+                        ? colors.success
+                        : nutritionEstimation.confidence >= 0.5
+                          ? colors.warning
+                          : colors.error
+                      }
+                    />
+                    <Text style={[
+                      styles.confidenceText,
+                      { color: nutritionEstimation.confidence >= 0.7
+                        ? colors.success
+                        : nutritionEstimation.confidence >= 0.5
+                          ? colors.warning
+                          : colors.error
+                      }
+                    ]}>
+                      {(nutritionEstimation.confidence * 100).toFixed(0)}% Confidence
+                    </Text>
+                  </View>
+                )}
 
                 <Text style={[styles.dishNameLarge, { color: colors.textPrimary }]}>
                   {nutritionEstimation.dishName}
                 </Text>
-                
-                <Text style={[styles.portionText, { color: colors.textSecondary }]}>
-                  {nutritionEstimation.portion.charAt(0).toUpperCase() + nutritionEstimation.portion.slice(1)} Portion
-                </Text>
 
-                <View style={styles.macrosGrid}>
-                  <View style={styles.macroItem}>
-                    <Text style={[styles.macroValue, { color: colors.textPrimary }]}>
-                      {nutritionEstimation.calories}
+                {/* Portion Size Selector with Weight */}
+                <View style={styles.portionSliderContainer}>
+                  <View style={styles.portionSliderHeader}>
+                    <Text style={[styles.portionLabel, { color: colors.textPrimary }]}>
+                      Portion Size
                     </Text>
+                    <Text style={[styles.portionValue, { color: colors.accentBlue }]}>
+                      {getPortionLabel()} ({convertWeight(portionGrams)})
+                    </Text>
+                  </View>
+                  
+                  {/* Custom Slider-like Interface */}
+                  <View style={styles.portionSliderTrack}>
+                    <View style={[styles.sliderTrackBackground, { backgroundColor: colors.border }]}>
+                      <View
+                        style={[
+                          styles.sliderTrackFill,
+                          {
+                            backgroundColor: colors.accentBlue,
+                            width: `${(sliderValue / 2) * 100}%`
+                          }
+                        ]}
+                      />
+                    </View>
+                    
+                    {/* Slider Buttons */}
+                    <View style={styles.sliderButtons}>
+                      {[
+                        { value: 0, label: 'Small', grams: PORTION_GRAMS.small },
+                        { value: 1, label: 'Medium', grams: PORTION_GRAMS.medium },
+                        { value: 2, label: 'Large', grams: PORTION_GRAMS.large },
+                      ].map((option) => (
+                        <Pressable
+                          key={option.value}
+                          style={[
+                            styles.sliderButton,
+                            {
+                              backgroundColor: sliderValue === option.value
+                                ? colors.accentBlue
+                                : colors.card,
+                              borderColor: sliderValue === option.value
+                                ? colors.accentBlue
+                                : colors.border,
+                            },
+                          ]}
+                          onPress={() => {
+                            setSliderValue(option.value);
+                            setPortionGrams(option.grams);
+                            onSelectPortion(option.label.toLowerCase() as PortionSize);
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.sliderButtonText,
+                              { color: sliderValue === option.value ? '#FFFFFF' : colors.textPrimary },
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.sliderButtonGrams,
+                              { color: sliderValue === option.value ? '#FFFFFF' : colors.textSecondary },
+                            ]}
+                          >
+                            {convertWeight(option.grams)}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+
+                {/* Editable Macros Grid */}
+                <View style={styles.macrosEditGrid}>
+                  <View style={styles.macroEditItem}>
                     <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>
+                      Calories
+                    </Text>
+                    <TextInput
+                      style={[
+                        styles.macroInput,
+                        {
+                          backgroundColor: colors.inputBackground,
+                          color: colors.textPrimary,
+                        },
+                      ]}
+                      value={editedCalories}
+                      onChangeText={setEditedCalories}
+                      keyboardType="numeric"
+                      placeholder="0"
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                    <Text style={[styles.macroUnit, { color: colors.textSecondary }]}>
                       kcal
                     </Text>
                   </View>
-                  <View style={styles.macroItem}>
-                    <Text style={[styles.macroValue, { color: colors.proteinColor }]}>
-                      {nutritionEstimation.protein}g
-                    </Text>
-                    <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>
+                  
+                  <View style={styles.macroEditItem}>
+                    <Text style={[styles.macroLabel, { color: colors.proteinColor }]}>
                       Protein
                     </Text>
-                  </View>
-                  <View style={styles.macroItem}>
-                    <Text style={[styles.macroValue, { color: colors.carbsColor }]}>
-                      {nutritionEstimation.carbs}g
+                    <TextInput
+                      style={[
+                        styles.macroInput,
+                        {
+                          backgroundColor: colors.inputBackground,
+                          color: colors.proteinColor,
+                        },
+                      ]}
+                      value={editedProtein}
+                      onChangeText={setEditedProtein}
+                      keyboardType="decimal-pad"
+                      placeholder="0"
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                    <Text style={[styles.macroUnit, { color: colors.textSecondary }]}>
+                      g
                     </Text>
-                    <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>
+                  </View>
+                  
+                  <View style={styles.macroEditItem}>
+                    <Text style={[styles.macroLabel, { color: colors.carbsColor }]}>
                       Carbs
                     </Text>
-                  </View>
-                  <View style={styles.macroItem}>
-                    <Text style={[styles.macroValue, { color: colors.fatColor }]}>
-                      {nutritionEstimation.fat}g
+                    <TextInput
+                      style={[
+                        styles.macroInput,
+                        {
+                          backgroundColor: colors.inputBackground,
+                          color: colors.carbsColor,
+                        },
+                      ]}
+                      value={editedCarbs}
+                      onChangeText={setEditedCarbs}
+                      keyboardType="decimal-pad"
+                      placeholder="0"
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                    <Text style={[styles.macroUnit, { color: colors.textSecondary }]}>
+                      g
                     </Text>
-                    <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>
+                  </View>
+                  
+                  <View style={styles.macroEditItem}>
+                    <Text style={[styles.macroLabel, { color: colors.fatColor }]}>
                       Fat
+                    </Text>
+                    <TextInput
+                      style={[
+                        styles.macroInput,
+                        {
+                          backgroundColor: colors.inputBackground,
+                          color: colors.fatColor,
+                        },
+                      ]}
+                      value={editedFat}
+                      onChangeText={setEditedFat}
+                      keyboardType="decimal-pad"
+                      placeholder="0"
+                      placeholderTextColor={colors.textSecondary}
+                    />
+                    <Text style={[styles.macroUnit, { color: colors.textSecondary }]}>
+                      g
                     </Text>
                   </View>
                 </View>
@@ -308,7 +530,16 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
               {/* Save Button */}
               <Button
                 title="Save Meal"
-                onPress={() => onSave(selectedMealType)}
+                onPress={() => {
+                  const editedNutrition = {
+                    calories: parseFloat(editedCalories) || 0,
+                    protein: parseFloat(editedProtein) || 0,
+                    carbs: parseFloat(editedCarbs) || 0,
+                    fat: parseFloat(editedFat) || 0,
+                    portionGrams,
+                  };
+                  onSave(selectedMealType, editedNutrition);
+                }}
                 style={styles.saveButton}
               />
             </>
@@ -507,5 +738,78 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginTop: 8,
+  },
+  portionSliderContainer: {
+    width: '100%',
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  portionSliderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  portionValue: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  portionSliderTrack: {
+    width: '100%',
+  },
+  sliderTrackBackground: {
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  sliderTrackFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  sliderButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  sliderButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    borderWidth: 2,
+    alignItems: 'center',
+  },
+  sliderButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  sliderButtonGrams: {
+    fontSize: 12,
+  },
+  macrosEditGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    width: '100%',
+    gap: 16,
+  },
+  macroEditItem: {
+    alignItems: 'center',
+    minWidth: '40%',
+  },
+  macroInput: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginVertical: 4,
+    minWidth: 80,
+  },
+  macroUnit: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });

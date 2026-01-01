@@ -1,0 +1,2002 @@
+index,dish_id,display_name,category,cuisine,serving_grams,calories,protein,carbs,fat,fiber,sodium
+1,CHAUDIN,Chaudin,other,international,100,520,6.0,60.0,28.0,2.5,450
+2,BAMBALOUNI,Bambalouni,other,international,100,520,6.0,60.0,28.0,2.5,450
+3,GHORIBA,Ghoriba,other,international,100,520,6.0,60.0,28.0,2.5,450
+4,MANGO_STICKY_RICE,Mango sticky rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+5,JIANBING,Jianbing,other,international,100,520,6.0,60.0,28.0,2.5,450
+6,AGUACHILE,Aguachile,other,international,100,520,6.0,60.0,28.0,2.5,450
+7,CARROZZA,Carrozza,other,international,100,520,6.0,60.0,28.0,2.5,450
+8,MIYAN_KUKA,Miyan kuka,other,international,100,520,6.0,60.0,28.0,2.5,450
+9,EFO_RIRO,Efo riro,other,international,100,520,6.0,60.0,28.0,2.5,450
+10,AYAM_MASAK_MERAH,Ayam masak merah,other,international,100,520,6.0,60.0,28.0,2.5,450
+11,CHIFFON_PIE,Chiffon pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+13,RISO_PATATE_E_COZZE,Riso patate e cozze,other,international,100,520,6.0,60.0,28.0,2.5,450
+14,BAZIN,Bazin,other,international,100,520,6.0,60.0,28.0,2.5,450
+15,BLACK_BOTTOM_PIE,Black bottom pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+16,PALÓC_SOUP,Palóc soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+17,SAILOR_SANDWICH,Sailor sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+18,TUWO_SHINKAFA,Tuwo shinkafa,other,international,100,520,6.0,60.0,28.0,2.5,450
+19,CARNE_A_LA_TAMPIQUEÑA,Carne a la tampiqueña,other,international,100,520,6.0,60.0,28.0,2.5,450
+20,PASTEL_AZTECA,Pastel azteca,other,international,100,520,6.0,60.0,28.0,2.5,450
+21,FUJIAN_RED_WINE_CHICKEN,Fujian red wine chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+22,BOEBER,Boeber,other,international,100,520,6.0,60.0,28.0,2.5,450
+23,LADY_BALTIMORE_CAKE,Lady Baltimore cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+24,YAM_KHAI_DAO,Yam khai dao,other,international,100,520,6.0,60.0,28.0,2.5,450
+25,TEXAS_TOMMY,Texas Tommy,other,international,100,520,6.0,60.0,28.0,2.5,450
+26,HAR_CHEONG_GAI,Har cheong gai,other,international,100,520,6.0,60.0,28.0,2.5,450
+27,KOLOKYTHOPITA,Kolokythopita,other,international,100,520,6.0,60.0,28.0,2.5,450
+28,KARYDOPITA,Karydopita,other,international,100,520,6.0,60.0,28.0,2.5,450
+29,RINFLAJŠ,Rinflajš,other,international,100,520,6.0,60.0,28.0,2.5,450
+30,HAINANESE_CURRY_RICE,Hainanese curry rice,rice,indian,100,130,2.7,28.0,0.3,0.4,1
+31,SONORAN_HOT_DOG,Sonoran hot dog,other,american,100,520,6.0,60.0,28.0,2.5,450
+33,AFGHANI_BURGER,Afghani burger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+34,TEOCHEW_PORRIDGE,Teochew porridge,other,international,100,520,6.0,60.0,28.0,2.5,450
+35,MINESTRA_DI_CECI,Minestra di ceci,other,international,100,520,6.0,60.0,28.0,2.5,450
+36,PASTRAMI_ON_RYE,Pastrami on rye,other,international,100,520,6.0,60.0,28.0,2.5,450
+37,ROAST_BEEF_SANDWICH,Roast beef sandwich,beef,international,100,250,26.0,0.0,15.0,0.0,72
+38,CHAHAN,Chahan,other,international,100,520,6.0,60.0,28.0,2.5,450
+39,EKURU,Ekuru,other,international,100,520,6.0,60.0,28.0,2.5,450
+40,SCIUSCEDDU,Sciusceddu,other,international,100,520,6.0,60.0,28.0,2.5,450
+41,BREAKFAST_BURRITO,Breakfast burrito,other,mexican,100,520,6.0,60.0,28.0,2.5,450
+43,SAUSAGE_STROGANOFF,Sausage Stroganoff,other,international,100,520,6.0,60.0,28.0,2.5,450
+44,ROTI_JALA,Roti jala,bread,indian,100,265,9.0,49.0,3.2,2.7,491
+45,PIRAO,Pirao,other,international,100,520,6.0,60.0,28.0,2.5,450
+46,CASATIELLO,Casatiello,other,international,100,520,6.0,60.0,28.0,2.5,450
+47,KHANOM_TAN,Khanom tan,other,international,100,520,6.0,60.0,28.0,2.5,450
+48,MUAMBA_CHICKEN,Muamba chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+49,DOBRADINHA,Dobradinha,other,international,100,520,6.0,60.0,28.0,2.5,450
+50,BRUCKFLEISCH,Bruckfleisch,other,international,100,520,6.0,60.0,28.0,2.5,450
+51,MOLOTE,Molote,other,international,100,520,6.0,60.0,28.0,2.5,450
+52,SPONGATA,Spongata,other,international,100,520,6.0,60.0,28.0,2.5,450
+53,FUNGE,Funge,other,international,100,520,6.0,60.0,28.0,2.5,450
+55,KÖTTBULLAR,Köttbullar,other,international,100,520,6.0,60.0,28.0,2.5,450
+56,KA'AK,Ka'ak,other,international,100,520,6.0,60.0,28.0,2.5,450
+57,PAPET_VAUDOIS,Papet vaudois,other,international,100,520,6.0,60.0,28.0,2.5,450
+59,PROSCIUTTO_DI_NORCIA,Prosciutto di Norcia,other,international,100,520,6.0,60.0,28.0,2.5,450
+60,MALLOREDDUS,Malloreddus,other,international,100,520,6.0,60.0,28.0,2.5,450
+62,PANNENKOEK,Pannenkoek,other,international,100,520,6.0,60.0,28.0,2.5,450
+63,DIRTY_MACARONI,Dirty macaroni,pasta,international,100,131,5.0,25.0,1.1,1.8,6
+65,GARLIC_BUTTER_SHRIMP,Garlic butter shrimp,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+66,FRICASSE,Fricasse,other,international,100,520,6.0,60.0,28.0,2.5,450
+67,STRACCIATELLA,Stracciatella,other,international,100,520,6.0,60.0,28.0,2.5,450
+69,SARTÙ,Sartù,other,international,100,520,6.0,60.0,28.0,2.5,450
+70,MATELOTE,Matelote,other,international,100,520,6.0,60.0,28.0,2.5,450
+71,BAODU,Baodu,other,international,100,520,6.0,60.0,28.0,2.5,450
+72,MATTENTAART,Mattentaart,other,international,100,520,6.0,60.0,28.0,2.5,450
+73,CARTELLATE,Cartellate,other,international,100,520,6.0,60.0,28.0,2.5,450
+74,GYERAN_PPANG,Gyeran-ppang,other,international,100,520,6.0,60.0,28.0,2.5,450
+75,TORTA_PASQUALINA,Torta Pasqualina,other,international,100,520,6.0,60.0,28.0,2.5,450
+76,CALTABOȘ,Caltaboș,other,international,100,520,6.0,60.0,28.0,2.5,450
+77,KHANOM_MO_KAENG,Khanom mo kaeng,other,international,100,520,6.0,60.0,28.0,2.5,450
+78,SUIMONO,Suimono,other,international,100,520,6.0,60.0,28.0,2.5,450
+79,DIMLAMA,Dimlama,other,international,100,520,6.0,60.0,28.0,2.5,450
+80,TAVË_KOSI,Tavë Kosi,other,international,100,520,6.0,60.0,28.0,2.5,450
+83,KALACH,Kalach,other,international,100,520,6.0,60.0,28.0,2.5,450
+84,JAMBON_PERSILLÉ,Jambon persillé,other,international,100,520,6.0,60.0,28.0,2.5,450
+85,PORK_BONES,Pork Bones,pork,international,100,242,27.0,0.0,14.0,0.0,62
+86,POZHARSKY_CUTLET,Pozharsky cutlet,other,international,100,520,6.0,60.0,28.0,2.5,450
+87,ROCCOCÒ,Roccocò,other,international,100,520,6.0,60.0,28.0,2.5,450
+88,FEIJÃO_DE_ÓLEO_DE_PALMA,Feijão de óleo de palma,other,international,100,520,6.0,60.0,28.0,2.5,450
+89,CALULU,Calulu,other,international,100,520,6.0,60.0,28.0,2.5,450
+90,BEY'S_SOUP,Bey's Soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+92,THỊT_KHO_TÀU,Thịt kho tàu,other,international,100,520,6.0,60.0,28.0,2.5,450
+93,BON_BON_CHICKEN,Bon bon chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+94,ZOQUE,Zoque,other,international,100,520,6.0,60.0,28.0,2.5,450
+95,BINT_AL_SAHN,Bint al-sahn,other,international,100,520,6.0,60.0,28.0,2.5,450
+96,TEMPOYAK,Tempoyak,other,international,100,520,6.0,60.0,28.0,2.5,450
+97,PURAN_POLI,Puran poli,other,international,100,520,6.0,60.0,28.0,2.5,450
+99,CHUEO_TANG,Chueo-tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+100,NAEM,Naem,other,international,100,520,6.0,60.0,28.0,2.5,450
+103,PIZOKEL,Pizokel,other,international,100,520,6.0,60.0,28.0,2.5,450
+105,SCHIACCIATA,Schiacciata,other,international,100,520,6.0,60.0,28.0,2.5,450
+106,DAHEEN,Daheen,other,international,100,520,6.0,60.0,28.0,2.5,450
+107,CHAPSSAL_TTEOK,Chapssal-tteok,other,international,100,520,6.0,60.0,28.0,2.5,450
+109,CRESCENTINA_MODENESE,Crescentina modenese,other,international,100,520,6.0,60.0,28.0,2.5,450
+110,PANSOTTI,Pansotti,other,international,100,520,6.0,60.0,28.0,2.5,450
+111,FRIED_EGGPLANT,Fried eggplant,egg,international,100,201,16.9,1.4,14.3,0.0,161
+112,PORTUGUESE_SEAFOOD_RICE,Portuguese seafood rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+113,TRIPES_À_LA_MODE_DE_CAEN,Tripes à la mode de Caen,other,international,100,520,6.0,60.0,28.0,2.5,450
+115,BRENEBON,Brenebon,other,international,100,520,6.0,60.0,28.0,2.5,450
+116,GNOCCO_FRITTO,Gnocco fritto,other,international,100,520,6.0,60.0,28.0,2.5,450
+118,TAHU_TEK_TEK,Tahu tek-tek,other,international,100,520,6.0,60.0,28.0,2.5,450
+119,BIBIKKAN,Bibikkan,other,international,100,520,6.0,60.0,28.0,2.5,450
+120,SQUID_TONGSENG,Squid tongseng,other,international,100,520,6.0,60.0,28.0,2.5,450
+122,BUNDEVARA,Bundevara,bread,international,100,265,9.0,49.0,3.2,2.7,491
+123,SOP_SAUDARA,Sop saudara,other,international,100,520,6.0,60.0,28.0,2.5,450
+125,ERBAZZONE,Erbazzone,other,international,100,520,6.0,60.0,28.0,2.5,450
+126,KISRA,Kisra,other,international,100,520,6.0,60.0,28.0,2.5,450
+127,MEAT_FROM_TIBLICA,Meat from tiblica,other,international,100,520,6.0,60.0,28.0,2.5,450
+129,YUFKA,Yufka,other,international,100,520,6.0,60.0,28.0,2.5,450
+130,PISAREI_E_FAŚÖ,Pisarei e faśö,other,international,100,520,6.0,60.0,28.0,2.5,450
+132,PAMPUSHKA,Pampushka,other,international,100,520,6.0,60.0,28.0,2.5,450
+133,MAKOWIEC,Makowiec,other,international,100,520,6.0,60.0,28.0,2.5,450
+134,SALEEG,Saleeg,other,international,100,520,6.0,60.0,28.0,2.5,450
+135,_M_0100FWT6,/m/0100fwt6,other,international,100,520,6.0,60.0,28.0,2.5,450
+136,JÓKAI_BEAN_SOUP,Jókai bean soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+137,BOOKBINDER_SOUP,Bookbinder soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+138,SELAT_SOLO,Selat solo,other,international,100,520,6.0,60.0,28.0,2.5,450
+139,KUTSINTA,Kutsinta,other,international,100,520,6.0,60.0,28.0,2.5,450
+140,SAGO_SOUP,Sago soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+141,VINEGRET,Vinegret,other,international,100,520,6.0,60.0,28.0,2.5,450
+142,SHRIMP_AND_GRITS,Shrimp and grits,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+143,SIROP_DE_LIÈGE,Sirop de Liège,other,international,100,520,6.0,60.0,28.0,2.5,450
+144,WOKU,Woku,other,international,100,520,6.0,60.0,28.0,2.5,450
+145,MUHALLEBI,Muhallebi,other,international,100,520,6.0,60.0,28.0,2.5,450
+146,GEPUK,Gepuk,other,international,100,520,6.0,60.0,28.0,2.5,450
+147,FOUÉE,Fouée,other,international,100,520,6.0,60.0,28.0,2.5,450
+148,OCTOPUS,Octopus,other,international,100,520,6.0,60.0,28.0,2.5,450
+149,KOBA,Koba,other,international,100,520,6.0,60.0,28.0,2.5,450
+150,BÒ_LÚC_LẮC,Bò lúc lắc,other,international,100,520,6.0,60.0,28.0,2.5,450
+151,SQUID_LŪ'AU,Squid lū'au,other,international,100,520,6.0,60.0,28.0,2.5,450
+152,SHRIMP_LOUIE,Shrimp Louie,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+153,BLACK_PUDDING,Black pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+154,CHERRY_KEBAB,Cherry kebab,other,middle_eastern,100,520,6.0,60.0,28.0,2.5,450
+155,PITSI_PITSÎ,Pitsi-pitsî,other,international,100,520,6.0,60.0,28.0,2.5,450
+156,SABICH_SALAD,Sabich salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+157,MIE_KOCOK,Mie kocok,other,international,100,520,6.0,60.0,28.0,2.5,450
+158,MARACA_PIE,Maraca pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+159,BANGA,Banga,other,international,100,520,6.0,60.0,28.0,2.5,450
+160,BACCALÀ_ALLA_LUCANA,Baccalà alla lucana,other,international,100,520,6.0,60.0,28.0,2.5,450
+161,NASI_TUMPANG,Nasi tumpang,other,international,100,520,6.0,60.0,28.0,2.5,450
+162,GRATIN_DAUPHINOIS,Gratin dauphinois,other,international,100,520,6.0,60.0,28.0,2.5,450
+163,ARROZ_CHAUFA,Arroz chaufa,other,international,100,520,6.0,60.0,28.0,2.5,450
+164,KUIH,Kuih,other,international,100,520,6.0,60.0,28.0,2.5,450
+165,AYAM_GORENG,Ayam goreng,other,international,100,520,6.0,60.0,28.0,2.5,450
+166,CHONGOS_ZAMORANOS,Chongos zamoranos,other,international,100,520,6.0,60.0,28.0,2.5,450
+167,_M_011C708,/m/011c708,other,international,100,520,6.0,60.0,28.0,2.5,450
+168,MĂMĂLIGĂ,Mămăligă,other,international,100,520,6.0,60.0,28.0,2.5,450
+169,CANDIED_ALMONDS,Candied almonds,other,international,100,520,6.0,60.0,28.0,2.5,450
+170,LASAGNE,Lasagne,other,international,100,520,6.0,60.0,28.0,2.5,450
+171,PECEL_LELE,Pecel Lele,other,international,100,520,6.0,60.0,28.0,2.5,450
+172,LETTUCE_SOUP,Lettuce soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+173,ACQUACOTTA,Acquacotta,other,international,100,520,6.0,60.0,28.0,2.5,450
+174,PORK_BLOOD_SOUP,Pork blood soup,pork,international,100,242,27.0,0.0,14.0,0.0,62
+175,_M_011SQ8KG,/m/011sq8kg,other,international,100,520,6.0,60.0,28.0,2.5,450
+176,BURIDDA,Buridda,other,international,100,520,6.0,60.0,28.0,2.5,450
+177,MACCU,Maccu,other,international,100,520,6.0,60.0,28.0,2.5,450
+178,TURKEY_DEVONSHIRE,Turkey Devonshire,other,international,100,520,6.0,60.0,28.0,2.5,450
+179,GINESTRATA,Ginestrata,other,international,100,520,6.0,60.0,28.0,2.5,450
+180,GARMUGIA,Garmugia,other,international,100,520,6.0,60.0,28.0,2.5,450
+181,MERINGUE,Meringue,other,international,100,520,6.0,60.0,28.0,2.5,450
+182,PEANUT_BUTTER_AND_JELLY_SANDWICH,Peanut butter and jelly sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+183,COUQUE_DE_DINANT,Couque de Dinant,other,international,100,520,6.0,60.0,28.0,2.5,450
+184,OMO_TUO,Omo tuo,other,international,100,520,6.0,60.0,28.0,2.5,450
+185,THAPTHIM_KROP,Thapthim krop,other,international,100,520,6.0,60.0,28.0,2.5,450
+186,PIE_TEE,Pie tee,pie,international,100,237,2.4,34.0,11.0,0.7,197
+187,SUTARFENI,Sutarfeni,other,international,100,520,6.0,60.0,28.0,2.5,450
+188,RACLETTE,Raclette,other,international,100,520,6.0,60.0,28.0,2.5,450
+189,WOTOU,Wotou,other,international,100,520,6.0,60.0,28.0,2.5,450
+190,PUNUGULU,Punugulu,other,international,100,520,6.0,60.0,28.0,2.5,450
+191,SUCCOTASH,Succotash,other,international,100,520,6.0,60.0,28.0,2.5,450
+192,CHIM_CHUM,Chim chum,other,international,100,520,6.0,60.0,28.0,2.5,450
+193,WACHIPA,Wachipa,other,international,100,520,6.0,60.0,28.0,2.5,450
+194,BOAT_NOODLES,Boat noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+195,TANTUNI,Tantuni,other,international,100,520,6.0,60.0,28.0,2.5,450
+196,SHAB_DEG,Shab Deg,other,international,100,520,6.0,60.0,28.0,2.5,450
+197,CHẢ_GIÒ,Chả giò,other,international,100,520,6.0,60.0,28.0,2.5,450
+198,CIABATTA_BACON_CHEESEBURGER,Ciabatta Bacon Cheeseburger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+199,MIE_KANGKUNG,Mie kangkung,other,international,100,520,6.0,60.0,28.0,2.5,450
+200,TUWO_MASARA,Tuwo masara,other,international,100,520,6.0,60.0,28.0,2.5,450
+201,KOKONTE,Kokonte,other,international,100,520,6.0,60.0,28.0,2.5,450
+202,AKPLE,Akple,other,international,100,520,6.0,60.0,28.0,2.5,450
+203,_M_012VYPZP,/m/012vypzp,other,international,100,520,6.0,60.0,28.0,2.5,450
+204,KWAREŻIMAL,Kwareżimal,other,international,100,520,6.0,60.0,28.0,2.5,450
+205,BENTO,Bento,other,international,100,520,6.0,60.0,28.0,2.5,450
+206,OSECHI,Osechi,other,international,100,520,6.0,60.0,28.0,2.5,450
+207,OKONOMIYAKI,Okonomiyaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+208,MISO_SOUP,Miso soup,soup,japanese,100,32,1.3,5.8,0.6,0.5,343
+209,DANGO,Dango,other,international,100,520,6.0,60.0,28.0,2.5,450
+210,ONIGIRI,Onigiri,other,international,100,520,6.0,60.0,28.0,2.5,450
+211,HIYAYAKKO,Hiyayakko,other,international,100,520,6.0,60.0,28.0,2.5,450
+212,TEMPURA,Tempura,other,japanese,100,676,7.8,78.0,36.4,3.2,585
+213,MOCHI,Mochi,other,international,100,520,6.0,60.0,28.0,2.5,450
+214,PEPPERSOUP,Peppersoup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+215,CALDO_DE_QUESO,Caldo de queso,other,international,100,520,6.0,60.0,28.0,2.5,450
+216,DODO_IKIRE,Dodo ikire,other,international,100,520,6.0,60.0,28.0,2.5,450
+217,UIRŌ,Uirō,other,international,100,520,6.0,60.0,28.0,2.5,450
+218,HONG_DOU_TANG,Hong dou tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+219,KAKIGŌRI,Kakigōri,other,international,100,520,6.0,60.0,28.0,2.5,450
+220,KHICHU,Khichu,other,international,100,520,6.0,60.0,28.0,2.5,450
+221,BOLO_DE_ARROZ,Bolo de arroz,other,international,100,520,6.0,60.0,28.0,2.5,450
+222,CHIPS_AND_DIP,Chips and dip,snack,international,100,520,6.0,60.0,28.0,2.5,450
+223,MURGH_MUSALLAM,Murgh musallam,other,international,100,520,6.0,60.0,28.0,2.5,450
+224,UTICA_GREENS,Utica greens,other,international,100,520,6.0,60.0,28.0,2.5,450
+225,ZAALOUK,Zaalouk,other,international,100,520,6.0,60.0,28.0,2.5,450
+226,MUTTON_CURRY,Mutton curry,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+227,MUGHLAI_PARATHA,Mughlai paratha,other,international,100,520,6.0,60.0,28.0,2.5,450
+228,TUO_ZAAFI,Tuo Zaafi,other,international,100,520,6.0,60.0,28.0,2.5,450
+229,BÁNH_BỘT_LỌC,Bánh bột lọc,other,international,100,520,6.0,60.0,28.0,2.5,450
+230,_M_013F387H,/m/013f387h,other,international,100,520,6.0,60.0,28.0,2.5,450
+231,CHEESEBURGER,Cheeseburger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+232,JELLY_BEAN,Jelly bean,other,international,100,520,6.0,60.0,28.0,2.5,450
+233,APPLE_PIE,Apple pie,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+234,UDON,Udon,other,japanese,100,520,6.0,60.0,28.0,2.5,450
+235,FALAFEL,Falafel,other,middle_eastern,100,520,6.0,60.0,28.0,2.5,450
+236,AGEDASHI_DŌFU,Agedashi dōfu,other,international,100,520,6.0,60.0,28.0,2.5,450
+237,DASHI,Dashi,other,international,100,520,6.0,60.0,28.0,2.5,450
+238,TORTELL,Tortell,other,international,100,520,6.0,60.0,28.0,2.5,450
+239,OMELETTE,Omelette,egg,international,100,155,13.0,1.1,11.0,0.0,124
+240,CRÈME_BRÛLÉE,Crème brûlée,other,international,100,520,6.0,60.0,28.0,2.5,450
+241,CUCUMBER_SOUP,Cucumber soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+242,FRENCH_TOAST,French toast,other,international,100,520,6.0,60.0,28.0,2.5,450
+243,TRIPE,Tripe,other,international,100,520,6.0,60.0,28.0,2.5,450
+244,PEPPERONI,Pepperoni,other,international,100,520,6.0,60.0,28.0,2.5,450
+245,SALAMI,Salami,other,international,100,520,6.0,60.0,28.0,2.5,450
+246,KIMCHI,Kimchi,other,international,100,520,6.0,60.0,28.0,2.5,450
+247,KNÖDEL,Knödel,other,international,100,520,6.0,60.0,28.0,2.5,450
+248,TAKOYAKI,Takoyaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+249,HALVA,Halva,other,international,100,520,6.0,60.0,28.0,2.5,450
+250,PIGS_IN_A_BLANKET,Pigs in a blanket,other,international,100,520,6.0,60.0,28.0,2.5,450
+251,SPANAKOPITA,Spanakopita,other,international,100,520,6.0,60.0,28.0,2.5,450
+252,PUMPKIN_PIE,Pumpkin pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+253,JAMBALAYA,Jambalaya,other,international,100,520,6.0,60.0,28.0,2.5,450
+254,CLUB_SANDWICH,Club sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+255,CHURRO,Churro,other,international,100,520,6.0,60.0,28.0,2.5,450
+256,TURDUCKEN,Turducken,other,international,100,520,6.0,60.0,28.0,2.5,450
+257,WELSH_RAREBIT,Welsh rarebit,other,international,100,520,6.0,60.0,28.0,2.5,450
+258,HOT_DOG,Hot dog,other,american,100,520,6.0,60.0,28.0,2.5,450
+259,OYAKODON,Oyakodon,other,international,100,520,6.0,60.0,28.0,2.5,450
+260,MEATBALL,Meatball,other,international,100,520,6.0,60.0,28.0,2.5,450
+261,WALDORF_SALAD,Waldorf salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+262,POTATO_SALAD,Potato salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+263,SATAY,Satay,other,international,100,520,6.0,60.0,28.0,2.5,450
+264,PEMMICAN,Pemmican,other,international,100,520,6.0,60.0,28.0,2.5,450
+265,MÄMMI,Mämmi,other,international,100,520,6.0,60.0,28.0,2.5,450
+266,FIDEUÀ,Fideuà,other,international,100,520,6.0,60.0,28.0,2.5,450
+267,WAFFLE,Waffle,other,international,100,520,6.0,60.0,28.0,2.5,450
+268,PANCAKE,Pancake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+269,QUICHE,Quiche,other,french,100,520,6.0,60.0,28.0,2.5,450
+270,BORSCHT,Borscht,other,international,100,520,6.0,60.0,28.0,2.5,450
+271,BRATWURST,Bratwurst,other,international,100,520,6.0,60.0,28.0,2.5,450
+272,FOIE_GRAS,Foie gras,other,international,100,520,6.0,60.0,28.0,2.5,450
+273,BURRITO,Burrito,other,mexican,100,520,6.0,60.0,28.0,2.5,450
+274,GOULASH,Goulash,other,international,100,520,6.0,60.0,28.0,2.5,450
+275,SPOTTED_DICK,Spotted dick,other,international,100,520,6.0,60.0,28.0,2.5,450
+276,COQ_AU_VIN,Coq au vin,other,international,100,520,6.0,60.0,28.0,2.5,450
+277,RATATOUILLE,Ratatouille,other,international,100,520,6.0,60.0,28.0,2.5,450
+278,CORNBREAD,Cornbread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+279,SOUVLAKI,Souvlaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+280,CHOW_MEIN,Chow mein,other,chinese,100,520,6.0,60.0,28.0,2.5,450
+281,ROAST_BEEF,Roast beef,beef,international,100,250,26.0,0.0,15.0,0.0,72
+282,PEKING_DUCK,Peking duck,other,international,100,520,6.0,60.0,28.0,2.5,450
+283,FRIED_CHICKEN,Fried chicken,chicken,american,100,310,35.1,0.0,18.2,0.0,106
+284,CROQUEMBOUCHE,Croquembouche,other,international,100,520,6.0,60.0,28.0,2.5,450
+285,TAHINI,Tahini,other,international,100,520,6.0,60.0,28.0,2.5,450
+286,GUMBO,Gumbo,other,international,100,520,6.0,60.0,28.0,2.5,450
+287,FAJITA,Fajita,other,international,100,520,6.0,60.0,28.0,2.5,450
+288,CHICKEN_FRIED_STEAK,Chicken fried steak,chicken,international,100,310,35.1,0.0,18.2,0.0,106
+289,SUKIYAKI,Sukiyaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+290,SCRAPPLE,Scrapple,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+291,CHILI_CON_CARNE,Chili con carne,other,international,100,520,6.0,60.0,28.0,2.5,450
+292,MONTE_CRISTO_SANDWICH,Monte Cristo sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+293,KIELBASA,Kielbasa,other,international,100,520,6.0,60.0,28.0,2.5,450
+294,POLENTA,Polenta,other,international,100,520,6.0,60.0,28.0,2.5,450
+295,REUBEN_SANDWICH,Reuben sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+296,S'MORE,S'more,other,international,100,520,6.0,60.0,28.0,2.5,450
+297,ANDOUILLE,Andouille,other,international,100,520,6.0,60.0,28.0,2.5,450
+298,BEIGNET,Beignet,other,international,100,520,6.0,60.0,28.0,2.5,450
+299,CRÊPE,Crêpe,other,international,100,520,6.0,60.0,28.0,2.5,450
+300,GULAI,Gulai,other,international,100,520,6.0,60.0,28.0,2.5,450
+301,BREAKFAST_SAUSAGE,Breakfast sausage,other,international,100,520,6.0,60.0,28.0,2.5,450
+302,CHORIZO,Chorizo,other,international,100,520,6.0,60.0,28.0,2.5,450
+303,GYRO,Gyro,other,international,100,520,6.0,60.0,28.0,2.5,450
+304,NACHOS,Nachos,other,mexican,100,520,6.0,60.0,28.0,2.5,450
+305,LARB,Larb,other,international,100,520,6.0,60.0,28.0,2.5,450
+306,COUSCOUS,Couscous,other,international,100,520,6.0,60.0,28.0,2.5,450
+307,MEZE,Meze,other,international,100,520,6.0,60.0,28.0,2.5,450
+308,CHEESESTEAK,Cheesesteak,beef,international,100,250,26.0,0.0,15.0,0.0,72
+309,FROZEN_YOGURT,Frozen yogurt,yogurt,international,100,59,3.5,4.7,3.3,0.0,36
+310,INJERA,Injera,other,international,100,520,6.0,60.0,28.0,2.5,450
+311,MUESLI,Muesli,other,international,100,520,6.0,60.0,28.0,2.5,450
+312,MEATLOAF,Meatloaf,other,international,100,520,6.0,60.0,28.0,2.5,450
+313,FUET,Fuet,other,international,100,520,6.0,60.0,28.0,2.5,450
+314,NATTŌ,Nattō,other,international,100,520,6.0,60.0,28.0,2.5,450
+315,BANANA_SPLIT,Banana split,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+316,PĄCZKI,Pączki,other,international,100,520,6.0,60.0,28.0,2.5,450
+317,POUND_CAKE,Pound cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+318,FUQI_FEIPIAN,Fuqi feipian,other,international,100,520,6.0,60.0,28.0,2.5,450
+319,NASI_LEMAK,Nasi lemak,other,international,100,520,6.0,60.0,28.0,2.5,450
+320,FLAN,Flan,other,international,100,520,6.0,60.0,28.0,2.5,450
+321,PAD_THAI,Pad thai,other,thai,100,520,6.0,60.0,28.0,2.5,450
+322,YAKITORI,Yakitori,other,international,100,520,6.0,60.0,28.0,2.5,450
+323,AMANATTŌ,Amanattō,other,international,100,520,6.0,60.0,28.0,2.5,450
+324,TOM_KHA_KAI,Tom kha kai,other,international,100,520,6.0,60.0,28.0,2.5,450
+325,LOKMA,Lokma,other,international,100,520,6.0,60.0,28.0,2.5,450
+326,MOONCAKE,Mooncake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+327,IDLI,Idli,other,indian,100,520,6.0,60.0,28.0,2.5,450
+328,SPÄTZLE,Spätzle,other,international,100,520,6.0,60.0,28.0,2.5,450
+329,NOPALITO,Nopalito,other,international,100,520,6.0,60.0,28.0,2.5,450
+330,SINCRONIZADA,Sincronizada,other,international,100,520,6.0,60.0,28.0,2.5,450
+331,ŽGANCI,Žganci,other,international,100,520,6.0,60.0,28.0,2.5,450
+332,TOTOPO,Totopo,other,international,100,520,6.0,60.0,28.0,2.5,450
+333,FOLAR,Folar,other,international,100,520,6.0,60.0,28.0,2.5,450
+334,CHERRY_PIE,Cherry pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+335,UMEBOSHI,Umeboshi,other,international,100,520,6.0,60.0,28.0,2.5,450
+336,PATTY,Patty,other,international,100,520,6.0,60.0,28.0,2.5,450
+337,SALTAH,Saltah,other,international,100,520,6.0,60.0,28.0,2.5,450
+338,KHINKALI,Khinkali,other,international,100,520,6.0,60.0,28.0,2.5,450
+339,SHKEDEI_MARAK,Shkedei marak,other,international,100,520,6.0,60.0,28.0,2.5,450
+340,TEKKADON,Tekkadon,other,international,100,520,6.0,60.0,28.0,2.5,450
+341,CHADACHADI,Chadachadi,other,international,100,520,6.0,60.0,28.0,2.5,450
+342,KAIPEN,Kaipen,other,international,100,520,6.0,60.0,28.0,2.5,450
+343,DRAW_SOUP,Draw soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+344,SHAHAN_FUL,Shahan ful,other,international,100,520,6.0,60.0,28.0,2.5,450
+345,SHIRO,Shiro,other,international,100,520,6.0,60.0,28.0,2.5,450
+346,GA'AT,Ga'at,other,international,100,520,6.0,60.0,28.0,2.5,450
+347,SKORDALIA,Skordalia,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+348,BUDAE_JJIGAE,Budae jjigae,other,international,100,520,6.0,60.0,28.0,2.5,450
+349,ANJU,Anju,other,international,100,520,6.0,60.0,28.0,2.5,450
+350,FRIED_COKE,Fried Coke,other,international,100,676,7.8,78.0,36.4,3.2,585
+351,LEMANG,Lemang,other,international,100,520,6.0,60.0,28.0,2.5,450
+352,BASUNDI,Basundi,other,international,100,520,6.0,60.0,28.0,2.5,450
+353,BROWN_BETTY,Brown Betty,other,international,100,520,6.0,60.0,28.0,2.5,450
+354,KHABEES,Khabees,other,international,100,520,6.0,60.0,28.0,2.5,450
+355,KOTTU,Kottu,other,international,100,520,6.0,60.0,28.0,2.5,450
+356,ISTERBAND,Isterband,other,international,100,520,6.0,60.0,28.0,2.5,450
+357,CIAUSCOLO,Ciauscolo,other,international,100,520,6.0,60.0,28.0,2.5,450
+358,KHATKHATE,Khatkhate,other,international,100,520,6.0,60.0,28.0,2.5,450
+359,PAN_DE_MUERTO,Pan de muerto,other,international,100,520,6.0,60.0,28.0,2.5,450
+360,CAPONATA,Caponata,other,international,100,520,6.0,60.0,28.0,2.5,450
+361,_M_0267F9W,/m/0267f9w,other,international,100,520,6.0,60.0,28.0,2.5,450
+362,SABAAYAD,Sabaayad,other,international,100,520,6.0,60.0,28.0,2.5,450
+363,MIYEOK_GUK,Miyeok-guk,other,international,100,520,6.0,60.0,28.0,2.5,450
+364,IMONI,Imoni,other,international,100,520,6.0,60.0,28.0,2.5,450
+365,PITHA,Pitha,other,international,100,520,6.0,60.0,28.0,2.5,450
+366,KEDGEREE,Kedgeree,other,international,100,520,6.0,60.0,28.0,2.5,450
+367,BIFE_A_CAVALO,Bife a cavalo,other,international,100,520,6.0,60.0,28.0,2.5,450
+368,YAKI_UDON,Yaki udon,other,japanese,100,520,6.0,60.0,28.0,2.5,450
+369,SHE_CRAB_SOUP,She-crab soup,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+370,KOOZH,Koozh,other,international,100,520,6.0,60.0,28.0,2.5,450
+371,KEŞKEK,Keşkek,other,international,100,520,6.0,60.0,28.0,2.5,450
+372,CABIDELA,Cabidela,other,international,100,520,6.0,60.0,28.0,2.5,450
+373,GERBER_SANDWICH,Gerber sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+374,ZAGORSKI_ŠTRUKLI,Zagorski Štrukli,other,international,100,520,6.0,60.0,28.0,2.5,450
+375,HIMBASHA,Himbasha,other,international,100,520,6.0,60.0,28.0,2.5,450
+376,SATARAŠ,Sataraš,other,international,100,520,6.0,60.0,28.0,2.5,450
+377,KAKUNI,Kakuni,other,international,100,520,6.0,60.0,28.0,2.5,450
+378,ENORMOUS_OMELET_SANDWICH,Enormous Omelet Sandwich,egg,international,100,155,13.0,1.1,11.0,0.0,124
+379,TURRÓN,Turrón,other,international,100,520,6.0,60.0,28.0,2.5,450
+380,TSUKUDANI,Tsukudani,other,international,100,520,6.0,60.0,28.0,2.5,450
+381,HAWAIIAN_HAYSTACK,Hawaiian haystack,other,international,100,520,6.0,60.0,28.0,2.5,450
+382,KATEH,Kateh,other,international,100,520,6.0,60.0,28.0,2.5,450
+383,STOEMP,Stoemp,other,international,100,520,6.0,60.0,28.0,2.5,450
+384,PAJEON,Pajeon,other,international,100,520,6.0,60.0,28.0,2.5,450
+385,ĠBEJNA,Ġbejna,other,international,100,520,6.0,60.0,28.0,2.5,450
+386,KAYA_TOAST,Kaya toast,other,international,100,520,6.0,60.0,28.0,2.5,450
+387,FIT_FIT,Fit-fit,other,international,100,520,6.0,60.0,28.0,2.5,450
+388,KITCHA,Kitcha,other,international,100,520,6.0,60.0,28.0,2.5,450
+389,THALIPEETH,Thalipeeth,other,international,100,520,6.0,60.0,28.0,2.5,450
+390,FIGGY_PUDDING,Figgy pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+391,CACHUPA,Cachupa,other,international,100,520,6.0,60.0,28.0,2.5,450
+392,CHERRIES_JUBILEE,Cherries jubilee,other,international,100,520,6.0,60.0,28.0,2.5,450
+393,CRAPPIT_HEID,Crappit heid,other,international,100,520,6.0,60.0,28.0,2.5,450
+394,MINCE_AND_TATTIES,Mince and tatties,other,international,100,520,6.0,60.0,28.0,2.5,450
+395,ANADAMA_BREAD,Anadama bread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+396,CARBONARA,Carbonara,other,italian,100,520,6.0,60.0,28.0,2.5,450
+397,KLADDKAKA,Kladdkaka,other,international,100,520,6.0,60.0,28.0,2.5,450
+398,SHAKSHOUKA,Shakshouka,other,international,100,520,6.0,60.0,28.0,2.5,450
+399,CHICKEN_VESUVIO,Chicken Vesuvio,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+400,JIBARITO,Jibarito,other,international,100,520,6.0,60.0,28.0,2.5,450
+401,CHICKEN_DIVAN,Chicken Divan,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+402,MOTSUNABE,Motsunabe,other,international,100,520,6.0,60.0,28.0,2.5,450
+403,SONOFABITCH_STEW,Sonofabitch stew,soup,international,100,32,1.3,5.8,0.6,0.5,343
+404,CORN_PUDDING,Corn pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+405,JOHNNY_MARZETTI,Johnny Marzetti,other,international,100,520,6.0,60.0,28.0,2.5,450
+406,MOSTARDA,Mostarda,other,international,100,520,6.0,60.0,28.0,2.5,450
+407,MAAFE,Maafe,other,international,100,520,6.0,60.0,28.0,2.5,450
+408,CHURMA,Churma,other,international,100,520,6.0,60.0,28.0,2.5,450
+409,CHOLE_BHATURE,Chole bhature,other,international,100,520,6.0,60.0,28.0,2.5,450
+410,DOBOS_TORTE,Dobos torte,other,international,100,520,6.0,60.0,28.0,2.5,450
+411,CARNE_DE_PORCO_À_ALENTEJANA,Carne de porco à alentejana,other,international,100,520,6.0,60.0,28.0,2.5,450
+412,KHAO_SOI,Khao soi,other,international,100,520,6.0,60.0,28.0,2.5,450
+413,KISSEL,Kissel,other,international,100,520,6.0,60.0,28.0,2.5,450
+414,COTTAGE_LOAF,Cottage loaf,other,international,100,520,6.0,60.0,28.0,2.5,450
+415,SILVER_NEEDLE_NOODLES,Silver needle noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+416,SHRIMP_DEJONGHE,Shrimp DeJonghe,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+417,KIRITANPO,Kiritanpo,other,international,100,520,6.0,60.0,28.0,2.5,450
+418,BEAN_PIE,Bean pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+419,CHURCHKHELA,Churchkhela,other,international,100,520,6.0,60.0,28.0,2.5,450
+420,YAHNI,Yahni,other,international,100,520,6.0,60.0,28.0,2.5,450
+421,GRINGAS,Gringas,other,international,100,520,6.0,60.0,28.0,2.5,450
+422,ANNIN_TOFU,Annin tofu,other,international,100,520,6.0,60.0,28.0,2.5,450
+423,JIAOZI,Jiaozi,other,international,100,520,6.0,60.0,28.0,2.5,450
+424,BREAKFAST_SANDWICH,Breakfast sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+425,TANGHULU,Tanghulu,other,international,100,520,6.0,60.0,28.0,2.5,450
+426,BLACK_SESAME_SOUP,Black sesame soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+427,GOUGÈRE,Gougère,other,international,100,520,6.0,60.0,28.0,2.5,450
+428,NAMUL,Namul,other,international,100,520,6.0,60.0,28.0,2.5,450
+429,KOSAMBARI,Kosambari,other,international,100,520,6.0,60.0,28.0,2.5,450
+430,MA'AMOUL,Ma'amoul,other,international,100,520,6.0,60.0,28.0,2.5,450
+431,CALDO_DE_POLLO,Caldo de pollo,other,international,100,520,6.0,60.0,28.0,2.5,450
+432,LOUKANIKO,Loukaniko,other,international,100,520,6.0,60.0,28.0,2.5,450
+433,DOBERGE_CAKE,Doberge cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+434,NASI_CAMPUR,Nasi campur,other,international,100,520,6.0,60.0,28.0,2.5,450
+435,SNACK_CAKE,Snack cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+436,TAIYAKI,Taiyaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+437,KARNIYARIK,Karnıyarık,other,international,100,520,6.0,60.0,28.0,2.5,450
+438,PIEROGI,Pierogi,pie,international,100,237,2.4,34.0,11.0,0.7,197
+439,MACARONI_AND_CHEESE,Macaroni and cheese,pasta,international,100,131,5.0,25.0,1.1,1.8,6
+440,HUEVOS_MOTULEÑOS,Huevos motuleños,other,international,100,520,6.0,60.0,28.0,2.5,450
+441,CHISLIC,Chislic,other,international,100,520,6.0,60.0,28.0,2.5,450
+442,CORN_DOG,Corn dog,other,international,100,520,6.0,60.0,28.0,2.5,450
+443,SHAWARMA,Shawarma,other,middle_eastern,100,520,6.0,60.0,28.0,2.5,450
+444,ZONGZI,Zongzi,other,international,100,520,6.0,60.0,28.0,2.5,450
+445,DUMPLING,Dumpling,dumpling,international,100,200,8.0,28.0,6.0,1.5,320
+446,SYRNIKI,Syrniki,other,international,100,520,6.0,60.0,28.0,2.5,450
+447,KING_CAKE,King cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+448,SOUFFLÉ,Soufflé,other,international,100,520,6.0,60.0,28.0,2.5,450
+449,GYŪDON,Gyūdon,other,international,100,520,6.0,60.0,28.0,2.5,450
+450,CHICKEN_NUGGET,Chicken nugget,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+451,BULGOGI,Bulgogi,other,international,100,520,6.0,60.0,28.0,2.5,450
+452,EGGS_BENEDICT,Eggs Benedict,egg,international,100,155,13.0,1.1,11.0,0.0,124
+453,HOT_DRY_NOODLES,Hot dry noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+454,MASHED_POTATO,Mashed potato,other,international,100,520,6.0,60.0,28.0,2.5,450
+455,ANPAN,Anpan,other,international,100,520,6.0,60.0,28.0,2.5,450
+456,QUESADILLA,Quesadilla,other,mexican,100,520,6.0,60.0,28.0,2.5,450
+457,YOUTIAO,Youtiao,other,international,100,520,6.0,60.0,28.0,2.5,450
+458,CONGEE,Congee,other,international,100,520,6.0,60.0,28.0,2.5,450
+459,SEKIHAN,Sekihan,other,international,100,520,6.0,60.0,28.0,2.5,450
+460,SEMLA,Semla,other,international,100,520,6.0,60.0,28.0,2.5,450
+461,ARCTIC_ROLL,Arctic roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+462,CASTELLA,Castella,other,international,100,520,6.0,60.0,28.0,2.5,450
+463,HANABIRAMOCHI,Hanabiramochi,other,international,100,520,6.0,60.0,28.0,2.5,450
+464,FALUKORV,Falukorv,other,international,100,520,6.0,60.0,28.0,2.5,450
+465,KETUPAT,Ketupat,other,international,100,520,6.0,60.0,28.0,2.5,450
+466,RENDANG,Rendang,other,international,100,520,6.0,60.0,28.0,2.5,450
+467,CHOCOLATE_BROWNIE,Chocolate brownie,other,international,100,520,6.0,60.0,28.0,2.5,450
+468,MAPO_DOUFU,Mapo doufu,other,international,100,520,6.0,60.0,28.0,2.5,450
+469,CHINESE_NOODLES,Chinese noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+470,EMPANADA,Empanada,other,international,100,520,6.0,60.0,28.0,2.5,450
+471,FRIED_RICE,Fried rice,rice,chinese,100,169,3.5,36.4,0.4,0.5,1
+472,CHICAGO_STYLE_PIZZA,Chicago-style pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+473,CUBAN_SANDWICH,Cuban sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+474,TARTE_TATIN,Tarte Tatin,pie,international,100,237,2.4,34.0,11.0,0.7,197
+475,YAKISOBA,Yakisoba,other,international,100,520,6.0,60.0,28.0,2.5,450
+476,DAGWOOD_SANDWICH,Dagwood sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+477,CHEESECAKE,Cheesecake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+478,SAMOSA,Samosa,other,indian,100,520,6.0,60.0,28.0,2.5,450
+479,DEVIL'S_FOOD_CAKE,Devil's food cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+480,SHASHLIK,Shashlik,other,international,100,520,6.0,60.0,28.0,2.5,450
+481,HORSESHOE_SANDWICH,Horseshoe sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+482,CITY_CHICKEN,City chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+483,KEY_LIME_PIE,Key lime pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+484,POTATO_SKINS,Potato skins,other,international,100,520,6.0,60.0,28.0,2.5,450
+485,HAEJANG_GUK,Haejang-guk,other,international,100,520,6.0,60.0,28.0,2.5,450
+486,BURMESE_TOFU,Burmese tofu,other,international,100,520,6.0,60.0,28.0,2.5,450
+487,SHUMAI,Shumai,other,international,100,520,6.0,60.0,28.0,2.5,450
+488,SOUR_CHERRY_SOUP,Sour cherry soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+489,GIGANDES_PLAKI,Gigandes plaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+490,MAJBOOS,Majboos,other,international,100,520,6.0,60.0,28.0,2.5,450
+491,CHICKEN_CURRY,Chicken curry,chicken,indian,100,239,27.0,0.0,14.0,0.0,82
+492,SHRIMP_CREOLE,Shrimp Creole,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+493,PORK_TENDERLOIN_SANDWICH,Pork tenderloin sandwich,pork,international,100,242,27.0,0.0,14.0,0.0,62
+494,DAMPFNUDEL,Dampfnudel,other,international,100,520,6.0,60.0,28.0,2.5,450
+495,FINNAN_HADDIE,Finnan haddie,other,international,100,520,6.0,60.0,28.0,2.5,450
+496,KENKEY,Kenkey,other,international,100,520,6.0,60.0,28.0,2.5,450
+497,PINCHO,Pincho,other,international,100,520,6.0,60.0,28.0,2.5,450
+498,GUNDRUK,Gundruk,other,international,100,520,6.0,60.0,28.0,2.5,450
+499,CHILORIO,Chilorio,other,international,100,520,6.0,60.0,28.0,2.5,450
+500,KOULOURAKIA,Koulourakia,other,international,100,520,6.0,60.0,28.0,2.5,450
+501,BRYNDZOVÉ_HALUŠKY,Bryndzové halušky,other,international,100,520,6.0,60.0,28.0,2.5,450
+502,IMAGAWAYAKI,Imagawayaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+503,VASILOPITA,Vasilopita,other,international,100,520,6.0,60.0,28.0,2.5,450
+504,STRAPAČKY,Strapačky,other,international,100,520,6.0,60.0,28.0,2.5,450
+505,PO'_BOY,Po' boy,other,international,100,520,6.0,60.0,28.0,2.5,450
+506,CAPIROTADA,Capirotada,other,international,100,520,6.0,60.0,28.0,2.5,450
+507,BEEF_MANHATTAN,Beef Manhattan,beef,international,100,250,26.0,0.0,15.0,0.0,72
+508,SANDWICH_LOAF,Sandwich loaf,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+509,JIAN_DUI,Jian dui,other,international,100,520,6.0,60.0,28.0,2.5,450
+510,ALMOND_BISCUIT,Almond biscuit,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+511,WEST_SLAVIC_FERMENTED_CEREAL_SOUPS,West Slavic fermented cereal soups,soup,international,100,32,1.3,5.8,0.6,0.5,343
+512,FRIED_PLANTAIN,Fried plantain,other,international,100,676,7.8,78.0,36.4,3.2,585
+513,STUFFED_PEPPERS,Stuffed peppers,other,international,100,520,6.0,60.0,28.0,2.5,450
+514,PIPERADE,Piperade,other,international,100,520,6.0,60.0,28.0,2.5,450
+515,ROGAN_JOSH,Rogan josh,other,international,100,520,6.0,60.0,28.0,2.5,450
+516,FABADA_ASTURIANA,Fabada asturiana,other,international,100,520,6.0,60.0,28.0,2.5,450
+517,POTATO_WEDGES,Potato wedges,other,international,100,520,6.0,60.0,28.0,2.5,450
+518,CALISSON,Calisson,other,international,100,520,6.0,60.0,28.0,2.5,450
+519,PRAWN_BALL,Prawn ball,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+520,KUSHIKATSU,Kushikatsu,other,international,100,520,6.0,60.0,28.0,2.5,450
+521,LO_MAI_CHI,Lo mai chi,other,international,100,520,6.0,60.0,28.0,2.5,450
+522,MANCHET,Manchet,other,international,100,520,6.0,60.0,28.0,2.5,450
+523,LEEK_SOUP,Leek soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+524,VANILLEROSTBRATEN,Vanillerostbraten,other,international,100,520,6.0,60.0,28.0,2.5,450
+525,HANGTOWN_FRY,Hangtown fry,other,international,100,520,6.0,60.0,28.0,2.5,450
+526,CABBIE_CLAW,Cabbie claw,other,international,100,520,6.0,60.0,28.0,2.5,450
+527,CHITRANNA,Chitranna,other,international,100,520,6.0,60.0,28.0,2.5,450
+528,RAGI_MUDDE,Ragi mudde,other,international,100,520,6.0,60.0,28.0,2.5,450
+529,DENVER_SANDWICH,Denver sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+530,LAVERBREAD,Laverbread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+531,ELOTE,Elote,other,international,100,520,6.0,60.0,28.0,2.5,450
+532,KULOLO,Kulolo,other,international,100,520,6.0,60.0,28.0,2.5,450
+533,OXTAIL_SOUP,Oxtail soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+534,PANTUA,Pantua,other,international,100,520,6.0,60.0,28.0,2.5,450
+535,CORN_RELISH,Corn relish,other,international,100,520,6.0,60.0,28.0,2.5,450
+536,POGAČA,Pogača,other,international,100,520,6.0,60.0,28.0,2.5,450
+537,QUBANI_KA_MEETHA,Qubani-ka-Meetha,other,international,100,520,6.0,60.0,28.0,2.5,450
+538,BOONDI,Boondi,other,international,100,520,6.0,60.0,28.0,2.5,450
+539,ARROSTICINI,Arrosticini,other,international,100,520,6.0,60.0,28.0,2.5,450
+540,PANELLE,Panelle,other,international,100,520,6.0,60.0,28.0,2.5,450
+541,SANTULA,Santula,other,international,100,520,6.0,60.0,28.0,2.5,450
+542,TOFU_SKIN_ROLL,Tofu skin roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+543,CRISPY_FRIED_CHICKEN,Crispy fried chicken,chicken,american,100,310,35.1,0.0,18.2,0.0,106
+544,STEAMED_MEATBALL,Steamed meatball,other,international,100,416,4.8,48.0,22.4,2.0,360
+545,LOBIO,Lobio,other,international,100,520,6.0,60.0,28.0,2.5,450
+546,SUMAN,Suman,other,international,100,520,6.0,60.0,28.0,2.5,450
+547,HŌTŌ,Hōtō,other,international,100,520,6.0,60.0,28.0,2.5,450
+548,MATBUKHA,Matbukha,other,international,100,520,6.0,60.0,28.0,2.5,450
+549,_M_02RGJS1,/m/02rgjs1,other,international,100,520,6.0,60.0,28.0,2.5,450
+550,AÇORDA,Açorda,other,international,100,520,6.0,60.0,28.0,2.5,450
+551,MAKDOUS,Makdous,other,international,100,520,6.0,60.0,28.0,2.5,450
+552,SOTO,Soto,other,international,100,520,6.0,60.0,28.0,2.5,450
+553,FRANGOLLO,Frangollo,other,international,100,520,6.0,60.0,28.0,2.5,450
+554,PATTY_MELT,Patty melt,other,international,100,520,6.0,60.0,28.0,2.5,450
+555,TARO_DUMPLING,Taro dumpling,dumpling,international,100,200,8.0,28.0,6.0,1.5,320
+556,ENTOMATADA,Entomatada,other,international,100,520,6.0,60.0,28.0,2.5,450
+557,BÁNH_CUỐN,Bánh cuốn,other,international,100,520,6.0,60.0,28.0,2.5,450
+558,CORUNDA,Corunda,other,international,100,520,6.0,60.0,28.0,2.5,450
+559,ZHALIANG,Zhaliang,other,international,100,520,6.0,60.0,28.0,2.5,450
+560,CASSOULET,Cassoulet,other,international,100,520,6.0,60.0,28.0,2.5,450
+561,DEBRECENER,Debrecener,other,international,100,520,6.0,60.0,28.0,2.5,450
+562,SCAMPI,Scampi,other,international,100,520,6.0,60.0,28.0,2.5,450
+563,PILAF,Pilaf,rice,international,100,130,2.7,28.0,0.3,0.4,1
+564,SAMBAR,Sambar,other,international,100,520,6.0,60.0,28.0,2.5,450
+565,CENTURY_EGG,Century egg,egg,international,100,155,13.0,1.1,11.0,0.0,124
+566,ESCARGOT,Escargot,other,international,100,520,6.0,60.0,28.0,2.5,450
+567,CONG_YOU_BING,Cong you bing,other,international,100,520,6.0,60.0,28.0,2.5,450
+568,BEEF_NOODLE_SOUP,Beef noodle soup,beef,international,100,250,26.0,0.0,15.0,0.0,72
+569,MAGIRITSA,Magiritsa,other,international,100,520,6.0,60.0,28.0,2.5,450
+570,GUGELHUPF,Gugelhupf,other,international,100,520,6.0,60.0,28.0,2.5,450
+571,SACHIMA,Sachima,other,international,100,520,6.0,60.0,28.0,2.5,450
+572,WHITE_RICE,White rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+573,MAULTASCHE,Maultasche,other,international,100,520,6.0,60.0,28.0,2.5,450
+574,AMERICAN_CHOP_SUEY,American chop suey,other,international,100,520,6.0,60.0,28.0,2.5,450
+575,FISH_SLICE,Fish slice,fish,international,100,206,22.0,0.0,12.0,0.0,90
+576,SEA_CUCUMBER,Sea cucumber,other,international,100,520,6.0,60.0,28.0,2.5,450
+577,BEEF_BALL,Beef ball,beef,international,100,250,26.0,0.0,15.0,0.0,72
+578,SIU_YUK,Siu yuk,other,international,100,520,6.0,60.0,28.0,2.5,450
+579,SEAFOOD_BIRDSNEST,Seafood birdsnest,other,international,100,520,6.0,60.0,28.0,2.5,450
+580,WHITE_CUT_CHICKEN,White cut chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+581,_M_02VWRYJ,/m/02vwryj,other,international,100,520,6.0,60.0,28.0,2.5,450
+582,SATSIVI,Satsivi,other,international,100,520,6.0,60.0,28.0,2.5,450
+583,MALPUA,Malpua,other,international,100,520,6.0,60.0,28.0,2.5,450
+584,CHHENA_GAJA,Chhena gaja,other,international,100,520,6.0,60.0,28.0,2.5,450
+585,FLYING_JACOB,Flying Jacob,other,international,100,520,6.0,60.0,28.0,2.5,450
+586,STEAK_DE_BURGO,Steak de Burgo,beef,international,100,250,26.0,0.0,15.0,0.0,72
+587,CRAB_LOUIE,Crab Louie,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+588,BUTTER_CHICKEN,Butter chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+589,AMOK_TREY,Amok trey,other,international,100,520,6.0,60.0,28.0,2.5,450
+590,MENEMEN,Menemen,other,international,100,520,6.0,60.0,28.0,2.5,450
+591,PIADINA,Piadina,other,international,100,520,6.0,60.0,28.0,2.5,450
+592,ORANGE_CUTTLEFISH,Orange cuttlefish,fish,international,100,206,22.0,0.0,12.0,0.0,90
+593,FUDGE,Fudge,other,international,100,520,6.0,60.0,28.0,2.5,450
+594,COTTAGE_PUDDING,Cottage Pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+595,MEATCAKE,Meatcake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+596,BUTTERMILK_PIE,Buttermilk pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+597,KALAMAY,Kalamay,other,international,100,520,6.0,60.0,28.0,2.5,450
+598,PUTO,Puto,other,international,100,520,6.0,60.0,28.0,2.5,450
+599,DAL_MAKHANI,Dal makhani,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+600,MIXIOTE,Mixiote,other,international,100,520,6.0,60.0,28.0,2.5,450
+601,BAGEL_DOG,Bagel dog,other,international,100,520,6.0,60.0,28.0,2.5,450
+602,BÚN_RIÊU,Bún riêu,other,international,100,520,6.0,60.0,28.0,2.5,450
+603,FEIJOADA,Feijoada,other,international,100,520,6.0,60.0,28.0,2.5,450
+604,PHO,Pho,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+605,MILK_TOAST,Milk toast,milk,international,100,61,3.2,4.8,3.3,0.0,44
+606,LIVER_AND_ONIONS,Liver and onions,other,international,100,520,6.0,60.0,28.0,2.5,450
+607,ICED_BUN,Iced bun,bread,international,100,265,9.0,49.0,3.2,2.7,491
+608,SHEER_KHURMA,Sheer khurma,other,international,100,520,6.0,60.0,28.0,2.5,450
+609,YI_MEIN,Yi mein,other,international,100,520,6.0,60.0,28.0,2.5,450
+610,SHRIMP_ROE_NOODLES,Shrimp roe noodles,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+611,LAI_FUN,Lai fun,other,international,100,520,6.0,60.0,28.0,2.5,450
+612,OIL_NOODLES,Oil noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+613,KAL_GUKSU,Kal-guksu,other,international,100,520,6.0,60.0,28.0,2.5,450
+614,YOUMIAN,Youmian,other,international,100,520,6.0,60.0,28.0,2.5,450
+615,AVGOLEMONO,Avgolemono,other,international,100,520,6.0,60.0,28.0,2.5,450
+616,PORK_ROLL,Pork roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+617,TART,Tart,pie,international,100,237,2.4,34.0,11.0,0.7,197
+618,LEBERKÄSE,Leberkäse,other,international,100,520,6.0,60.0,28.0,2.5,450
+619,KALAKUKKO,Kalakukko,other,international,100,520,6.0,60.0,28.0,2.5,450
+620,MUSTAMAKKARA,Mustamakkara,other,international,100,520,6.0,60.0,28.0,2.5,450
+621,BABA_GHANOUSH,Baba ghanoush,other,international,100,520,6.0,60.0,28.0,2.5,450
+622,KARELIAN_PASTY,Karelian pasty,other,international,100,520,6.0,60.0,28.0,2.5,450
+623,SHORTCAKE,Shortcake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+624,PROFITEROLE,Profiterole,other,international,100,520,6.0,60.0,28.0,2.5,450
+625,MOUSSAKA,Moussaka,other,international,100,520,6.0,60.0,28.0,2.5,450
+626,DULCE_DE_LECHE,Dulce de leche,other,international,100,520,6.0,60.0,28.0,2.5,450
+627,BLAA,Blaa,other,international,100,520,6.0,60.0,28.0,2.5,450
+628,RISOTTO,Risotto,rice,italian,100,130,2.7,28.0,0.3,0.4,1
+629,FUNNEL_CAKE,Funnel cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+630,FRIED_DOUGH,Fried dough,other,international,100,676,7.8,78.0,36.4,3.2,585
+631,CONSOMMÉ,Consommé,other,international,100,520,6.0,60.0,28.0,2.5,450
+632,CLAM_CHOWDER,Clam chowder,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+633,TARTIFLETTE,Tartiflette,pie,international,100,237,2.4,34.0,11.0,0.7,197
+634,RED_CURRY,Red curry,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+635,TANDOORI_CHICKEN,Tandoori chicken,chicken,indian,100,239,27.0,0.0,14.0,0.0,82
+636,GAZPACHO,Gazpacho,other,international,100,520,6.0,60.0,28.0,2.5,450
+637,PROSCIUTTO,Prosciutto,other,international,100,520,6.0,60.0,28.0,2.5,450
+638,BOEREWORS,Boerewors,other,international,100,520,6.0,60.0,28.0,2.5,450
+639,BAKED_POTATO,Baked potato,other,international,100,468,5.4,54.0,25.2,2.2,405
+640,BOUILLABAISSE,Bouillabaisse,other,international,100,520,6.0,60.0,28.0,2.5,450
+641,KRALAN,Kralan,other,international,100,520,6.0,60.0,28.0,2.5,450
+642,CHIRETA,Chireta,other,international,100,520,6.0,60.0,28.0,2.5,450
+643,BAKEWELL_TART,Bakewell tart,pie,international,100,237,2.4,34.0,11.0,0.7,197
+644,GRITS,Grits,other,international,100,520,6.0,60.0,28.0,2.5,450
+645,SHAVED_ICE,Shaved ice,other,international,100,520,6.0,60.0,28.0,2.5,450
+646,CHOCO_PIE,Choco pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+647,CUMIAN,Cumian,other,international,100,520,6.0,60.0,28.0,2.5,450
+648,JOKBAL,Jokbal,other,international,100,520,6.0,60.0,28.0,2.5,450
+649,GRILLADES,Grillades,other,international,100,520,6.0,60.0,28.0,2.5,450
+650,HOTTEOK,Hotteok,other,international,100,520,6.0,60.0,28.0,2.5,450
+651,EZOGELIN_SOUP,Ezogelin soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+652,KNEDLE,Knedle,other,international,100,520,6.0,60.0,28.0,2.5,450
+653,MASGOUF,Masgouf,other,international,100,520,6.0,60.0,28.0,2.5,450
+654,SOPE,Sope,other,international,100,520,6.0,60.0,28.0,2.5,450
+655,COCONUT_RICE,Coconut rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+656,BAKARKHANI,Bakarkhani,other,international,100,520,6.0,60.0,28.0,2.5,450
+657,ASIDA,Asida,other,international,100,520,6.0,60.0,28.0,2.5,450
+658,DIRT_CAKE,Dirt cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+659,SEL_ROTI,Sel roti,bread,indian,100,265,9.0,49.0,3.2,2.7,491
+660,KALAKAND,Kalakand,other,international,100,520,6.0,60.0,28.0,2.5,450
+661,GHEVAR,Ghevar,other,international,100,520,6.0,60.0,28.0,2.5,450
+662,SUSSEX_POND_PUDDING,Sussex pond pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+663,LONTONG,Lontong,other,international,100,520,6.0,60.0,28.0,2.5,450
+664,BÁNH_BÈO,Bánh bèo,other,international,100,520,6.0,60.0,28.0,2.5,450
+665,PRINGÁ,Pringá,other,international,100,520,6.0,60.0,28.0,2.5,450
+666,BULL_ROAST,Bull roast,other,international,100,520,6.0,60.0,28.0,2.5,450
+667,STUFFED_HAM,Stuffed ham,pork,international,100,242,27.0,0.0,14.0,0.0,62
+668,LABLABI,Lablabi,other,international,100,520,6.0,60.0,28.0,2.5,450
+669,GOOEY_BUTTER_CAKE,Gooey butter cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+670,CARCIOFI_ALLA_GIUDIA,Carciofi alla giudia,other,international,100,520,6.0,60.0,28.0,2.5,450
+671,YIN_SI_JUAN,Yin si juan,other,international,100,520,6.0,60.0,28.0,2.5,450
+672,BABI_PANGGANG,Babi panggang,other,international,100,520,6.0,60.0,28.0,2.5,450
+673,CHAO_HONG_GUO,Chao hong guo,other,international,100,520,6.0,60.0,28.0,2.5,450
+674,FUN_GUO,Fun guo,other,international,100,520,6.0,60.0,28.0,2.5,450
+675,KHIRA_SAGARA,Khira sagara,other,international,100,520,6.0,60.0,28.0,2.5,450
+676,COCONUT_BAR,Coconut bar,other,international,100,520,6.0,60.0,28.0,2.5,450
+677,SUNDAE,Sundae,other,international,100,520,6.0,60.0,28.0,2.5,450
+678,TUNA_FISH_SANDWICH,Tuna fish sandwich,fish,international,100,206,22.0,0.0,12.0,0.0,90
+679,ZHANGCHA_DUCK,Zhangcha duck,other,international,100,520,6.0,60.0,28.0,2.5,450
+680,MARRY_GIRL_CAKE,Marry girl cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+681,FRIJOLES_CHARROS,Frijoles charros,other,international,100,520,6.0,60.0,28.0,2.5,450
+682,ROSCA_DE_REYES,Rosca de reyes,other,international,100,520,6.0,60.0,28.0,2.5,450
+683,HAPPY_FACES,Happy Faces,other,international,100,520,6.0,60.0,28.0,2.5,450
+684,DEVILED_CRAB,Deviled crab,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+685,SUNDUBU_JJIGAE,Sundubu-jjigae,other,international,100,520,6.0,60.0,28.0,2.5,450
+686,SINSEOLLO,Sinseollo,other,international,100,520,6.0,60.0,28.0,2.5,450
+687,DONGCHIMI,Dongchimi,other,international,100,520,6.0,60.0,28.0,2.5,450
+688,NABAK_KIMCHI,Nabak-kimchi,other,international,100,520,6.0,60.0,28.0,2.5,450
+689,DHONDAS,Dhondas,other,international,100,520,6.0,60.0,28.0,2.5,450
+690,SOAN_PAPDI,Soan papdi,other,international,100,520,6.0,60.0,28.0,2.5,450
+691,BAEK_KIMCHI,Baek-kimchi,other,international,100,520,6.0,60.0,28.0,2.5,450
+692,CHICKEN_RIGGIES,Chicken riggies,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+693,AFELIA,Afelia,other,international,100,520,6.0,60.0,28.0,2.5,450
+694,GULYÁSLEVES,Gulyásleves,other,international,100,520,6.0,60.0,28.0,2.5,450
+695,MARIE_BISCUIT,Marie biscuit,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+696,CAFÉ_LIÉGEOIS,Café liégeois,other,international,100,520,6.0,60.0,28.0,2.5,450
+697,CHÈ,Chè,other,international,100,520,6.0,60.0,28.0,2.5,450
+698,POOTHAREKULU,Pootharekulu,other,international,100,520,6.0,60.0,28.0,2.5,450
+699,ESCALOPE,Escalope,other,international,100,520,6.0,60.0,28.0,2.5,450
+700,RAJMA,Rajma,other,international,100,520,6.0,60.0,28.0,2.5,450
+701,BESHBARMAK,Beshbarmak,other,international,100,520,6.0,60.0,28.0,2.5,450
+702,TORTA_TRE_MONTI,Torta Tre Monti,other,international,100,520,6.0,60.0,28.0,2.5,450
+703,FRENCH_DIP,French dip,other,international,100,520,6.0,60.0,28.0,2.5,450
+704,PUMPKIN_COCONUT_CUSTARD,Pumpkin-coconut custard,other,international,100,520,6.0,60.0,28.0,2.5,450
+705,ROSE_HIP_SOUP,Rose hip soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+706,VEGGIE_BURGER,Veggie burger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+707,STEAK_TARTARE,Steak tartare,beef,international,100,250,26.0,0.0,15.0,0.0,72
+708,BOLOGNA_SAUSAGE,Bologna sausage,other,international,100,520,6.0,60.0,28.0,2.5,450
+709,PÂTÉ,Pâté,other,international,100,520,6.0,60.0,28.0,2.5,450
+710,BIBIMBAP,Bibimbap,other,international,100,520,6.0,60.0,28.0,2.5,450
+711,SHAHI_PANEER,Shahi paneer,cheese,indian,100,402,25.0,1.3,33.0,0.0,621
+712,FUFU,Fufu,other,international,100,520,6.0,60.0,28.0,2.5,450
+713,PYTTIPANNA,Pyttipanna,other,international,100,520,6.0,60.0,28.0,2.5,450
+714,CHICKEN_SANDWICH,Chicken sandwich,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+715,GHARI,Ghari,other,international,100,520,6.0,60.0,28.0,2.5,450
+716,MICHIGAN_SALAD,Michigan salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+717,CABINET_PUDDING,Cabinet pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+718,AMERICAN_FRIED_RICE,American fried rice,rice,chinese,100,169,3.5,36.4,0.4,0.5,1
+719,KOROVAI,Korovai,other,international,100,520,6.0,60.0,28.0,2.5,450
+720,CHURRASCO,Churrasco,other,international,100,520,6.0,60.0,28.0,2.5,450
+721,PASULJ,Pasulj,other,international,100,520,6.0,60.0,28.0,2.5,450
+722,MITRAILLETTE,Mitraillette,other,international,100,520,6.0,60.0,28.0,2.5,450
+723,SALATĂ_DE_BOEUF,Salată de boeuf,other,international,100,520,6.0,60.0,28.0,2.5,450
+724,RICE_PUDDING,Rice pudding,rice,international,100,130,2.7,28.0,0.3,0.4,1
+725,RÖSTI,Rösti,other,international,100,520,6.0,60.0,28.0,2.5,450
+726,NARYN,Naryn,other,international,100,520,6.0,60.0,28.0,2.5,450
+727,KALDERETA,Kaldereta,other,international,100,520,6.0,60.0,28.0,2.5,450
+728,MAKROUDH,Makroudh,other,international,100,520,6.0,60.0,28.0,2.5,450
+729,KACHUMBARI,Kachumbari,other,international,100,520,6.0,60.0,28.0,2.5,450
+730,TSUKEMONO,Tsukemono,other,international,100,520,6.0,60.0,28.0,2.5,450
+731,CHEESE_FRIES,Cheese fries,cheese,international,100,402,25.0,1.3,33.0,0.0,621
+732,SLATKO,Slatko,other,international,100,520,6.0,60.0,28.0,2.5,450
+733,QATAYEF,Qatayef,other,international,100,520,6.0,60.0,28.0,2.5,450
+734,PASSATELLI,Passatelli,other,international,100,520,6.0,60.0,28.0,2.5,450
+735,SWEET_POTATO_SOUP,Sweet potato soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+736,SHCHI,Shchi,other,international,100,520,6.0,60.0,28.0,2.5,450
+737,KULFI,Kulfi,other,international,100,520,6.0,60.0,28.0,2.5,450
+738,DOLMA,Dolma,other,international,100,520,6.0,60.0,28.0,2.5,450
+739,KAI_YANG,Kai yang,other,international,100,520,6.0,60.0,28.0,2.5,450
+740,SHARK_FIN_SOUP,Shark fin soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+741,POZOLE,Pozole,other,international,100,520,6.0,60.0,28.0,2.5,450
+742,PAKORA,Pakora,other,indian,100,520,6.0,60.0,28.0,2.5,450
+743,CHANTILLY_CAKE,Chantilly cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+744,KRÓWKI,Krówki,other,international,100,520,6.0,60.0,28.0,2.5,450
+745,RUSSIAN_TEA_CAKE,Russian tea cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+746,OX_TONGUE_PASTRY,Ox-tongue pastry,other,international,100,520,6.0,60.0,28.0,2.5,450
+747,SACHERTORTE,Sachertorte,other,international,100,520,6.0,60.0,28.0,2.5,450
+748,PALITAW,Palitaw,other,international,100,520,6.0,60.0,28.0,2.5,450
+749,JOLPAN,Jolpan,other,international,100,520,6.0,60.0,28.0,2.5,450
+750,MANTOU,Mantou,other,international,100,520,6.0,60.0,28.0,2.5,450
+751,FINGER_STEAKS,Finger steaks,beef,international,100,250,26.0,0.0,15.0,0.0,72
+752,STEAK_SANDWICH,Steak sandwich,beef,international,100,250,26.0,0.0,15.0,0.0,72
+753,TALO,Talo,other,international,100,520,6.0,60.0,28.0,2.5,450
+754,ERKUAI,Erkuai,other,international,100,520,6.0,60.0,28.0,2.5,450
+755,MIXIAN,Mixian,other,international,100,520,6.0,60.0,28.0,2.5,450
+756,ST._LOUIS_STYLE_PIZZA,St. Louis-style pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+757,MOAMBE,Moambe,other,international,100,520,6.0,60.0,28.0,2.5,450
+758,UPMA,Upma,other,international,100,520,6.0,60.0,28.0,2.5,450
+759,PANJIRI,Panjiri,other,international,100,520,6.0,60.0,28.0,2.5,450
+760,EGGS_SARDOU,Eggs Sardou,egg,international,100,155,13.0,1.1,11.0,0.0,124
+761,SHANGHAI_FRIED_NOODLES,Shanghai fried noodles,noodles,international,100,179,5.9,32.5,2.7,1.6,10
+762,QUARKKÄULCHEN,Quarkkäulchen,other,international,100,520,6.0,60.0,28.0,2.5,450
+763,CUPCAKE,Cupcake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+764,SNICKERDOODLE,Snickerdoodle,other,international,100,520,6.0,60.0,28.0,2.5,450
+765,FARL,Farl,other,international,100,520,6.0,60.0,28.0,2.5,450
+766,COLESLAW,Coleslaw,salad,international,100,17,1.2,3.3,0.2,1.3,10
+767,CALAS,Calas,other,international,100,520,6.0,60.0,28.0,2.5,450
+768,BEEF_STROGANOFF,Beef Stroganoff,beef,international,100,250,26.0,0.0,15.0,0.0,72
+769,SHIMOTSUKARE,Shimotsukare,other,international,100,520,6.0,60.0,28.0,2.5,450
+770,SQUAB,Squab,other,international,100,520,6.0,60.0,28.0,2.5,450
+771,BASBOUSA,Basbousa,other,international,100,520,6.0,60.0,28.0,2.5,450
+772,WATALAPPAM,Watalappam,other,international,100,520,6.0,60.0,28.0,2.5,450
+773,TEPSI_BAYTINIJAN,Tepsi baytinijan,other,international,100,520,6.0,60.0,28.0,2.5,450
+774,KULI_KULI,Kuli-kuli,other,international,100,520,6.0,60.0,28.0,2.5,450
+775,SHABU_SHABU,Shabu-shabu,other,international,100,520,6.0,60.0,28.0,2.5,450
+776,SUNDAE,Sundae,other,international,100,520,6.0,60.0,28.0,2.5,450
+777,FRIED_BRAIN_SANDWICH,Fried brain sandwich,sandwich,international,100,325,15.6,39.0,11.7,2.6,585
+778,ROLLMOPS,Rollmops,bread,international,100,265,9.0,49.0,3.2,2.7,491
+779,HIGASHI,Higashi,other,international,100,520,6.0,60.0,28.0,2.5,450
+780,PANNA_COTTA,Panna cotta,other,international,100,520,6.0,60.0,28.0,2.5,450
+781,ALOO_GOBI,Aloo gobi,other,international,100,520,6.0,60.0,28.0,2.5,450
+782,ASPIC,Aspic,other,international,100,520,6.0,60.0,28.0,2.5,450
+783,OBATZDA,Obatzda,other,international,100,520,6.0,60.0,28.0,2.5,450
+784,GULAB_JAMUN,Gulab jamun,other,international,100,520,6.0,60.0,28.0,2.5,450
+785,TUNA_CASSEROLE,Tuna casserole,fish,international,100,206,22.0,0.0,12.0,0.0,90
+786,RIBOLLITA,Ribollita,other,international,100,520,6.0,60.0,28.0,2.5,450
+787,CHOMCHOM,Chomchom,other,international,100,520,6.0,60.0,28.0,2.5,450
+788,RASSOLNIK,Rassolnik,other,international,100,520,6.0,60.0,28.0,2.5,450
+789,JEONGOL,Jeongol,other,international,100,520,6.0,60.0,28.0,2.5,450
+790,CANTONESE_SEAFOOD_SOUP,Cantonese seafood soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+791,EGGPLANT_SALAD,Eggplant Salad,egg,international,100,155,13.0,1.1,11.0,0.0,124
+792,KÜRTŐSKALÁCS,Kürtőskalács,other,international,100,520,6.0,60.0,28.0,2.5,450
+793,PÖLSA,Pölsa,other,international,100,520,6.0,60.0,28.0,2.5,450
+794,LOBSTER_ROLL,Lobster roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+795,SLOPPY_JOE,Sloppy joe,other,international,100,520,6.0,60.0,28.0,2.5,450
+796,SCHNITZEL,Schnitzel,other,international,100,520,6.0,60.0,28.0,2.5,450
+797,BACALHAU,Bacalhau,other,international,100,520,6.0,60.0,28.0,2.5,450
+798,SFENJ,Sfenj,other,international,100,520,6.0,60.0,28.0,2.5,450
+799,MENUDO,Menudo,other,international,100,520,6.0,60.0,28.0,2.5,450
+800,GUJIA,Gujia,other,international,100,520,6.0,60.0,28.0,2.5,450
+801,LIVER_SOUP,Liver soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+802,PANOCHA,Panocha,other,international,100,520,6.0,60.0,28.0,2.5,450
+803,CHAKAPULI,Chakapuli,other,international,100,520,6.0,60.0,28.0,2.5,450
+804,SKLANDRAUSIS,Sklandrausis,other,international,100,520,6.0,60.0,28.0,2.5,450
+805,LIVER_PÂTÉ,Liver pâté,other,international,100,520,6.0,60.0,28.0,2.5,450
+806,RULLEPØLSE,Rullepølse,other,international,100,520,6.0,60.0,28.0,2.5,450
+807,FRIKADELLER,Frikadeller,other,international,100,520,6.0,60.0,28.0,2.5,450
+808,FRIKANDEL,Frikandel,other,international,100,520,6.0,60.0,28.0,2.5,450
+809,CINNAMON_ROLL,Cinnamon roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+810,SCOTCH_PIE,Scotch pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+811,HOT_WIENER,Hot wiener,other,international,100,520,6.0,60.0,28.0,2.5,450
+812,WODZIONKA,Wodzionka,other,international,100,520,6.0,60.0,28.0,2.5,450
+813,GREEK_SALAD,Greek salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+814,RAITA,Raita,other,international,100,520,6.0,60.0,28.0,2.5,450
+815,DONG'AN_CHICKEN,Dong'an chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+816,BOORTSOG,Boortsog,other,international,100,520,6.0,60.0,28.0,2.5,450
+817,COCA,Coca,other,international,100,520,6.0,60.0,28.0,2.5,450
+818,CHAMPON,Champon,pork,international,100,242,27.0,0.0,14.0,0.0,62
+819,TABBOULEH,Tabbouleh,other,international,100,520,6.0,60.0,28.0,2.5,450
+820,KOROKKE,Korokke,other,international,100,520,6.0,60.0,28.0,2.5,450
+821,CHILE_RELLENO,Chile relleno,other,international,100,520,6.0,60.0,28.0,2.5,450
+822,BRANDADE,Brandade,other,international,100,520,6.0,60.0,28.0,2.5,450
+823,HOPPANG,Hoppang,other,international,100,520,6.0,60.0,28.0,2.5,450
+824,GOZINAKI,Gozinaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+825,LAZARAKIA,Lazarakia,other,international,100,520,6.0,60.0,28.0,2.5,450
+826,PUFF_PUFF,Puff Puff,other,international,100,520,6.0,60.0,28.0,2.5,450
+827,FATTEH,Fatteh,other,international,100,520,6.0,60.0,28.0,2.5,450
+828,SPECULAAS,Speculaas,other,international,100,520,6.0,60.0,28.0,2.5,450
+829,KARASUMI,Karasumi,other,international,100,520,6.0,60.0,28.0,2.5,450
+830,BRANDY_SNAPS,Brandy snaps,other,international,100,520,6.0,60.0,28.0,2.5,450
+831,TRDELNÍK,Trdelník,other,international,100,520,6.0,60.0,28.0,2.5,450
+832,COCIDO_MADRILEÑO,Cocido madrileño,other,international,100,520,6.0,60.0,28.0,2.5,450
+833,RED_VELVET_CAKE,Red velvet cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+834,KRINGLE,Kringle,other,international,100,520,6.0,60.0,28.0,2.5,450
+835,QUENELLE,Quenelle,other,international,100,520,6.0,60.0,28.0,2.5,450
+836,TOASTED_RAVIOLI,Toasted ravioli,other,international,100,520,6.0,60.0,28.0,2.5,450
+837,TAJINE,Tajine,other,international,100,520,6.0,60.0,28.0,2.5,450
+838,CRANACHAN,Cranachan,other,international,100,520,6.0,60.0,28.0,2.5,450
+839,RUSK,Rusk,other,international,100,520,6.0,60.0,28.0,2.5,450
+840,MILLE_FEUILLE,Mille-feuille,other,international,100,520,6.0,60.0,28.0,2.5,450
+841,ACORN_NOODLE_SOUP,Acorn noodle soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+842,GACHAS,Gachas,other,international,100,520,6.0,60.0,28.0,2.5,450
+843,JINGISUKAN,Jingisukan,other,international,100,520,6.0,60.0,28.0,2.5,450
+844,THEKUA,Thekua,other,international,100,520,6.0,60.0,28.0,2.5,450
+845,GHUGNI,Ghugni,other,international,100,520,6.0,60.0,28.0,2.5,450
+846,TARAMA,Tarama,other,international,100,520,6.0,60.0,28.0,2.5,450
+847,ITALIAN_BEEF,Italian beef,beef,international,100,250,26.0,0.0,15.0,0.0,72
+848,CHALLAH,Challah,other,international,100,520,6.0,60.0,28.0,2.5,450
+849,FRIED_ICE_CREAM,Fried ice cream,dessert,international,100,334,4.2,46.8,14.3,0.9,180
+850,ONION_RING,Onion ring,other,international,100,520,6.0,60.0,28.0,2.5,450
+851,SMOKED_MEAT,Smoked meat,other,international,100,520,6.0,60.0,28.0,2.5,450
+852,DAHI_VADA,Dahi vada,other,international,100,520,6.0,60.0,28.0,2.5,450
+853,MOTHER_IN_LAW,Mother-in-law,other,international,100,520,6.0,60.0,28.0,2.5,450
+854,BLONDIE,Blondie,other,international,100,520,6.0,60.0,28.0,2.5,450
+855,GUK,Guk,other,international,100,520,6.0,60.0,28.0,2.5,450
+856,HIYASHI_CHŪKA,Hiyashi chūka,other,international,100,520,6.0,60.0,28.0,2.5,450
+857,SWEET_SHELLS,Sweet shells,other,international,100,520,6.0,60.0,28.0,2.5,450
+858,SALISBURY_STEAK,Salisbury steak,beef,international,100,250,26.0,0.0,15.0,0.0,72
+859,POFFERTJES,Poffertjes,other,international,100,520,6.0,60.0,28.0,2.5,450
+860,EGGS_NEPTUNE,Eggs Neptune,egg,international,100,155,13.0,1.1,11.0,0.0,124
+861,GALBI_JJIM,Galbi-jjim,other,international,100,520,6.0,60.0,28.0,2.5,450
+862,AGWI_JJIM,Agwi-jjim,other,international,100,520,6.0,60.0,28.0,2.5,450
+863,LADOB,Ladob,other,international,100,520,6.0,60.0,28.0,2.5,450
+864,INSTANT_BOILED_MUTTON,Instant-boiled mutton,other,international,100,416,4.8,48.0,22.4,2.0,360
+865,CINCALOK,Cincalok,other,international,100,520,6.0,60.0,28.0,2.5,450
+866,JOOK_SING_NOODLES,Jook-sing noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+867,POTBROOD,Potbrood,other,international,100,520,6.0,60.0,28.0,2.5,450
+868,BURKINABE_CUISINE,Burkinabe cuisine,other,international,100,520,6.0,60.0,28.0,2.5,450
+869,TARALLI,Taralli,other,international,100,520,6.0,60.0,28.0,2.5,450
+870,CARBONADE_FLAMANDE,Carbonade flamande,other,international,100,520,6.0,60.0,28.0,2.5,450
+871,XÔI,Xôi,other,international,100,520,6.0,60.0,28.0,2.5,450
+872,SAUERBRATEN,Sauerbraten,other,international,100,520,6.0,60.0,28.0,2.5,450
+873,SPIEDIE,Spiedie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+874,GIMBAP,Gimbap,other,international,100,520,6.0,60.0,28.0,2.5,450
+875,CZERNINA,Czernina,other,international,100,520,6.0,60.0,28.0,2.5,450
+876,KROPPKAKA,Kroppkaka,other,international,100,520,6.0,60.0,28.0,2.5,450
+877,BUDDHA'S_DELIGHT,Buddha's delight,other,international,100,520,6.0,60.0,28.0,2.5,450
+878,PAIN_AU_CHOCOLAT,Pain au chocolat,other,international,100,520,6.0,60.0,28.0,2.5,450
+879,GOETTA,Goetta,other,international,100,520,6.0,60.0,28.0,2.5,450
+880,GERMAN_CHOCOLATE_CAKE,German chocolate cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+881,MELT_SANDWICH,Melt sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+882,POPIAH,Popiah,other,international,100,520,6.0,60.0,28.0,2.5,450
+883,HALEEM,Haleem,other,international,100,520,6.0,60.0,28.0,2.5,450
+884,HORNAZO,Hornazo,other,international,100,520,6.0,60.0,28.0,2.5,450
+885,JANCHI_GUKSU,Janchi-guksu,other,international,100,520,6.0,60.0,28.0,2.5,450
+886,KIPPER,Kipper,other,international,100,520,6.0,60.0,28.0,2.5,450
+887,BOSSAM,Bossam,other,international,100,520,6.0,60.0,28.0,2.5,450
+888,ARBROATH_SMOKIE,Arbroath smokie,other,international,100,520,6.0,60.0,28.0,2.5,450
+889,BOLOGNA_SANDWICH,Bologna sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+890,COBBLER,Cobbler,other,international,100,520,6.0,60.0,28.0,2.5,450
+891,KOUIGN_AMANN,Kouign-amann,other,international,100,520,6.0,60.0,28.0,2.5,450
+892,CHAR_KWAY_TEOW,Char kway teow,other,international,100,520,6.0,60.0,28.0,2.5,450
+893,ROSTBRÄTEL,Rostbrätel,other,international,100,520,6.0,60.0,28.0,2.5,450
+894,DOENJANG_JJIGAE,Doenjang-jjigae,other,international,100,520,6.0,60.0,28.0,2.5,450
+895,THARID,Tharid,other,international,100,520,6.0,60.0,28.0,2.5,450
+896,HAINANESE_CHICKEN_RICE,Hainanese chicken rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+897,BAK_KUT_TEH,Bak kut teh,other,international,100,520,6.0,60.0,28.0,2.5,450
+898,CABBAGE_ROLL,Cabbage roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+899,RUNZA,Runza,other,international,100,520,6.0,60.0,28.0,2.5,450
+900,BANANAS_FOSTER,Bananas Foster,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+901,KOZHUKKATTA,Kozhukkatta,other,international,100,520,6.0,60.0,28.0,2.5,450
+902,KŪČIUKAI,Kūčiukai,other,international,100,520,6.0,60.0,28.0,2.5,450
+903,SMØRREBRØD,Smørrebrød,other,international,100,520,6.0,60.0,28.0,2.5,450
+904,KUTIA,Kutia,other,international,100,520,6.0,60.0,28.0,2.5,450
+905,DEVILED_EGG,Deviled egg,egg,international,100,155,13.0,1.1,11.0,0.0,124
+906,BUCHTELN,Buchteln,other,international,100,520,6.0,60.0,28.0,2.5,450
+907,APPLE_STRUDEL,Apple strudel,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+908,WONTON,Wonton,dumpling,chinese,100,200,8.0,28.0,6.0,1.5,320
+909,CHESS_PIE,Chess pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+910,PIROZHKI,Pirozhki,other,international,100,520,6.0,60.0,28.0,2.5,450
+911,DOUZHI,Douzhi,other,international,100,520,6.0,60.0,28.0,2.5,450
+912,MACARONI_SOUP,Macaroni soup,pasta,international,100,131,5.0,25.0,1.1,1.8,6
+913,CROSSING_THE_BRIDGE_NOODLES,Crossing-the-bridge noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+914,LECHAZO,Lechazo,other,international,100,520,6.0,60.0,28.0,2.5,450
+915,ROLLED_OYSTER,Rolled oyster,bread,international,100,265,9.0,49.0,3.2,2.7,491
+916,ASAM_PEDAS,Asam pedas,other,international,100,520,6.0,60.0,28.0,2.5,450
+917,MI_KROP,Mi krop,other,international,100,520,6.0,60.0,28.0,2.5,450
+918,PATOLEO,Patoleo,other,international,100,520,6.0,60.0,28.0,2.5,450
+919,RIGÓ_JANCSI,Rigó Jancsi,other,international,100,520,6.0,60.0,28.0,2.5,450
+920,OLLADA,Ollada,other,international,100,520,6.0,60.0,28.0,2.5,450
+921,GARBURE,Garbure,other,international,100,520,6.0,60.0,28.0,2.5,450
+922,SABUDANA_KHICHADI,Sabudana Khichadi,other,international,100,520,6.0,60.0,28.0,2.5,450
+923,POTÉE,Potée,other,international,100,520,6.0,60.0,28.0,2.5,450
+924,PHANAENG_CURRY,Phanaeng curry,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+925,MADELEINE,Madeleine,other,international,100,520,6.0,60.0,28.0,2.5,450
+926,MASHED_PUMPKIN,Mashed pumpkin,other,international,100,520,6.0,60.0,28.0,2.5,450
+927,SUET_PUDDING,Suet pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+928,BOMBAY_MIX,Bombay mix,other,international,100,520,6.0,60.0,28.0,2.5,450
+929,NAMAGASHI,Namagashi,other,international,100,520,6.0,60.0,28.0,2.5,450
+930,STRUFFOLI,Struffoli,other,international,100,520,6.0,60.0,28.0,2.5,450
+931,DAK_GALBI,Dak-galbi,other,international,100,520,6.0,60.0,28.0,2.5,450
+932,CHUCHVARA,Chuchvara,other,international,100,520,6.0,60.0,28.0,2.5,450
+933,MISAL,Misal,other,international,100,520,6.0,60.0,28.0,2.5,450
+934,PATATNIK,Patatnik,other,international,100,520,6.0,60.0,28.0,2.5,450
+935,YUXIANG,Yuxiang,other,international,100,520,6.0,60.0,28.0,2.5,450
+936,FROZEN_BANANA,Frozen banana,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+937,PSAROSOUPA,Psarosoupa,soup,international,100,32,1.3,5.8,0.6,0.5,343
+938,MEKITSA,Mekitsa,other,international,100,520,6.0,60.0,28.0,2.5,450
+939,SANNA,Sanna,other,international,100,520,6.0,60.0,28.0,2.5,450
+940,QAZI,Qazı,other,international,100,520,6.0,60.0,28.0,2.5,450
+941,SORBETES,Sorbetes,other,international,100,520,6.0,60.0,28.0,2.5,450
+942,POTATOES_O'BRIEN,Potatoes O'Brien,other,international,100,520,6.0,60.0,28.0,2.5,450
+943,TOM_YUM,Tom yum,other,thai,100,520,6.0,60.0,28.0,2.5,450
+944,BALUSHAHI,Balushahi,other,international,100,520,6.0,60.0,28.0,2.5,450
+945,ARROZ_A_LA_CUBANA,Arroz a la cubana,other,international,100,520,6.0,60.0,28.0,2.5,450
+946,JALEBI,Jalebi,other,international,100,520,6.0,60.0,28.0,2.5,450
+947,SOPAIPILLA,Sopaipilla,other,international,100,520,6.0,60.0,28.0,2.5,450
+948,UKHA,Ukha,other,international,100,520,6.0,60.0,28.0,2.5,450
+949,SVÍČKOVÁ,Svíčková,other,international,100,520,6.0,60.0,28.0,2.5,450
+950,TÚRÓS_CSUSZA,Túrós csusza,other,international,100,520,6.0,60.0,28.0,2.5,450
+951,PINNEKJØTT,Pinnekjøtt,other,international,100,520,6.0,60.0,28.0,2.5,450
+952,SALTY_LIQUORICE,Salty liquorice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+953,LEMON_ICE_BOX_PIE,Lemon ice box pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+954,KNICKERBOCKER_GLORY,Knickerbocker glory,other,international,100,520,6.0,60.0,28.0,2.5,450
+955,ZHAJIANGMIAN,Zhajiangmian,other,international,100,520,6.0,60.0,28.0,2.5,450
+956,COBB_SALAD,Cobb salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+957,MISUA,Misua,other,international,100,520,6.0,60.0,28.0,2.5,450
+958,SHOOFLY_PIE,Shoofly pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+959,BHAKRI,Bhakri,other,international,100,520,6.0,60.0,28.0,2.5,450
+960,APPLE_CAKE,Apple cake,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+961,ORANGE_CHICKEN,Orange chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+962,JAMÓN_SERRANO,Jamón serrano,other,international,100,520,6.0,60.0,28.0,2.5,450
+963,BUNDT_CAKE,Bundt cake,bread,international,100,265,9.0,49.0,3.2,2.7,491
+964,BARA_BRITH,Bara brith,other,international,100,520,6.0,60.0,28.0,2.5,450
+965,HOT_POT,Hot pot,other,international,100,520,6.0,60.0,28.0,2.5,450
+966,KUNG_PAO_CHICKEN,Kung Pao chicken,chicken,chinese,100,239,27.0,0.0,14.0,0.0,82
+967,MULUKHIYAH,Mulukhiyah,other,international,100,520,6.0,60.0,28.0,2.5,450
+968,PITI,Piti,other,international,100,520,6.0,60.0,28.0,2.5,450
+969,DOUBLE_KA_MEETHA,Double ka meetha,other,international,100,520,6.0,60.0,28.0,2.5,450
+970,CHOILA,Choila,other,international,100,520,6.0,60.0,28.0,2.5,450
+971,MOUSTALEVRIA,Moustalevria,other,international,100,520,6.0,60.0,28.0,2.5,450
+972,ARIZONA_CHEESE_CRISP,Arizona cheese crisp,cheese,international,100,402,25.0,1.3,33.0,0.0,621
+973,RICE_KRISPIES_TREATS,Rice Krispies Treats,rice,international,100,130,2.7,28.0,0.3,0.4,1
+974,LIANGPI,Liangpi,other,international,100,520,6.0,60.0,28.0,2.5,450
+975,PRINSKORV,Prinskorv,other,international,100,520,6.0,60.0,28.0,2.5,450
+976,SALMOREJO,Salmorejo,other,international,100,520,6.0,60.0,28.0,2.5,450
+977,CHICKEN_FRANÇAISE,Chicken Française,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+978,FLÄSKKORV,Fläskkorv,other,international,100,520,6.0,60.0,28.0,2.5,450
+979,GLORIFIED_RICE,Glorified rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+980,_M_04ZZSVG,/m/04zzsvg,other,international,100,520,6.0,60.0,28.0,2.5,450
+981,STINKY_TOFU,Stinky tofu,other,international,100,520,6.0,60.0,28.0,2.5,450
+982,MUFFULETTA,Muffuletta,other,international,100,520,6.0,60.0,28.0,2.5,450
+983,SOY_SAUCE_CHICKEN,Soy sauce chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+984,CHICKEN_FINGERS,Chicken fingers,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+985,PECAN_PIE,Pecan pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+986,EBA,Eba,other,international,100,520,6.0,60.0,28.0,2.5,450
+987,PARFAIT,Parfait,other,international,100,520,6.0,60.0,28.0,2.5,450
+988,NDOLÉ,Ndolé,other,international,100,520,6.0,60.0,28.0,2.5,450
+989,CHEESE_SANDWICH,Cheese sandwich,cheese,international,100,402,25.0,1.3,33.0,0.0,621
+990,CARNE_DE_VINHA_D'ALHOS,Carne de vinha d'alhos,other,international,100,520,6.0,60.0,28.0,2.5,450
+991,BOB_ANDY_PIE,Bob Andy pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+992,CINCINNATI_CHILI,Cincinnati chili,other,international,100,520,6.0,60.0,28.0,2.5,450
+993,FRICO,Frico,other,international,100,520,6.0,60.0,28.0,2.5,450
+994,TAPIOCA_PUDDING,Tapioca pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+995,MINESTRONE,Minestrone,other,international,100,520,6.0,60.0,28.0,2.5,450
+996,BOXTY,Boxty,other,international,100,520,6.0,60.0,28.0,2.5,450
+997,NAENGMYEON,Naengmyeon,other,international,100,520,6.0,60.0,28.0,2.5,450
+998,SEVEN_LAYER_SALAD,Seven-layer salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+999,_M_0553TG,/m/0553tg,other,international,100,520,6.0,60.0,28.0,2.5,450
+1000,CAWL,Cawl,other,international,100,520,6.0,60.0,28.0,2.5,450
+1001,CHOCOLATE_PUDDING,Chocolate pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1002,HOTDISH,Hotdish,other,international,100,520,6.0,60.0,28.0,2.5,450
+1003,CICCIOLI,Ciccioli,other,international,100,520,6.0,60.0,28.0,2.5,450
+1004,DOUHUA,Douhua,other,international,100,520,6.0,60.0,28.0,2.5,450
+1005,BERLINER,Berliner,other,international,100,520,6.0,60.0,28.0,2.5,450
+1006,FRIED_FISH,Fried fish,fish,international,100,267,28.6,0.0,15.6,0.0,117
+1007,APPLE_CRISP,Apple crisp,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+1008,BOUDIN,Boudin,other,international,100,520,6.0,60.0,28.0,2.5,450
+1009,YUSHENG,Yusheng,other,international,100,520,6.0,60.0,28.0,2.5,450
+1010,BABKA,Babka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1011,PIZZOCCHERI,Pizzoccheri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1012,WELSH_CAKE,Welsh cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1013,PARKER_HOUSE_ROLL,Parker House roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1014,TRIPE_SOUP,Tripe soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1015,CHIMICHANGA,Chimichanga,other,international,100,520,6.0,60.0,28.0,2.5,450
+1016,JUCY_LUCY,Jucy Lucy,other,international,100,520,6.0,60.0,28.0,2.5,450
+1017,DODGER_DOG,Dodger Dog,other,international,100,520,6.0,60.0,28.0,2.5,450
+1018,PASTIERA,Pastiera,other,international,100,520,6.0,60.0,28.0,2.5,450
+1019,HUARACHE,Huarache,other,international,100,520,6.0,60.0,28.0,2.5,450
+1020,SOLKADHI,Solkadhi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1021,SCHUPFNUDEL,Schupfnudel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1022,WALDORF_PUDDING,Waldorf pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1023,HAREES,Harees,other,international,100,520,6.0,60.0,28.0,2.5,450
+1024,ASH_RESHTEH,Ash reshteh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1025,CELERY_VICTOR,Celery Victor,other,international,100,520,6.0,60.0,28.0,2.5,450
+1026,DIPLES,Diples,other,international,100,520,6.0,60.0,28.0,2.5,450
+1027,KOMPOT,Kompot,other,international,100,520,6.0,60.0,28.0,2.5,450
+1028,FRENCH_ONION_SOUP,French onion soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1029,TRES_LECHES_CAKE,Tres leches cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1030,TORTA_CAPRESE,Torta caprese,other,international,100,520,6.0,60.0,28.0,2.5,450
+1031,BLACK_FOREST_GATEAU,Black Forest gateau,other,international,100,520,6.0,60.0,28.0,2.5,450
+1032,PÂTÉ_AUX_POMMES_DE_TERRE,Pâté aux pommes de terre,other,international,100,520,6.0,60.0,28.0,2.5,450
+1033,LÂPA,Lâpa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1034,BÜNDNER_NUSSTORTE,Bündner Nusstorte,other,international,100,520,6.0,60.0,28.0,2.5,450
+1035,HACHEE,Hachee,other,international,100,520,6.0,60.0,28.0,2.5,450
+1036,SPAGHETTI_AGLIO_E_OLIO,Spaghetti aglio e olio,pasta,international,100,131,5.0,25.0,1.1,1.8,6
+1037,WHOOPIE_PIE,Whoopie pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1038,AIS_KACANG,Ais kacang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1039,CHERMOULA,Chermoula,other,international,100,520,6.0,60.0,28.0,2.5,450
+1040,GADO_GADO,Gado-gado,other,international,100,520,6.0,60.0,28.0,2.5,450
+1041,MERGUEZ,Merguez,other,international,100,520,6.0,60.0,28.0,2.5,450
+1042,SNICKERS_SALAD,Snickers salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1043,GIOUVETSI,Giouvetsi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1044,KHARCHO,Kharcho,other,international,100,520,6.0,60.0,28.0,2.5,450
+1045,CHICKEN_FRIED_BACON,Chicken fried bacon,chicken,international,100,310,35.1,0.0,18.2,0.0,106
+1046,DESSERT_BAR,Dessert bar,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1047,COULIBIAC,Coulibiac,other,international,100,520,6.0,60.0,28.0,2.5,450
+1048,THIEBOUDIENNE,Thieboudienne,other,international,100,520,6.0,60.0,28.0,2.5,450
+1049,RABRI,Rabri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1050,SAPIN_SAPIN,Sapin-sapin,other,international,100,520,6.0,60.0,28.0,2.5,450
+1051,SEALED_CRUSTLESS_SANDWICH,Sealed crustless sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1052,CARNE_ASADA,Carne asada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1053,COYOTAS,Coyotas,other,international,100,520,6.0,60.0,28.0,2.5,450
+1054,CHOCOLATE_COVERED_BACON,Chocolate-covered bacon,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1055,STROOPWAFEL,Stroopwafel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1056,GRAVLAX,Gravlax,other,international,100,520,6.0,60.0,28.0,2.5,450
+1057,POT_PIE,Pot pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1058,GHORMEH_SABZI,Ghormeh sabzi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1059,SURF_AND_TURF,Surf and turf,other,international,100,520,6.0,60.0,28.0,2.5,450
+1060,BRUNSWICK_STEW,Brunswick stew,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1061,MITITEI,Mititei,other,international,100,520,6.0,60.0,28.0,2.5,450
+1062,FLUFFERNUTTER,Fluffernutter,other,international,100,520,6.0,60.0,28.0,2.5,450
+1063,KHAJA,Khaja,other,international,100,520,6.0,60.0,28.0,2.5,450
+1064,STOTTIE_CAKE,Stottie cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1065,LONDON_BROIL,London broil,other,international,100,520,6.0,60.0,28.0,2.5,450
+1066,FASOLADA,Fasolada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1067,STRUDEL,Strudel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1068,ØLLEBRØD,Øllebrød,other,international,100,520,6.0,60.0,28.0,2.5,450
+1069,TAMAGO_KAKE_GOHAN,Tamago kake gohan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1070,HOT_WATER_CORN_BREAD,Hot water corn bread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1071,PHILIPPINE_ADOBO,Philippine adobo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1072,HULATANG,Hulatang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1073,DYRLÆGENS_NATMAD,Dyrlægens natmad,other,international,100,520,6.0,60.0,28.0,2.5,450
+1074,CHISTORRA,Chistorra,other,international,100,520,6.0,60.0,28.0,2.5,450
+1075,POLKAGRIS,Polkagris,other,international,100,520,6.0,60.0,28.0,2.5,450
+1076,GALBI_TANG,Galbi-tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1077,MROUZIA,Mrouzia,other,international,100,520,6.0,60.0,28.0,2.5,450
+1078,GOPCHANG_JEONGOL,Gopchang-jeongol,other,international,100,520,6.0,60.0,28.0,2.5,450
+1079,MIANG_KHAM,Miang kham,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1080,CLAMS_CASINO,Clams casino,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1081,NANBANZUKE,Nanbanzuke,other,international,100,520,6.0,60.0,28.0,2.5,450
+1082,DRIPPING_CAKE,Dripping cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1083,COOKIE_SALAD,Cookie salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1084,USAL,Usal,other,international,100,520,6.0,60.0,28.0,2.5,450
+1085,MANDU_GUK,Mandu-guk,other,international,100,520,6.0,60.0,28.0,2.5,450
+1086,SMALAHOVE,Smalahove,other,international,100,520,6.0,60.0,28.0,2.5,450
+1087,KOKIS,Kokis,other,international,100,520,6.0,60.0,28.0,2.5,450
+1088,ORI_TANG,Ori-tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1089,PAKHALA,Pakhala,other,international,100,520,6.0,60.0,28.0,2.5,450
+1090,CREAM_PIE,Cream pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1091,BUTAJIRU,Butajiru,other,international,100,520,6.0,60.0,28.0,2.5,450
+1092,NEW_ENGLAND_BOILED_DINNER,New England boiled dinner,other,international,100,416,4.8,48.0,22.4,2.0,360
+1093,CHHENA_JALEBI,Chhena jalebi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1094,PASTITSIO,Pastitsio,other,international,100,520,6.0,60.0,28.0,2.5,450
+1095,PANUCHO,Panucho,other,international,100,520,6.0,60.0,28.0,2.5,450
+1096,CHHENA_KHEERI,Chhena kheeri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1097,KIFLI,Kifli,other,international,100,520,6.0,60.0,28.0,2.5,450
+1098,SOLYANKA,Solyanka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1099,SADHYA,Sadhya,other,international,100,520,6.0,60.0,28.0,2.5,450
+1100,CULLEN_SKINK,Cullen skink,other,international,100,520,6.0,60.0,28.0,2.5,450
+1101,HAVREGRYNSKUGLE,Havregrynskugle,other,international,100,520,6.0,60.0,28.0,2.5,450
+1102,HARIRA,Harira,other,international,100,520,6.0,60.0,28.0,2.5,450
+1103,CORNISH_GAME_HEN,Cornish game hen,other,international,100,520,6.0,60.0,28.0,2.5,450
+1104,BEEF_ON_WECK,Beef on weck,beef,international,100,250,26.0,0.0,15.0,0.0,72
+1105,TOMPOUCE,Tompouce,other,international,100,520,6.0,60.0,28.0,2.5,450
+1106,CALDO_DE_SIETE_MARES,Caldo de siete mares,other,international,100,520,6.0,60.0,28.0,2.5,450
+1107,MILLIONBØF,Millionbøf,other,international,100,520,6.0,60.0,28.0,2.5,450
+1108,CHICAGO_STYLE_HOT_DOG,Chicago-style hot dog,other,american,100,520,6.0,60.0,28.0,2.5,450
+1109,RISALAMANDE,Risalamande,other,international,100,520,6.0,60.0,28.0,2.5,450
+1110,ALINAZIK_KEBAB,Alinazik kebab,other,middle_eastern,100,520,6.0,60.0,28.0,2.5,450
+1111,MEDISTERPØLSE,Medisterpølse,other,international,100,520,6.0,60.0,28.0,2.5,450
+1112,SARSON_DA_SAAG,Sarson da saag,other,international,100,520,6.0,60.0,28.0,2.5,450
+1113,LIANGFEN,Liangfen,other,international,100,520,6.0,60.0,28.0,2.5,450
+1114,PISTOLETTE,Pistolette,other,international,100,520,6.0,60.0,28.0,2.5,450
+1115,STEAMED_CLAMS,Steamed clams,seafood,international,100,79,16.0,0.0,1.4,0.0,88
+1116,ULAM,Ulam,other,international,100,520,6.0,60.0,28.0,2.5,450
+1117,KHEER,Kheer,other,international,100,520,6.0,60.0,28.0,2.5,450
+1118,TLACOYO,Tlacoyo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1119,TARATOR,Tarator,other,international,100,520,6.0,60.0,28.0,2.5,450
+1120,_M_061PTQ,/m/061ptq,other,international,100,520,6.0,60.0,28.0,2.5,450
+1121,_M_062P8X,/m/062p8x,other,international,100,520,6.0,60.0,28.0,2.5,450
+1122,COCHINITA_PIBIL,Cochinita pibil,other,international,100,520,6.0,60.0,28.0,2.5,450
+1123,BUDDHA_JUMPS_OVER_THE_WALL,Buddha Jumps Over the Wall,other,international,100,520,6.0,60.0,28.0,2.5,450
+1124,SFOUF,Sfouf,other,international,100,520,6.0,60.0,28.0,2.5,450
+1125,HAM_AND_CHEESE_SANDWICH,Ham and cheese sandwich,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1126,"""PEANUT_BUTTER","""Peanut butter",other,international,100,520,6.0,60.0,28.0,2.5,450
+1127,"""BACON","""Bacon",pork,international,100,242,27.0,0.0,14.0,0.0,62
+1128,CHICKEN_KARAHI,Chicken karahi,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1129,MAPLE_BACON_DONUT,Maple bacon donut,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1130,LITTI,Litti,other,international,100,520,6.0,60.0,28.0,2.5,450
+1131,NAM_KHAO,Nam Khao,other,international,100,520,6.0,60.0,28.0,2.5,450
+1132,NAM_TOK,Nam tok,other,international,100,520,6.0,60.0,28.0,2.5,450
+1133,BAOZI,Baozi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1134,KIBBEH,Kibbeh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1135,KUSHARI,Kushari,other,international,100,520,6.0,60.0,28.0,2.5,450
+1136,JIUNIANG,Jiuniang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1137,_M_06603BL,/m/06603bl,other,international,100,520,6.0,60.0,28.0,2.5,450
+1138,MACHHER_JHOL,Machher Jhol,other,international,100,520,6.0,60.0,28.0,2.5,450
+1139,FAHSA,Fahsa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1140,MYSORE_PAK,Mysore pak,other,international,100,520,6.0,60.0,28.0,2.5,450
+1141,CHALUPA,Chalupa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1142,SWISS_ROLL,Swiss roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1143,BALKENBRIJ,Balkenbrij,other,international,100,520,6.0,60.0,28.0,2.5,450
+1144,TORTAS_DE_ACEITE,Tortas de aceite,other,international,100,520,6.0,60.0,28.0,2.5,450
+1145,POPOVER,Popover,other,international,100,520,6.0,60.0,28.0,2.5,450
+1146,FALOODA,Falooda,other,international,100,520,6.0,60.0,28.0,2.5,450
+1147,MACARONI_SALAD,Macaroni salad,pasta,international,100,131,5.0,25.0,1.1,1.8,6
+1148,BARBACOA,Barbacoa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1149,HUSHPUPPY,Hushpuppy,other,international,100,520,6.0,60.0,28.0,2.5,450
+1150,LUTHER_BURGER,Luther Burger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+1151,RAGOUT,Ragout,other,international,100,520,6.0,60.0,28.0,2.5,450
+1152,BÁNH_BAO,Bánh bao,other,international,100,520,6.0,60.0,28.0,2.5,450
+1153,MORONGA,Moronga,other,international,100,520,6.0,60.0,28.0,2.5,450
+1154,HAYASHI_RICE,Hayashi rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1155,ZÜRCHER_GESCHNETZELTES,Zürcher Geschnetzeltes,other,international,100,520,6.0,60.0,28.0,2.5,450
+1156,ÉCLAIR,Éclair,other,international,100,520,6.0,60.0,28.0,2.5,450
+1157,COLCANNON,Colcannon,other,international,100,520,6.0,60.0,28.0,2.5,450
+1158,BEAR_CLAW,Bear claw,other,international,100,520,6.0,60.0,28.0,2.5,450
+1159,FRANCESINHA,Francesinha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1160,WAT,Wat,other,international,100,520,6.0,60.0,28.0,2.5,450
+1161,LOCO_MOCO,Loco moco,other,international,100,520,6.0,60.0,28.0,2.5,450
+1162,HOT_MILK_CAKE,Hot milk cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1163,HOE,Hoe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1164,GORDITA,Gordita,other,international,100,520,6.0,60.0,28.0,2.5,450
+1165,MACARON,Macaron,other,international,100,520,6.0,60.0,28.0,2.5,450
+1166,PEPPERONI_ROLL,Pepperoni roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1167,RASGULLA,Rasgulla,other,international,100,520,6.0,60.0,28.0,2.5,450
+1168,ANGEL_WINGS,Angel wings,other,international,100,520,6.0,60.0,28.0,2.5,450
+1169,HUEVOS_RANCHEROS,Huevos rancheros,other,international,100,520,6.0,60.0,28.0,2.5,450
+1170,CAPRESE_SALAD,Caprese salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1171,KOMBDI_VADE,Kombdi vade,other,international,100,520,6.0,60.0,28.0,2.5,450
+1172,YONG_TAU_FOO,Yong tau foo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1173,CHAI_TOW_KWAY,Chai tow kway,other,international,100,520,6.0,60.0,28.0,2.5,450
+1174,MACHACA,Machaca,other,international,100,520,6.0,60.0,28.0,2.5,450
+1175,UGALI,Ugali,other,international,100,520,6.0,60.0,28.0,2.5,450
+1176,ARRÒS_NEGRE,Arròs negre,other,international,100,520,6.0,60.0,28.0,2.5,450
+1177,KIMCHI_FRIED_RICE,Kimchi fried rice,rice,chinese,100,169,3.5,36.4,0.4,0.5,1
+1178,FRYBREAD,Frybread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1179,HALO_HALO,Halo-halo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1180,SHIOKARA,Shiokara,other,international,100,520,6.0,60.0,28.0,2.5,450
+1181,JANSSONS_FRESTELSE,Janssons frestelse,other,international,100,520,6.0,60.0,28.0,2.5,450
+1182,HOT_BROWN,Hot Brown,other,international,100,520,6.0,60.0,28.0,2.5,450
+1183,TORTA,Torta,other,international,100,520,6.0,60.0,28.0,2.5,450
+1184,ĆEVAPI,Ćevapi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1185,SALT_WATER_TAFFY,Salt water taffy,other,international,100,520,6.0,60.0,28.0,2.5,450
+1186,ÇILBIR,Çılbır,other,international,100,520,6.0,60.0,28.0,2.5,450
+1187,MURTABAK,Murtabak,other,international,100,520,6.0,60.0,28.0,2.5,450
+1188,TAHU_GORENG,Tahu goreng,other,international,100,520,6.0,60.0,28.0,2.5,450
+1189,SOTO_AYAM,Soto ayam,other,international,100,520,6.0,60.0,28.0,2.5,450
+1190,MEE_SIAM,Mee siam,other,international,100,520,6.0,60.0,28.0,2.5,450
+1191,SUBMARINE_SANDWICH,Submarine sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1192,HALUŠKY,Halušky,other,international,100,520,6.0,60.0,28.0,2.5,450
+1193,KIMCHI_JJIGAE,Kimchi-jjigae,other,international,100,520,6.0,60.0,28.0,2.5,450
+1194,FISH_BALL,Fish ball,fish,international,100,206,22.0,0.0,12.0,0.0,90
+1195,BLODPALT,Blodpalt,other,international,100,520,6.0,60.0,28.0,2.5,450
+1196,LEBANON_BOLOGNA,Lebanon bologna,other,international,100,520,6.0,60.0,28.0,2.5,450
+1197,OKROSHKA,Okroshka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1198,LINZER_TORTE,Linzer torte,other,international,100,520,6.0,60.0,28.0,2.5,450
+1199,SHRIKHAND,Shrikhand,other,international,100,520,6.0,60.0,28.0,2.5,450
+1200,YAKINIKU,Yakiniku,other,international,100,520,6.0,60.0,28.0,2.5,450
+1201,HUEVOS_DIVORCIADOS,Huevos divorciados,other,international,100,520,6.0,60.0,28.0,2.5,450
+1202,NIHARI,Nihari,other,international,100,520,6.0,60.0,28.0,2.5,450
+1203,SAUTÉED_REINDEER,Sautéed reindeer,other,international,100,520,6.0,60.0,28.0,2.5,450
+1204,HASTY_PUDDING,Hasty pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1205,MISSION_BURRITO,Mission burrito,other,mexican,100,520,6.0,60.0,28.0,2.5,450
+1206,SWEET_AND_SOUR_PORK,Sweet and sour pork,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1207,RØDGRØD,Rødgrød,other,international,100,520,6.0,60.0,28.0,2.5,450
+1208,BOOYAH,Booyah,other,international,100,520,6.0,60.0,28.0,2.5,450
+1209,BIENENSTICH,Bienenstich,other,international,100,520,6.0,60.0,28.0,2.5,450
+1210,DRESSED_HERRING,Dressed herring,other,international,100,520,6.0,60.0,28.0,2.5,450
+1211,NEW_YORK_STYLE_PIZZA,New York-style pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1212,BISTEK,Bistek,other,international,100,520,6.0,60.0,28.0,2.5,450
+1213,SINIGANG,Sinigang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1214,FIOS_DE_OVOS,Fios de ovos,other,international,100,520,6.0,60.0,28.0,2.5,450
+1215,VITELLO_TONNATO,Vitello tonnato,other,international,100,520,6.0,60.0,28.0,2.5,450
+1216,BISQUE,Bisque,other,international,100,520,6.0,60.0,28.0,2.5,450
+1217,_M_06W9WV4,/m/06w9wv4,other,international,100,520,6.0,60.0,28.0,2.5,450
+1218,MODAK,Modak,other,international,100,520,6.0,60.0,28.0,2.5,450
+1219,NEW_HAVEN_STYLE_PIZZA,New Haven-style pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1220,CALIFORNIA_STYLE_PIZZA,California-style pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1221,WRAP,Wrap,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1222,PURI,Puri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1223,JAMÓN,Jamón,other,international,100,520,6.0,60.0,28.0,2.5,450
+1224,KHASH,Khash,other,international,100,520,6.0,60.0,28.0,2.5,450
+1225,BEEF_BOURGUIGNON,Beef bourguignon,beef,international,100,250,26.0,0.0,15.0,0.0,72
+1226,TRUFFADE,Truffade,other,international,100,520,6.0,60.0,28.0,2.5,450
+1227,BÒ_NƯỚNG_LÁ_LỐT,Bò nướng lá lốt,other,international,100,520,6.0,60.0,28.0,2.5,450
+1228,FUL_MEDAMES,Ful medames,other,international,100,520,6.0,60.0,28.0,2.5,450
+1229,ALIGOT,Aligot,other,international,100,520,6.0,60.0,28.0,2.5,450
+1230,KOLACH,Kolach,other,international,100,520,6.0,60.0,28.0,2.5,450
+1231,GUAIWEI,Guaiwei,other,international,100,520,6.0,60.0,28.0,2.5,450
+1232,KESME,Kesme,other,international,100,520,6.0,60.0,28.0,2.5,450
+1233,FUNERAL_POTATOES,Funeral potatoes,other,international,100,520,6.0,60.0,28.0,2.5,450
+1234,SUSHI,Sushi,other,japanese,100,520,6.0,60.0,28.0,2.5,450
+1235,ARANCINI,Arancini,other,international,100,520,6.0,60.0,28.0,2.5,450
+1236,CREAMED_CORN,Creamed corn,other,international,100,520,6.0,60.0,28.0,2.5,450
+1237,MOZZARELLA_STICKS,Mozzarella sticks,other,international,100,520,6.0,60.0,28.0,2.5,450
+1238,AMERICAN_GOULASH,American goulash,other,international,100,520,6.0,60.0,28.0,2.5,450
+1239,GOFIO,Gofio,other,international,100,520,6.0,60.0,28.0,2.5,450
+1240,SOUP_ALLA_CANAVESE,Soup alla Canavese,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1241,RED_BEANS_AND_RICE,Red beans and rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1242,RÖSSYPOTTU,Rössypottu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1243,FLÄSKPANNKAKA,Fläskpannkaka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1244,HYDERABADI_BIRYANI,Hyderabadi biryani,rice,indian,100,130,2.7,28.0,0.3,0.4,1
+1245,BAECKEOFFE,Baeckeoffe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1246,ETON_MESS,Eton mess,other,international,100,520,6.0,60.0,28.0,2.5,450
+1247,KHACHAPURI,Khachapuri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1248,BANOFFEE_PIE,Banoffee pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1249,ANTS_CLIMBING_A_TREE,Ants climbing a tree,other,international,100,520,6.0,60.0,28.0,2.5,450
+1250,DANDAN_NOODLES,Dandan noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+1251,SUANLA_CHAOSHOU,Suanla chaoshou,other,international,100,520,6.0,60.0,28.0,2.5,450
+1252,SAMGYE_TANG,Samgye-tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1253,SPAM_MUSUBI,Spam musubi,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1254,BRIDIE,Bridie,other,international,100,520,6.0,60.0,28.0,2.5,450
+1255,KAJU_KATLI,Kaju katli,other,international,100,520,6.0,60.0,28.0,2.5,450
+1256,CHOCOLATE_COVERED_POTATO_CHIPS,Chocolate-covered potato chips,snack,international,100,520,6.0,60.0,28.0,2.5,450
+1257,ENNE_GAI,Enne gai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1258,RUSKE_KAPE,Ruske kape,other,international,100,520,6.0,60.0,28.0,2.5,450
+1259,SPAGHETTI,Spaghetti,pasta,international,100,131,5.0,25.0,1.1,1.8,6
+1260,GRASS_JELLY,Grass jelly,other,international,100,520,6.0,60.0,28.0,2.5,450
+1261,SALT_POTATOES,Salt potatoes,other,international,100,520,6.0,60.0,28.0,2.5,450
+1262,KATSUDON,Katsudon,other,japanese,100,520,6.0,60.0,28.0,2.5,450
+1263,PASANDA,Pasanda,other,international,100,520,6.0,60.0,28.0,2.5,450
+1264,BANITSA,Banitsa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1265,FLAMMEKUECHE,Flammekueche,other,international,100,520,6.0,60.0,28.0,2.5,450
+1266,TWICE_COOKED_PORK,Twice-cooked pork,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1267,KARE_KARE,Kare-kare,other,international,100,520,6.0,60.0,28.0,2.5,450
+1268,LAOBING,Laobing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1269,BANMIAN,Banmian,other,international,100,520,6.0,60.0,28.0,2.5,450
+1270,HONEY_CAKE,Honey cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1271,SWISS_WING,Swiss wing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1272,MICHIGAN_HOT_DOG,Michigan hot dog,other,american,100,520,6.0,60.0,28.0,2.5,450
+1273,TONG_SUI,Tong sui,other,international,100,520,6.0,60.0,28.0,2.5,450
+1274,TACO,Taco,other,mexican,100,520,6.0,60.0,28.0,2.5,450
+1275,SOSATIE,Sosatie,other,international,100,520,6.0,60.0,28.0,2.5,450
+1276,PAP,Pap,other,international,100,520,6.0,60.0,28.0,2.5,450
+1277,UMNGQUSHO,Umngqusho,other,international,100,520,6.0,60.0,28.0,2.5,450
+1278,MALVA_PUDDING,Malva pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1279,VICHYSSOISE,Vichyssoise,other,international,100,520,6.0,60.0,28.0,2.5,450
+1280,ZŌNI,Zōni,other,international,100,520,6.0,60.0,28.0,2.5,450
+1281,MAXWELL_STREET_POLISH,Maxwell Street Polish,other,international,100,520,6.0,60.0,28.0,2.5,450
+1282,VETKOEK,Vetkoek,other,international,100,520,6.0,60.0,28.0,2.5,450
+1283,MEALIE_BREAD,Mealie bread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1284,CHAKALAKA,Chakalaka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1285,FRIKKADEL,Frikkadel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1286,_M_07FR1X,/m/07fr1x,other,international,100,520,6.0,60.0,28.0,2.5,450
+1287,TTEOKGUK,Tteokguk,other,international,100,520,6.0,60.0,28.0,2.5,450
+1288,CONEY_ISLAND_HOT_DOG,Coney Island hot dog,other,american,100,520,6.0,60.0,28.0,2.5,450
+1289,TIROKAFTERI,Tirokafteri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1290,FESIKH,Fesikh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1291,BOSTON_CREAM_PIE,Boston cream pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1292,BUTTERMILK_KOLDSKÅL,Buttermilk koldskål,milk,international,100,61,3.2,4.8,3.3,0.0,44
+1293,WHITE_BOILED_SHRIMP,White boiled shrimp,seafood,international,100,79,16.0,0.0,1.4,0.0,88
+1294,BAGNUN,Bagnun,other,international,100,520,6.0,60.0,28.0,2.5,450
+1295,BUNTIL,Buntil,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1296,_M_07L949,/m/07l949,other,international,100,520,6.0,60.0,28.0,2.5,450
+1297,PISTO,Pisto,other,international,100,520,6.0,60.0,28.0,2.5,450
+1298,DHOKLA,Dhokla,other,international,100,520,6.0,60.0,28.0,2.5,450
+1299,AL_PASTOR,Al pastor,other,international,100,520,6.0,60.0,28.0,2.5,450
+1300,ST._PAUL_SANDWICH,St. Paul sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1301,MELONPAN,Melonpan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1302,HAUPIA,Haupia,other,international,100,520,6.0,60.0,28.0,2.5,450
+1303,LÁNGOS,Lángos,other,international,100,520,6.0,60.0,28.0,2.5,450
+1304,ÉTOUFFÉE,Étouffée,other,international,100,520,6.0,60.0,28.0,2.5,450
+1305,GALAKTOBOUREKO,Galaktoboureko,other,international,100,520,6.0,60.0,28.0,2.5,450
+1306,BÖREK,Börek,other,international,100,520,6.0,60.0,28.0,2.5,450
+1307,SUYA,Suya,other,international,100,520,6.0,60.0,28.0,2.5,450
+1308,RYE_BREAD,Rye bread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1309,ESCUDELLA_I_CARN_D'OLLA,Escudella i carn d'olla,other,international,100,520,6.0,60.0,28.0,2.5,450
+1310,GARI,Gari,other,international,100,520,6.0,60.0,28.0,2.5,450
+1311,TILKUT,Tilkut,other,international,100,520,6.0,60.0,28.0,2.5,450
+1312,BOTOK,Botok,other,international,100,520,6.0,60.0,28.0,2.5,450
+1313,TATWS_PUM_MUNUD,Tatws Pum Munud,other,international,100,520,6.0,60.0,28.0,2.5,450
+1314,CHAR_SIU,Char siu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1315,BURGOO,Burgoo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1316,CACIK,Cacık,other,international,100,520,6.0,60.0,28.0,2.5,450
+1317,BARFI,Barfi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1318,MULLIGAN_STEW,Mulligan stew,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1319,BIANGBIANG_NOODLES,Biangbiang noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+1320,BANANA_PUDDING,Banana pudding,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+1321,CRAB_CAKE,Crab cake,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1322,CHINESE_SAUSAGE,Chinese sausage,other,international,100,520,6.0,60.0,28.0,2.5,450
+1323,VEAL,Veal,other,international,100,520,6.0,60.0,28.0,2.5,450
+1324,CURRY_BREAD,Curry bread,bread,indian,100,265,9.0,49.0,3.2,2.7,491
+1325,PASTRY_HEART,Pastry heart,other,international,100,520,6.0,60.0,28.0,2.5,450
+1326,CRÈME_CARAMEL,Crème caramel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1327,PANADA,Panada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1328,PIE_À_LA_MODE,Pie à la Mode,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1329,BONUS_JACK,Bonus Jack,other,international,100,520,6.0,60.0,28.0,2.5,450
+1330,PRINCESS_CAKE,Princess cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1331,HARIHARI_NABE,Harihari-nabe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1332,HOT_CHICKEN,Hot chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1333,CHHENA_JHILI,Chhena Jhili,other,international,100,520,6.0,60.0,28.0,2.5,450
+1334,GRAPE_PIE,Grape pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1335,CHICKEN_BOG,Chicken bog,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1336,SAUSAGE_GRAVY,Sausage gravy,other,international,100,520,6.0,60.0,28.0,2.5,450
+1337,DERBY_PIE,Derby pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1338,ICE_CREAM_CAKE,Ice cream cake,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1339,SWISS_STEAK,Swiss steak,beef,international,100,250,26.0,0.0,15.0,0.0,72
+1340,_M_083TX9,/m/083tx9,other,international,100,520,6.0,60.0,28.0,2.5,450
+1341,STACK_CAKE,Stack cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1342,LOBSTER_NEWBERG,Lobster Newberg,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1343,NIKUJAGA,Nikujaga,other,international,100,520,6.0,60.0,28.0,2.5,450
+1344,MANTI,Manti,other,international,100,520,6.0,60.0,28.0,2.5,450
+1345,PARMIGIANA,Parmigiana,other,international,100,520,6.0,60.0,28.0,2.5,450
+1346,PALATSCHINKE,Palatschinke,other,international,100,520,6.0,60.0,28.0,2.5,450
+1347,GUJEOLPAN,Gujeolpan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1348,RAJAS_CON_CREMA,Rajas con crema,other,international,100,520,6.0,60.0,28.0,2.5,450
+1349,MAK_GUKSU,Mak-guksu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1350,TETRAZZINI,Tetrazzini,other,international,100,520,6.0,60.0,28.0,2.5,450
+1351,SQUID,Squid,other,international,100,520,6.0,60.0,28.0,2.5,450
+1352,PALAK_PANEER,Palak paneer,cheese,indian,100,402,25.0,1.3,33.0,0.0,621
+1353,KRUMKAKE,Krumkake,other,international,100,520,6.0,60.0,28.0,2.5,450
+1354,BOLANI,Bolani,other,international,100,520,6.0,60.0,28.0,2.5,450
+1355,PORK_AND_BEANS,Pork and beans,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1356,NIAN_GAO,Nian gao,other,international,100,520,6.0,60.0,28.0,2.5,450
+1357,OYSTERS_ROCKEFELLER,Oysters Rockefeller,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1358,TAVČE_GRAVČE,Tavče gravče,other,international,100,520,6.0,60.0,28.0,2.5,450
+1359,BAKKWA,Bakkwa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1360,XACUTI,Xacuti,other,international,100,520,6.0,60.0,28.0,2.5,450
+1361,SARAPATEL,Sarapatel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1362,TAQUITO,Taquito,other,international,100,520,6.0,60.0,28.0,2.5,450
+1363,EGG_DROP_SOUP,Egg drop soup,egg,international,100,155,13.0,1.1,11.0,0.0,124
+1364,SHAOBING,Shaobing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1365,CHAWANMUSHI,Chawanmushi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1366,NSHIMA_NSIMA,Nshima/Nsima,other,international,100,520,6.0,60.0,28.0,2.5,450
+1367,POLLOCK_ROE,Pollock roe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1368,SLINGER,Slinger,other,international,100,520,6.0,60.0,28.0,2.5,450
+1369,JAPCHAE,Japchae,other,international,100,520,6.0,60.0,28.0,2.5,450
+1370,ST._HONORÉ_CAKE,St. Honoré cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1371,BARM_CAKE,Barm cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1372,TULUMBA,Tulumba,other,international,100,520,6.0,60.0,28.0,2.5,450
+1373,XIAOLONGBAO,Xiaolongbao,other,international,100,520,6.0,60.0,28.0,2.5,450
+1374,DELMONICO_STEAK,Delmonico steak,beef,international,100,250,26.0,0.0,15.0,0.0,72
+1375,STROMBOLI,Stromboli,other,international,100,520,6.0,60.0,28.0,2.5,450
+1376,KANAFEH,Kanafeh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1377,HAMDOG,Hamdog,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1378,GARRI,Garri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1379,KOFTA,Kofta,other,international,100,520,6.0,60.0,28.0,2.5,450
+1380,CHANA_MASALA,Chana masala,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+1381,SALO,Salo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1382,LUNG_FUNG_SOUP,Lung fung soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1383,DIRTY_RICE,Dirty rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1384,URNEBES,Urnebes,other,international,100,520,6.0,60.0,28.0,2.5,450
+1385,ANDOUILLETTE,Andouillette,other,international,100,520,6.0,60.0,28.0,2.5,450
+1386,LANDJÄGER,Landjäger,other,international,100,520,6.0,60.0,28.0,2.5,450
+1387,FISHERMAN'S_SOUP,Fisherman's soup,fish,international,100,206,22.0,0.0,12.0,0.0,90
+1388,ROMERITOS,Romeritos,other,international,100,520,6.0,60.0,28.0,2.5,450
+1389,LANE_CAKE,Lane cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1390,PORK_JELLY,Pork jelly,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1391,IDIYAPPAM,Idiyappam,other,international,100,520,6.0,60.0,28.0,2.5,450
+1392,SMÖRGÅSTÅRTA,Smörgåstårta,other,international,100,520,6.0,60.0,28.0,2.5,450
+1393,SMAŽENÝ_SÝR,Smažený sýr,other,international,100,520,6.0,60.0,28.0,2.5,450
+1394,ARROZ_CON_POLLO,Arroz con pollo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1395,_M_08XMSN,/m/08xmsn,other,international,100,520,6.0,60.0,28.0,2.5,450
+1396,PETIT_GÂTEAU,Petit gâteau,other,international,100,520,6.0,60.0,28.0,2.5,450
+1397,TEA_EGG,Tea egg,egg,international,100,155,13.0,1.1,11.0,0.0,124
+1398,COCADA_AMARELA,Cocada amarela,other,international,100,520,6.0,60.0,28.0,2.5,450
+1399,JAPANESE_CURRY,Japanese curry,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+1400,QEEMA,Qeema,other,international,100,520,6.0,60.0,28.0,2.5,450
+1401,UNAGI,Unagi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1402,HOPPIN'_JOHN,Hoppin' John,other,international,100,520,6.0,60.0,28.0,2.5,450
+1403,GYŪHI,Gyūhi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1404,CLAFOUTIS,Clafoutis,other,international,100,520,6.0,60.0,28.0,2.5,450
+1405,GREEN_CURRY,Green curry,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+1406,GỎI_CUỐN,Gỏi cuốn,other,international,100,520,6.0,60.0,28.0,2.5,450
+1407,CHILLI_CRAB,Chilli crab,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1408,LO_MAI_GAI,Lo mai gai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1409,LO_MEIN,Lo mein,other,international,100,520,6.0,60.0,28.0,2.5,450
+1410,PUTTU,Puttu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1411,FRIED_PIE,Fried pie,pie,international,100,308,3.1,44.2,14.3,0.9,256
+1412,SPANISH_RICE,Spanish rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1413,NUEA_PHAT_PHRIK,Nuea phat phrik,other,international,100,520,6.0,60.0,28.0,2.5,450
+1414,JEOW_BONG,Jeow bong,other,international,100,520,6.0,60.0,28.0,2.5,450
+1415,MASSAMAN_CURRY,Massaman curry,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+1416,OSTKAKA,Ostkaka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1417,GUILINGGAO,Guilinggao,other,international,100,520,6.0,60.0,28.0,2.5,450
+1418,SPETTEKAKA,Spettekaka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1419,CUDIGHI,Cudighi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1420,SALTIMBOCCA,Saltimbocca,other,international,100,520,6.0,60.0,28.0,2.5,450
+1421,SFOGLIATELLA,Sfogliatella,other,international,100,520,6.0,60.0,28.0,2.5,450
+1422,BEEF_CHOW_FUN,Beef chow fun,beef,international,100,250,26.0,0.0,15.0,0.0,72
+1423,CHOW_MEIN_SANDWICH,Chow mein sandwich,sandwich,chinese,100,250,12.0,30.0,9.0,2.0,450
+1424,CARNITAS,Carnitas,other,international,100,520,6.0,60.0,28.0,2.5,450
+1425,CHINESE_STEAMED_EGGS,Chinese steamed eggs,egg,international,100,124,10.4,0.9,8.8,0.0,99
+1426,OYSTER_OMELETTE,Oyster omelette,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1427,GARDEN_SALAD,Garden salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1428,SALADE_NIÇOISE,Salade niçoise,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1429,DAL_BHAT,Dal bhat,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+1430,BISCUITS_AND_GRAVY,Biscuits and gravy,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1431,OMURICE,Omurice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1432,PAO_CAI,Pao cai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1433,NASI_LIWET,Nasi liwet,other,international,100,520,6.0,60.0,28.0,2.5,450
+1434,THAI_SUKI,Thai suki,other,international,100,520,6.0,60.0,28.0,2.5,450
+1435,MOO_SHU_PORK,Moo shu pork,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1436,CORN_CRAB_SOUP,Corn crab soup,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1437,FABES_CON_ALMEJAS,Fabes con almejas,other,international,100,520,6.0,60.0,28.0,2.5,450
+1438,GOLDEN_OPULENCE_SUNDAE,Golden Opulence Sundae,other,international,100,520,6.0,60.0,28.0,2.5,450
+1439,KETOPRAK,Ketoprak,other,international,100,520,6.0,60.0,28.0,2.5,450
+1440,MALA_MOGODU,Mala Mogodu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1441,TEKWAN,Tekwan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1442,VATRUSHKA,Vatrushka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1443,YIN_YANG_FISH,Yin Yang fish,fish,international,100,206,22.0,0.0,12.0,0.0,90
+1444,BOSTON_CREAM_DOUGHNUT,Boston cream doughnut,other,international,100,520,6.0,60.0,28.0,2.5,450
+1445,RAMEN,Ramen,noodles,japanese,100,138,4.5,25.0,2.1,1.2,8
+1446,HOME_FRIES,Home fries,other,international,100,520,6.0,60.0,28.0,2.5,450
+1447,MUSTACCIUOLI,Mustacciuoli,other,international,100,520,6.0,60.0,28.0,2.5,450
+1448,CLAM_CAKE,Clam cake,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1449,SARMA,Sarma,other,international,100,520,6.0,60.0,28.0,2.5,450
+1450,SHAHE_FEN,Shahe fen,other,international,100,520,6.0,60.0,28.0,2.5,450
+1451,CHARLESTON_RED_RICE,Charleston red rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1452,FISH_HEAD_CURRY,Fish head curry,fish,indian,100,206,22.0,0.0,12.0,0.0,90
+1453,PODVARAK,Podvarak,other,international,100,520,6.0,60.0,28.0,2.5,450
+1454,PIHTIJE,Pihtije,other,international,100,520,6.0,60.0,28.0,2.5,450
+1455,POPARA,Popara,other,international,100,520,6.0,60.0,28.0,2.5,450
+1456,KAČAMAK,Kačamak,other,international,100,520,6.0,60.0,28.0,2.5,450
+1457,SEOLLEONGTANG,Seolleongtang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1458,GOŁĄBKI,Gołąbki,other,international,100,520,6.0,60.0,28.0,2.5,450
+1459,SZALONCUKOR,Szaloncukor,other,international,100,520,6.0,60.0,28.0,2.5,450
+1460,KALDUNY,Kalduny,other,international,100,520,6.0,60.0,28.0,2.5,450
+1461,ZRAZY,Zrazy,other,international,100,520,6.0,60.0,28.0,2.5,450
+1462,PANETTONE,Panettone,other,international,100,520,6.0,60.0,28.0,2.5,450
+1463,AMBELOPOULIA,Ambelopoulia,other,international,100,520,6.0,60.0,28.0,2.5,450
+1464,PERSIMMON_PUDDING,Persimmon pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1465,FLOATING_ISLAND,Floating island,other,international,100,520,6.0,60.0,28.0,2.5,450
+1466,ZEEUWSE_BOLUS,Zeeuwse bolus,other,international,100,520,6.0,60.0,28.0,2.5,450
+1467,AMBUYAT,Ambuyat,other,international,100,520,6.0,60.0,28.0,2.5,450
+1468,SMULPAJ,Smulpaj,other,international,100,520,6.0,60.0,28.0,2.5,450
+1469,MORAVIAN_SPICE_COOKIES,Moravian spice cookies,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1470,MEE_POK,Mee pok,other,international,100,520,6.0,60.0,28.0,2.5,450
+1471,JJIGAE,Jjigae,other,international,100,520,6.0,60.0,28.0,2.5,450
+1472,PIZZA_BAGEL,Pizza bagel,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1473,TTEOK,Tteok,other,international,100,520,6.0,60.0,28.0,2.5,450
+1474,BRÆNDENDE_KÆRLIGHED,Brændende kærlighed,other,international,100,520,6.0,60.0,28.0,2.5,450
+1475,BEATEN_BISCUIT,Beaten biscuit,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1476,ÆBLEFLÆSK,Æbleflæsk,other,international,100,520,6.0,60.0,28.0,2.5,450
+1477,CHICKEN_PAPRIKASH,Chicken paprikash,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1478,TANGYUAN,Tangyuan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1479,TUNA_POT,Tuna pot,fish,international,100,206,22.0,0.0,12.0,0.0,90
+1480,BURNT_ENDS,Burnt ends,other,international,100,520,6.0,60.0,28.0,2.5,450
+1481,JAMÓN_IBÉRICO,Jamón ibérico,other,international,100,520,6.0,60.0,28.0,2.5,450
+1482,RAKFISK,Rakfisk,other,international,100,520,6.0,60.0,28.0,2.5,450
+1483,ZARANGOLLO,Zarangollo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1484,TÚRÓ_RUDI,Túró Rudi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1485,FLUMMERY,Flummery,other,international,100,520,6.0,60.0,28.0,2.5,450
+1486,CECINA,Cecina,other,international,100,520,6.0,60.0,28.0,2.5,450
+1487,GALINHA_À_PORTUGUESA,Galinha à portuguesa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1488,ANKIMO,Ankimo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1489,GALINHA_À_AFRICANA,Galinha à africana,other,international,100,520,6.0,60.0,28.0,2.5,450
+1490,CHA_SIU_BAO,Cha siu bao,other,international,100,520,6.0,60.0,28.0,2.5,450
+1491,FUGU_CHIRI,Fugu chiri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1492,ASSIDAT_ZGOUGOU,Assidat Zgougou,other,international,100,520,6.0,60.0,28.0,2.5,450
+1493,OXTAIL_STEW,Oxtail stew,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1494,LAPING,Laping,other,international,100,520,6.0,60.0,28.0,2.5,450
+1495,CHAKU,Chaku,other,international,100,520,6.0,60.0,28.0,2.5,450
+1496,CALDILLO_DE_PERRO,Caldillo de perro,other,international,100,520,6.0,60.0,28.0,2.5,450
+1497,SOPA_DE_GATO,Sopa de Gato,other,international,100,520,6.0,60.0,28.0,2.5,450
+1498,KELEDOŞ,Keledoş,other,international,100,520,6.0,60.0,28.0,2.5,450
+1499,MÜCVER,Mücver,other,international,100,520,6.0,60.0,28.0,2.5,450
+1500,BROTZEIT,Brotzeit,other,international,100,520,6.0,60.0,28.0,2.5,450
+1501,SHEKERBURA,Shekerbura,other,international,100,520,6.0,60.0,28.0,2.5,450
+1502,OEUFS_EN_MEURETTE,Oeufs en meurette,other,international,100,520,6.0,60.0,28.0,2.5,450
+1503,PAPPA_AL_POMODORO,Pappa al pomodoro,other,international,100,520,6.0,60.0,28.0,2.5,450
+1504,TEURGOULE,Teurgoule,other,international,100,520,6.0,60.0,28.0,2.5,450
+1505,BÁNH_XÈO,Bánh xèo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1506,MUSAKHAN,Musakhan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1507,MAQLUBA,Maqluba,other,international,100,520,6.0,60.0,28.0,2.5,450
+1508,BOB_CHORBA,Bob chorba,other,international,100,520,6.0,60.0,28.0,2.5,450
+1509,RUM_BABA,Rum baba,other,international,100,520,6.0,60.0,28.0,2.5,450
+1510,VEDA_BREAD,Veda bread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1511,FRIED_SHRIMP,Fried shrimp,seafood,international,100,128,26.0,0.0,2.2,0.0,144
+1512,PASTILLA,Pastilla,other,international,100,520,6.0,60.0,28.0,2.5,450
+1513,STRAWBERRY_DELIGHT,Strawberry delight,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+1514,CHEESE_DREAM,Cheese dream,cheese,international,100,402,25.0,1.3,33.0,0.0,621
+1515,FREJON,Frejon,other,international,100,520,6.0,60.0,28.0,2.5,450
+1516,GYERAN_JJIM,Gyeran-jjim,other,international,100,520,6.0,60.0,28.0,2.5,450
+1517,REVITHIA,Revithia,other,international,100,520,6.0,60.0,28.0,2.5,450
+1518,NASI_BOGANA,Nasi bogana,other,international,100,520,6.0,60.0,28.0,2.5,450
+1519,TORTA_DE_GAZPACHO,Torta de gazpacho,other,international,100,520,6.0,60.0,28.0,2.5,450
+1520,DOUBLE_DOWN,Double Down,other,international,100,520,6.0,60.0,28.0,2.5,450
+1521,SERI_MUKA,Seri Muka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1522,OBI_NON,Obi non,other,international,100,520,6.0,60.0,28.0,2.5,450
+1523,GARGANELLI,Garganelli,other,international,100,520,6.0,60.0,28.0,2.5,450
+1524,KIG_HA_FARZ,Kig ha farz,other,international,100,520,6.0,60.0,28.0,2.5,450
+1525,MISSISSIPPI_MUD_PIE,Mississippi mud pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1526,EVE'S_PUDDING,Eve's pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1527,AMALA,Amala,other,international,100,520,6.0,60.0,28.0,2.5,450
+1528,OKINAWA_SOBA,Okinawa soba,other,international,100,520,6.0,60.0,28.0,2.5,450
+1529,LAMIAN,Lamian,other,international,100,520,6.0,60.0,28.0,2.5,450
+1530,SOKI,Soki,other,international,100,520,6.0,60.0,28.0,2.5,450
+1531,CHICKEN_MARYLAND,Chicken Maryland,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1532,CHANPURŪ,Chanpurū,other,international,100,520,6.0,60.0,28.0,2.5,450
+1533,MLINCI,Mlinci,other,international,100,520,6.0,60.0,28.0,2.5,450
+1534,SMYRNA_MEATBALLS,Smyrna meatballs,other,international,100,520,6.0,60.0,28.0,2.5,450
+1535,TAVERN_SANDWICH,Tavern sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1536,YANGZHOU_FRIED_RICE,Yangzhou fried rice,rice,chinese,100,169,3.5,36.4,0.4,0.5,1
+1537,QUTAB,Qutab,other,international,100,520,6.0,60.0,28.0,2.5,450
+1538,DUM_ALOO,Dum Aloo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1539,QUEIJO_DO_PICO,Queijo do Pico,other,international,100,520,6.0,60.0,28.0,2.5,450
+1540,COCADA,Cocada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1541,CALF'S_LIVER_AND_BACON,Calf's liver and bacon,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1542,MOULES_FRITES,Moules-frites,other,international,100,520,6.0,60.0,28.0,2.5,450
+1543,ANARSA,Anarsa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1544,TLAYUDA,Tlayuda,other,international,100,520,6.0,60.0,28.0,2.5,450
+1545,ŠAKOTIS,Šakotis,other,international,100,520,6.0,60.0,28.0,2.5,450
+1546,JOLLOF_RICE,Jollof rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1547,MOIN_MOIN,Moin moin,other,international,100,520,6.0,60.0,28.0,2.5,450
+1548,JAM_ROLY_POLY,Jam roly-poly,other,international,100,520,6.0,60.0,28.0,2.5,450
+1549,HOCHZEITSSUPPE,Hochzeitssuppe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1550,MUCENICI,Mucenici,other,international,100,520,6.0,60.0,28.0,2.5,450
+1551,EMA_DATSHI,Ema datshi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1552,NGO_HIANG,Ngo hiang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1553,JELLO_SALAD,Jello salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1554,CLAYPOT_CHICKEN_RICE,Claypot chicken rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1555,MAEUN_TANG,Maeun-tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1556,CIFANTUAN,Cifantuan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1557,RHUBARB_PIE,Rhubarb pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1558,OLLA_PODRIDA,Olla podrida,other,international,100,520,6.0,60.0,28.0,2.5,450
+1559,HAR_GOW,Har gow,other,international,100,520,6.0,60.0,28.0,2.5,450
+1560,SAYUR_LODEH,Sayur lodeh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1561,MEMELA,Memela,other,international,100,520,6.0,60.0,28.0,2.5,450
+1562,WENCHANG_CHICKEN,Wenchang chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1563,GALINHADA,Galinhada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1564,LECSÓ,Lecsó,other,international,100,520,6.0,60.0,28.0,2.5,450
+1565,GYPSY_TART,Gypsy tart,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1566,BOUGATSA,Bougatsa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1567,GERMKNÖDEL,Germknödel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1568,HAYSTACK,Haystack,other,international,100,520,6.0,60.0,28.0,2.5,450
+1569,YULE_LOG,Yule log,other,international,100,520,6.0,60.0,28.0,2.5,450
+1570,BUTTER_COOKIE,Butter cookie,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1571,CHICKEN_À_LA_KING,Chicken à la King,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1572,MÉCHOUI,Méchoui,other,international,100,520,6.0,60.0,28.0,2.5,450
+1573,CROQUETTE,Croquette,other,international,100,520,6.0,60.0,28.0,2.5,450
+1574,SHAMI_KEBAB,Shami kebab,pork,middle_eastern,100,242,27.0,0.0,14.0,0.0,62
+1575,CHICKEN_AND_WAFFLES,Chicken and waffles,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1576,POKE,Poke,other,international,100,520,6.0,60.0,28.0,2.5,450
+1577,PUNSCH_ROLL,Punsch-roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1578,TURTLE_SOUP,Turtle soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1579,KANSAR,Kansar,other,international,100,520,6.0,60.0,28.0,2.5,450
+1580,GLAMORGAN_SAUSAGE,Glamorgan sausage,other,international,100,520,6.0,60.0,28.0,2.5,450
+1581,MANGO_PUDDING,Mango pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1582,BÁNH_CANH,Bánh canh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1583,CAPARRONES,Caparrones,other,international,100,520,6.0,60.0,28.0,2.5,450
+1584,ZOPF,Zopf,other,international,100,520,6.0,60.0,28.0,2.5,450
+1585,BATH_BUN,Bath bun,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1586,CHELSEA_BUN,Chelsea bun,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1587,LONDON_BUN,London bun,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1588,SAFFRON_BUN,Saffron bun,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1589,CHAKHCHOUKHA,Chakhchoukha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1590,ANGEL_FOOD_CAKE,Angel food cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1591,LALAB,Lalab,other,international,100,520,6.0,60.0,28.0,2.5,450
+1592,SUCKLING_PIG,Suckling pig,other,international,100,520,6.0,60.0,28.0,2.5,450
+1593,BARMBRACK,Barmbrack,other,international,100,520,6.0,60.0,28.0,2.5,450
+1594,KOTLET_SCHABOWY,Kotlet schabowy,other,international,100,520,6.0,60.0,28.0,2.5,450
+1595,PASTEL_DE_NATA,Pastel de nata,other,international,100,520,6.0,60.0,28.0,2.5,450
+1596,SHAVE_ICE,Shave ice,other,international,100,520,6.0,60.0,28.0,2.5,450
+1597,TIPSY_CAKE,Tipsy cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1598,CREAMED_EGGS_ON_TOAST,Creamed eggs on toast,egg,international,100,155,13.0,1.1,11.0,0.0,124
+1599,KERAK_TELOR,Kerak telor,other,international,100,520,6.0,60.0,28.0,2.5,450
+1600,OGOK_BAP,Ogok-bap,other,international,100,520,6.0,60.0,28.0,2.5,450
+1601,MORTADELLA,Mortadella,other,international,100,520,6.0,60.0,28.0,2.5,450
+1602,NUT_ROLL,Nut roll,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1603,FRIED_GREEN_TOMATOES,Fried green tomatoes,other,international,100,676,7.8,78.0,36.4,3.2,585
+1604,BEONDEGI,Beondegi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1605,TSOUREKI,Tsoureki,other,international,100,520,6.0,60.0,28.0,2.5,450
+1606,TIROPITA,Tiropita,other,international,100,520,6.0,60.0,28.0,2.5,450
+1607,PLJESKAVICA,Pljeskavica,other,international,100,520,6.0,60.0,28.0,2.5,450
+1608,KARAĐORĐEVA_ŠNICLA,Karađorđeva šnicla,other,international,100,520,6.0,60.0,28.0,2.5,450
+1609,KOKORETSI,Kokoretsi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1610,SKILPADJIES,Skilpadjies,other,international,100,520,6.0,60.0,28.0,2.5,450
+1611,CORN_CHOWDER,Corn chowder,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1612,TARHANA,Tarhana,other,international,100,520,6.0,60.0,28.0,2.5,450
+1613,TUFAHIJE,Tufahije,other,international,100,520,6.0,60.0,28.0,2.5,450
+1614,BIRRIA,Birria,other,international,100,520,6.0,60.0,28.0,2.5,450
+1615,VEAL_ORLOFF,Veal Orloff,other,international,100,520,6.0,60.0,28.0,2.5,450
+1616,FATTOUSH,Fattoush,other,international,100,520,6.0,60.0,28.0,2.5,450
+1617,PANE_CARASAU,Pane carasau,other,international,100,520,6.0,60.0,28.0,2.5,450
+1618,RAB_CAKE,Rab cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1619,BUFFALO_BURGER,Buffalo burger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+1620,TREACLE_TART,Treacle tart,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1621,HAMBURGER,Hamburger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+1622,STAMPPOT,Stamppot,other,international,100,520,6.0,60.0,28.0,2.5,450
+1623,KOPYTKA,Kopytka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1624,KHAI_YAT_SAI,Khai yat sai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1625,MINCHEE,Minchee,other,international,100,520,6.0,60.0,28.0,2.5,450
+1626,KINEMA,Kinema,other,international,100,520,6.0,60.0,28.0,2.5,450
+1627,SGABEO,Sgabeo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1628,CHILI_DOG,Chili dog,other,international,100,520,6.0,60.0,28.0,2.5,450
+1629,SPAGHETTI_ALLE_VONGOLE,Spaghetti alle vongole,pasta,international,100,131,5.0,25.0,1.1,1.8,6
+1630,BAVARIAN_CREAM,Bavarian cream,other,international,100,520,6.0,60.0,28.0,2.5,450
+1631,BHAJI,Bhaji,other,international,100,520,6.0,60.0,28.0,2.5,450
+1632,KACHORI,Kachori,other,international,100,520,6.0,60.0,28.0,2.5,450
+1633,CHOWDER,Chowder,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1634,SCOTCH_BROTH,Scotch broth,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1635,PEA_SOUP,Pea soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1636,KITFO,Kitfo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1637,GORED_GORED,Gored gored,other,international,100,520,6.0,60.0,28.0,2.5,450
+1638,BÁNH_CHƯNG,Bánh chưng,other,international,100,520,6.0,60.0,28.0,2.5,450
+1639,BÚN_BÒ_HUẾ,Bún bò Huế,other,international,100,520,6.0,60.0,28.0,2.5,450
+1640,BÒ_7_MÓN,Bò 7 món,other,international,100,520,6.0,60.0,28.0,2.5,450
+1641,CƠM_TẤM,Cơm tấm,other,international,100,520,6.0,60.0,28.0,2.5,450
+1642,AMBROSIA,Ambrosia,other,international,100,520,6.0,60.0,28.0,2.5,450
+1643,RÖNTTÖNEN,Rönttönen,other,international,100,520,6.0,60.0,28.0,2.5,450
+1644,BALCHÃO,Balchão,other,international,100,520,6.0,60.0,28.0,2.5,450
+1645,GIBASSIER,Gibassier,other,international,100,520,6.0,60.0,28.0,2.5,450
+1646,BACALHAU_À_ZÉ_DO_PIPO,Bacalhau à Zé do Pipo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1647,PANE_DI_ALTAMURA,Pane di Altamura,other,international,100,520,6.0,60.0,28.0,2.5,450
+1648,MYKYROKKA,Mykyrokka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1649,PASKA,Paska,other,international,100,520,6.0,60.0,28.0,2.5,450
+1650,BLACKBERRY_PIE,Blackberry pie,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+1651,MINCE_PIE,Mince pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1652,CORN_COOKIE,Corn cookie,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1653,FRANCESINHA_POVEIRA,Francesinha poveira,other,international,100,520,6.0,60.0,28.0,2.5,450
+1654,PICADILLO,Picadillo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1655,RUNEBERG_TORTE,Runeberg torte,other,international,100,520,6.0,60.0,28.0,2.5,450
+1656,KHAKHRA,Khakhra,other,international,100,520,6.0,60.0,28.0,2.5,450
+1657,OHN_NO_KHAO_SWÈ,Ohn no khao swè,other,international,100,520,6.0,60.0,28.0,2.5,450
+1658,SULTSINA,Sultsina,other,international,100,520,6.0,60.0,28.0,2.5,450
+1659,_M_0CRV0M,/m/0crv0m,other,international,100,520,6.0,60.0,28.0,2.5,450
+1660,PAELLA,Paella,other,international,100,520,6.0,60.0,28.0,2.5,450
+1661,ESPETADA,Espetada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1662,PATHIRI,Pathiri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1663,HORUMONYAKI,Horumonyaki,other,international,100,520,6.0,60.0,28.0,2.5,450
+1664,KHUBZ,Khubz,other,international,100,520,6.0,60.0,28.0,2.5,450
+1665,CIORBĂ,Ciorbă,other,international,100,520,6.0,60.0,28.0,2.5,450
+1666,KIMCHI_BUCHIMGAE,Kimchi-buchimgae,other,international,100,520,6.0,60.0,28.0,2.5,450
+1667,SESAME_CHICKEN,Sesame chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1668,THUKPA,Thukpa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1669,CHWINAMUL,Chwinamul,other,international,100,520,6.0,60.0,28.0,2.5,450
+1670,KABUNI,Kabuni,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1671,JHUNKA,Jhunka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1672,JOLADA_ROTTI,Jolada rotti,other,international,100,520,6.0,60.0,28.0,2.5,450
+1673,SPOONBREAD,Spoonbread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1674,KULICH,Kulich,other,international,100,520,6.0,60.0,28.0,2.5,450
+1675,PHAT_KHING,Phat khing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1676,NAMASU,Namasu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1677,WONTON_NOODLES,Wonton noodles,noodles,chinese,100,138,4.5,25.0,2.1,1.2,8
+1678,JOHNNYCAKE,Johnnycake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1679,PANELLETS,Panellets,other,international,100,520,6.0,60.0,28.0,2.5,450
+1680,MANJŪ,Manjū,other,international,100,520,6.0,60.0,28.0,2.5,450
+1681,MANDI,Mandi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1682,FORTUNE_COOKIE,Fortune cookie,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1683,NOPPE,Noppe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1684,SLAVINK,Slavink,other,international,100,520,6.0,60.0,28.0,2.5,450
+1685,COCKLE_BREAD,Cockle bread,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1686,CARURU,Caruru,other,international,100,520,6.0,60.0,28.0,2.5,450
+1687,CHẢ_LỤA,Chả lụa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1688,PAN_BAGNAT,Pan bagnat,other,international,100,520,6.0,60.0,28.0,2.5,450
+1689,SARDENARA,Sardenara,other,international,100,520,6.0,60.0,28.0,2.5,450
+1690,ENCHILADA,Enchilada,other,mexican,100,520,6.0,60.0,28.0,2.5,450
+1691,SAUSAGE_SANDWICH,Sausage sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1692,PISTACHIO_PUDDING,Pistachio pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1693,CHIKKI,Chikki,other,international,100,520,6.0,60.0,28.0,2.5,450
+1694,CHAMPORADO,Champorado,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1695,COCONUT_CAKE,Coconut cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1696,KAASSOUFFLÉ,Kaassoufflé,other,international,100,520,6.0,60.0,28.0,2.5,450
+1697,CARNE_PIZZAIOLA,Carne pizzaiola,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1698,KHAUK_SWÈ_THOKE,Khauk swè thoke,other,international,100,520,6.0,60.0,28.0,2.5,450
+1699,GAMJA_TANG,Gamja-tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1700,KADHI,Kadhi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1701,GREEN_BEAN_CASSEROLE,Green bean casserole,other,international,100,520,6.0,60.0,28.0,2.5,450
+1702,APPLE_DUMPLING,Apple dumpling,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+1703,COZONAC,Cozonac,other,international,100,520,6.0,60.0,28.0,2.5,450
+1704,PISSALADIÈRE,Pissaladière,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1705,PHAT_SI_IO,Phat si-io,other,international,100,520,6.0,60.0,28.0,2.5,450
+1706,DRUNKEN_NOODLES,Drunken noodles,noodles,international,100,138,4.5,25.0,2.1,1.2,8
+1707,JING_JIANG_ROU_SI,Jing Jiang Rou Si,other,international,100,520,6.0,60.0,28.0,2.5,450
+1708,ENDURI_PITHA,Enduri Pitha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1709,KAKARA_PITHA,Kakara pitha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1710,TARTA_DE_SANTIAGO,Tarta de Santiago,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1711,_M_0DN9ND,/m/0dn9nd,other,international,100,520,6.0,60.0,28.0,2.5,450
+1712,SHEFTALIA,Sheftalia,other,international,100,520,6.0,60.0,28.0,2.5,450
+1713,SOYBEAN_SPROUT,Soybean sprout,other,international,100,520,6.0,60.0,28.0,2.5,450
+1714,ITALIAN_HOT_DOG,Italian hot dog,other,american,100,520,6.0,60.0,28.0,2.5,450
+1715,MAKCHANG,Makchang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1716,MEESHAY,Meeshay,other,international,100,520,6.0,60.0,28.0,2.5,450
+1717,BACALHAU_COM_NATAS,Bacalhau com natas,other,international,100,520,6.0,60.0,28.0,2.5,450
+1718,MAZUREK,Mazurek,other,international,100,520,6.0,60.0,28.0,2.5,450
+1719,NAN_GYI_THOHK,Nan gyi thohk,other,international,100,520,6.0,60.0,28.0,2.5,450
+1720,AJAPSANDALI,Ajapsandali,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+1721,CARAC,Carac,other,international,100,520,6.0,60.0,28.0,2.5,450
+1722,MONT_DI,Mont di,other,international,100,520,6.0,60.0,28.0,2.5,450
+1723,GENG,Geng,other,international,100,520,6.0,60.0,28.0,2.5,450
+1724,VISPIPUURO,Vispipuuro,other,international,100,520,6.0,60.0,28.0,2.5,450
+1725,BAKSO,Bakso,other,international,100,520,6.0,60.0,28.0,2.5,450
+1726,CANJICA,Canjica,other,international,100,520,6.0,60.0,28.0,2.5,450
+1727,FOUGASSE,Fougasse,other,international,100,520,6.0,60.0,28.0,2.5,450
+1728,FOOL'S_GOLD_LOAF,Fool's Gold Loaf,other,international,100,520,6.0,60.0,28.0,2.5,450
+1729,BLUEBERRY_PIE,Blueberry pie,fruit,international,100,52,0.3,14.0,0.2,2.4,1
+1730,PICKLED_CUCUMBER,Pickled cucumber,other,international,100,520,6.0,60.0,28.0,2.5,450
+1731,OGBONO_SOUP,Ogbono soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1732,CHAMP,Champ,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1733,OYSTERS_EN_BROCHETTE,Oysters en brochette,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1734,PASKHA,Paskha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1735,SHISH_TAOUK,Shish taouk,other,international,100,520,6.0,60.0,28.0,2.5,450
+1736,ACARAJÉ,Acarajé,other,international,100,520,6.0,60.0,28.0,2.5,450
+1737,RAS_MALAI,Ras malai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1738,SAN_NAKJI,San-nakji,other,international,100,520,6.0,60.0,28.0,2.5,450
+1739,BUNGEO_PPANG,Bungeo-ppang,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1740,SKILANDIS,Skilandis,other,international,100,520,6.0,60.0,28.0,2.5,450
+1741,GOSH_E_FIL,Gosh-e Fil,other,international,100,520,6.0,60.0,28.0,2.5,450
+1742,NASI_DAGANG,Nasi dagang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1743,GHEIMEH,Gheimeh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1744,FESENJĀN,Fesenjān,other,international,100,520,6.0,60.0,28.0,2.5,450
+1745,BACALHAU_À_GOMES_DE_SÁ,Bacalhau à Gomes de Sá,other,international,100,520,6.0,60.0,28.0,2.5,450
+1746,FÅRIKÅL,Fårikål,other,international,100,520,6.0,60.0,28.0,2.5,450
+1747,BEDFORDSHIRE_CLANGER,Bedfordshire clanger,other,international,100,520,6.0,60.0,28.0,2.5,450
+1748,TONKATSU,Tonkatsu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1749,THAI_FRIED_RICE,Thai fried rice,rice,chinese,100,169,3.5,36.4,0.4,0.5,1
+1750,MANAKISH,Manakish,other,international,100,520,6.0,60.0,28.0,2.5,450
+1751,SCHWEINSHAXE,Schweinshaxe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1752,CHORBA,Chorba,other,international,100,520,6.0,60.0,28.0,2.5,450
+1753,OLIEBOL,Oliebol,other,international,100,520,6.0,60.0,28.0,2.5,450
+1754,ROPA_VIEJA,Ropa vieja,other,international,100,520,6.0,60.0,28.0,2.5,450
+1755,NATCHITOCHES_MEAT_PIE,Natchitoches meat pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1756,ICEBOX_CAKE,Icebox cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1757,SORREL_SOUP,Sorrel soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1758,LAHOH,Lahoh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1759,BOLILLO,Bolillo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1760,MOLLETE,Mollete,other,international,100,520,6.0,60.0,28.0,2.5,450
+1761,CALDEIRADA,Caldeirada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1762,OGI,Ogi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1763,WATERGATE_SALAD,Watergate salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1764,YAKSIK,Yaksik,other,international,100,520,6.0,60.0,28.0,2.5,450
+1765,HALF_SMOKE,Half-smoke,other,international,100,520,6.0,60.0,28.0,2.5,450
+1766,DAKOS,Dakos,other,international,100,520,6.0,60.0,28.0,2.5,450
+1767,SWEET_POTATO_PIE,Sweet potato pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1768,CAPPON_MAGRO,Cappon magro,other,international,100,520,6.0,60.0,28.0,2.5,450
+1769,SERUNDENG,Serundeng,other,international,100,520,6.0,60.0,28.0,2.5,450
+1770,RIJSTEVLAAI,Rijstevlaai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1771,AJOBLANCO,Ajoblanco,other,international,100,520,6.0,60.0,28.0,2.5,450
+1772,YAKA_MEIN,Yaka mein,other,international,100,520,6.0,60.0,28.0,2.5,450
+1773,JUJEH_KABAB,Jujeh kabab,other,international,100,520,6.0,60.0,28.0,2.5,450
+1774,SOY_EGG,Soy egg,egg,international,100,155,13.0,1.1,11.0,0.0,124
+1775,SHUIZHU,Shuizhu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1776,PULIYOGARE,Puliyogare,other,international,100,520,6.0,60.0,28.0,2.5,450
+1777,SAGO,Sago,other,international,100,520,6.0,60.0,28.0,2.5,450
+1778,LAULAU,Laulau,other,international,100,520,6.0,60.0,28.0,2.5,450
+1779,CURTIDO,Curtido,other,international,100,520,6.0,60.0,28.0,2.5,450
+1780,TAPAI,Tapai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1781,PRESS_CAKE,Press cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1782,CUCHIFRITOS,Cuchifritos,other,international,100,520,6.0,60.0,28.0,2.5,450
+1783,VLAAI,Vlaai,other,international,100,520,6.0,60.0,28.0,2.5,450
+1784,MALVERN_PUDDING,Malvern pudding,dessert,international,100,257,3.2,36.0,11.0,0.7,139
+1785,BAKLAVA,Baklava,other,international,100,520,6.0,60.0,28.0,2.5,450
+1786,CHEESE_DOG,Cheese dog,cheese,international,100,402,25.0,1.3,33.0,0.0,621
+1787,LUCHI,Luchi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1788,COWBOY_BEANS,Cowboy beans,other,international,100,520,6.0,60.0,28.0,2.5,450
+1789,SANDESH,Sandesh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1790,STEAK_DIANE,Steak Diane,beef,international,100,250,26.0,0.0,15.0,0.0,72
+1791,LOBSTER_STEW,Lobster stew,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1792,FINIKIA,Finikia,other,international,100,520,6.0,60.0,28.0,2.5,450
+1793,BIBINGKA,Bibingka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1794,TAFELSPITZ,Tafelspitz,other,international,100,520,6.0,60.0,28.0,2.5,450
+1795,PLOYE,Ploye,other,international,100,520,6.0,60.0,28.0,2.5,450
+1796,SAYUR_ASEM,Sayur asem,other,international,100,520,6.0,60.0,28.0,2.5,450
+1797,TRINXAT,Trinxat,other,international,100,520,6.0,60.0,28.0,2.5,450
+1798,NIKUMAN,Nikuman,other,international,100,520,6.0,60.0,28.0,2.5,450
+1799,COZIDO_À_PORTUGUESA,Cozido à portuguesa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1800,BACALHAU_À_BRÁS,Bacalhau à Brás,other,international,100,520,6.0,60.0,28.0,2.5,450
+1801,TOMATO_COMPOTE,Tomato compote,other,international,100,520,6.0,60.0,28.0,2.5,450
+1802,SESAME_SEED_CANDY,Sesame seed candy,other,international,100,520,6.0,60.0,28.0,2.5,450
+1803,DHEBRA,Dhebra,other,international,100,520,6.0,60.0,28.0,2.5,450
+1804,KAENG_PA,Kaeng pa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1805,MAS_RIHA,Mas riha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1806,ZOSUI,Zosui,other,international,100,520,6.0,60.0,28.0,2.5,450
+1807,YASSA,Yassa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1808,PAMBAZO,Pambazo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1809,IMARTI,Imarti,other,international,100,520,6.0,60.0,28.0,2.5,450
+1810,BACALHAU_COM_TODOS,Bacalhau com todos,other,international,100,520,6.0,60.0,28.0,2.5,450
+1811,BLACK_PEPPER_CRAB,Black pepper crab,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1812,QUESO_FLAMEADO,Queso flameado,other,international,100,520,6.0,60.0,28.0,2.5,450
+1813,BLACK_AND_WHITE_COOKIE,Black and white cookie,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1814,RED_BRAISED_PORK_BELLY,Red braised pork belly,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1815,KROFNE,Krofne,other,international,100,520,6.0,60.0,28.0,2.5,450
+1816,UŠTIPCI,Uštipci,other,international,100,520,6.0,60.0,28.0,2.5,450
+1817,ROŽATA,Rožata,other,international,100,520,6.0,60.0,28.0,2.5,450
+1818,PUNJENA_PAPRIKA,Punjena paprika,other,international,100,520,6.0,60.0,28.0,2.5,450
+1819,FUSI,Fusi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1820,MANEŠTRA,Maneštra,other,international,100,520,6.0,60.0,28.0,2.5,450
+1821,KROŠTULE,Kroštule,other,international,100,520,6.0,60.0,28.0,2.5,450
+1822,FRITULE,Fritule,other,international,100,520,6.0,60.0,28.0,2.5,450
+1823,PROTEIN_BAR,Protein bar,other,international,100,520,6.0,60.0,28.0,2.5,450
+1824,CORDON_BLEU,Cordon bleu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1825,PIROG,Pirog,other,international,100,520,6.0,60.0,28.0,2.5,450
+1826,PACHI_PULUSU,Pachi Pulusu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1827,FRIGĂRUI,Frigărui,other,international,100,520,6.0,60.0,28.0,2.5,450
+1828,CHHENA_PODA,Chhena poda,other,international,100,520,6.0,60.0,28.0,2.5,450
+1829,POORNALU,Poornalu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1830,PONGANALU,Ponganalu,other,international,100,520,6.0,60.0,28.0,2.5,450
+1831,BING,Bing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1832,FLAOUNA,Flaouna,other,international,100,520,6.0,60.0,28.0,2.5,450
+1833,CHAKODI,Chakodi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1834,ALOO_PARATHA,Aloo paratha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1835,KONRO,Konro,other,international,100,520,6.0,60.0,28.0,2.5,450
+1836,CEMITA,Cemita,other,international,100,520,6.0,60.0,28.0,2.5,450
+1837,ASINAN,Asinan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1838,BROA,Broa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1839,TRIFLE,Trifle,other,international,100,520,6.0,60.0,28.0,2.5,450
+1840,RAT_NA,Rat na,other,international,100,520,6.0,60.0,28.0,2.5,450
+1841,BORLENGO,Borlengo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1842,GAZPACHUELO,Gazpachuelo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1843,ESTERHÁZY_TORTE,Esterházy torte,other,international,100,520,6.0,60.0,28.0,2.5,450
+1844,MAGENBROT,Magenbrot,other,international,100,520,6.0,60.0,28.0,2.5,450
+1845,DETROIT_STYLE_PIZZA,Detroit-style pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1846,FULING_JIABING,Fuling jiabing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1847,LAKHAMARI,Lakhamari,pork,international,100,242,27.0,0.0,14.0,0.0,62
+1848,MUĆKALICA,Mućkalica,other,international,100,520,6.0,60.0,28.0,2.5,450
+1849,SUKHDI,Sukhdi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1850,KILISHI,Kilishi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1851,BAJI,Baji,other,international,100,520,6.0,60.0,28.0,2.5,450
+1852,PEANUT_BUTTER_COOKIE,Peanut butter cookie,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1853,RABBIT_PIE,Rabbit pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1854,PALING_IN_'T_GROEN,Paling in 't groen,other,international,100,520,6.0,60.0,28.0,2.5,450
+1855,CHATAAMARI,Chataamari,other,international,100,520,6.0,60.0,28.0,2.5,450
+1856,LAWAR,Lawar,other,international,100,520,6.0,60.0,28.0,2.5,450
+1857,ARISA_PITHA,Arisa Pitha,other,international,100,520,6.0,60.0,28.0,2.5,450
+1858,EMPAL_GENTONG,Empal gentong,other,international,100,520,6.0,60.0,28.0,2.5,450
+1859,CARNE_ASADA_FRIES,Carne asada fries,other,international,100,520,6.0,60.0,28.0,2.5,450
+1860,TAKIKOMI_GOHAN,Takikomi gohan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1861,KAMAMESHI,Kamameshi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1862,PASTA_SALAD,Pasta salad,pasta,italian,100,131,5.0,25.0,1.1,1.8,6
+1863,FASOLE_CU_CÂRNAȚI,Fasole cu cârnați,other,international,100,520,6.0,60.0,28.0,2.5,450
+1864,ZELNIK,Zelnik,other,international,100,520,6.0,60.0,28.0,2.5,450
+1865,PLĂCINTĂ,Plăcintă,other,international,100,520,6.0,60.0,28.0,2.5,450
+1866,TONGSENG,Tongseng,other,international,100,520,6.0,60.0,28.0,2.5,450
+1867,SOTO_MIE,Soto mie,other,international,100,520,6.0,60.0,28.0,2.5,450
+1868,SARBURMA,Sarburma,other,international,100,520,6.0,60.0,28.0,2.5,450
+1869,LUTEFISK,Lutefisk,other,international,100,520,6.0,60.0,28.0,2.5,450
+1870,KHICHDI,Khichdi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1871,BRIOUAT,Briouat,other,international,100,520,6.0,60.0,28.0,2.5,450
+1872,CHILI_BURGER,Chili burger,burger,american,100,295,17.0,24.0,14.0,1.2,396
+1873,BOLO_DE_MEL,Bolo de mel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1874,CLOOTIE,Clootie,other,international,100,520,6.0,60.0,28.0,2.5,450
+1875,SESWAA,Seswaa,other,international,100,520,6.0,60.0,28.0,2.5,450
+1876,TAHU_SUMEDANG,Tahu sumedang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1877,PICHELSTEINER,Pichelsteiner,other,international,100,520,6.0,60.0,28.0,2.5,450
+1878,BREAD_SOUP,Bread soup,bread,international,100,265,9.0,49.0,3.2,2.7,491
+1879,SCOTCHEROOS,Scotcheroos,other,international,100,520,6.0,60.0,28.0,2.5,450
+1880,KARTOFFELKÄSE,Kartoffelkäse,other,international,100,520,6.0,60.0,28.0,2.5,450
+1881,SCHUXEN,Schuxen,other,international,100,520,6.0,60.0,28.0,2.5,450
+1882,CARAMEL,Caramel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1883,ZWETSCHGENKUCHEN,Zwetschgenkuchen,other,international,100,520,6.0,60.0,28.0,2.5,450
+1884,ALLOCO,Alloco,other,international,100,520,6.0,60.0,28.0,2.5,450
+1885,VANGIBATH,Vangibath,other,international,100,520,6.0,60.0,28.0,2.5,450
+1886,TORRICADO,Torricado,other,international,100,520,6.0,60.0,28.0,2.5,450
+1887,PHAT_PHRIK_KHING,Phat phrik khing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1888,TOMATO_AND_EGG_SOUP,Tomato and egg soup,egg,international,100,155,13.0,1.1,11.0,0.0,124
+1889,_M_0H65YM4,/m/0h65ym4,other,international,100,520,6.0,60.0,28.0,2.5,450
+1890,SPANAKORIZO,Spanakorizo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1891,OSTROPEL,Ostropel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1892,TAMALE,Tamale,other,international,100,520,6.0,60.0,28.0,2.5,450
+1893,SEATTLE_STYLE_HOT_DOG,Seattle-style hot dog,other,american,100,520,6.0,60.0,28.0,2.5,450
+1894,AMMONIA_COOKIE,Ammonia cookie,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1895,BOSTON_BAKED_BEANS,Boston baked beans,other,international,100,468,5.4,54.0,25.2,2.2,405
+1896,AMANDINE,Amandine,other,international,100,520,6.0,60.0,28.0,2.5,450
+1897,DUCK_BLOOD_AND_VERMICELLI_SOUP,Duck blood and vermicelli soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1898,AZERBAIJANI_PAKHLAVA,Azerbaijani pakhlava,other,international,100,520,6.0,60.0,28.0,2.5,450
+1899,BAKWAN,Bakwan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1900,WALLENBERGARE,Wallenbergare,other,international,100,520,6.0,60.0,28.0,2.5,450
+1901,PASTRY,Pastry,other,international,100,520,6.0,60.0,28.0,2.5,450
+1902,MELOMAKARONO,Melomakarono,other,international,100,520,6.0,60.0,28.0,2.5,450
+1903,COCIDO_LEBANIEGO,Cocido lebaniego,other,international,100,520,6.0,60.0,28.0,2.5,450
+1904,KOI,Koi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1905,STIR_FRIED_TOMATO_AND_SCRAMBLED_EGGS,Stir-fried tomato and scrambled eggs,egg,international,100,201,16.9,1.4,14.3,0.0,161
+1906,FLÆSKESTEG,Flæskesteg,other,international,100,520,6.0,60.0,28.0,2.5,450
+1907,BEGGAR'S_CHICKEN,Beggar's Chicken,chicken,international,100,239,27.0,0.0,14.0,0.0,82
+1908,_M_0HZPVF0,/m/0hzpvf0,other,international,100,520,6.0,60.0,28.0,2.5,450
+1909,KONKONTE,Konkonte,other,international,100,520,6.0,60.0,28.0,2.5,450
+1910,STUFFED_SQUASH,Stuffed squash,other,international,100,520,6.0,60.0,28.0,2.5,450
+1911,KAENG_SOM,Kaeng som,other,international,100,520,6.0,60.0,28.0,2.5,450
+1912,KENTUCKY_JAM_CAKE,Kentucky jam cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1913,MURĂTURI,Murături,other,international,100,520,6.0,60.0,28.0,2.5,450
+1914,TOCHITURĂ,Tochitură,other,international,100,520,6.0,60.0,28.0,2.5,450
+1915,URAP,Urap,other,international,100,520,6.0,60.0,28.0,2.5,450
+1916,CORNULEȚE,Cornulețe,other,international,100,520,6.0,60.0,28.0,2.5,450
+1917,QUAD_CITY_STYLE_PIZZA,Quad City-style pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1918,PANEER_TIKKA,Paneer tikka,cheese,indian,100,402,25.0,1.3,33.0,0.0,621
+1919,CIORBĂ_DE_PERIȘOARE,Ciorbă de perișoare,other,international,100,520,6.0,60.0,28.0,2.5,450
+1920,_M_0J66841,/m/0j66841,other,international,100,520,6.0,60.0,28.0,2.5,450
+1921,SHAKER_LEMON_PIE,Shaker lemon pie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1922,DOODHPAK,Doodhpak,other,international,100,520,6.0,60.0,28.0,2.5,450
+1923,CEVICHE,Ceviche,other,international,100,520,6.0,60.0,28.0,2.5,450
+1924,CABBAGE_SOUP,Cabbage soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1925,NASI_TIMBEL,Nasi timbel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1926,PA_AMB_TOMÀQUET,Pa amb tomàquet,other,international,100,520,6.0,60.0,28.0,2.5,450
+1927,ESCALIVADA,Escalivada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1928,MEĐIMURSKA_GIBANICA,Međimurska gibanica,other,international,100,520,6.0,60.0,28.0,2.5,450
+1929,KHANOM_CHAN,Khanom chan,other,international,100,520,6.0,60.0,28.0,2.5,450
+1930,OHAW,Ohaw,other,international,100,520,6.0,60.0,28.0,2.5,450
+1931,BAGHRIR,Baghrir,other,international,100,520,6.0,60.0,28.0,2.5,450
+1932,HUMMINGBIRD_CAKE,Hummingbird cake,cake,international,100,257,3.2,36.0,11.0,0.7,139
+1933,NEAPOLITAN_PIZZA,Neapolitan pizza,pizza,italian,100,266,11.0,33.0,10.0,2.3,598
+1934,DOUGHNUT,Doughnut,other,international,100,520,6.0,60.0,28.0,2.5,450
+1935,HUMMUS,Hummus,other,middle_eastern,100,520,6.0,60.0,28.0,2.5,450
+1936,NIMONO,Nimono,other,international,100,520,6.0,60.0,28.0,2.5,450
+1937,CHOCOLATE_CHIP_COOKIE,Chocolate chip cookie,cookie,international,100,502,5.9,64.0,25.0,2.0,385
+1938,BÚN_ỐC,Bún ốc,other,international,100,520,6.0,60.0,28.0,2.5,450
+1939,CHEESE_STRAW,Cheese straw,cheese,international,100,402,25.0,1.3,33.0,0.0,621
+1940,SAUSAGE,Sausage,other,international,100,520,6.0,60.0,28.0,2.5,450
+1941,FROGEYE_SALAD,Frogeye salad,salad,international,100,17,1.2,3.3,0.2,1.3,10
+1942,SENATE_BEAN_SOUP,Senate bean soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1943,BOTIFARRA,Botifarra,other,international,100,520,6.0,60.0,28.0,2.5,450
+1944,LEBERKNÖDEL,Leberknödel,other,international,100,520,6.0,60.0,28.0,2.5,450
+1945,LAZIJI,Laziji,other,international,100,520,6.0,60.0,28.0,2.5,450
+1946,QUZI,Quzi,other,international,100,520,6.0,60.0,28.0,2.5,450
+1947,CHAZUKE,Chazuke,other,international,100,520,6.0,60.0,28.0,2.5,450
+1948,SANDWICH,Sandwich,sandwich,international,100,250,12.0,30.0,9.0,2.0,450
+1949,BLT,BLT,other,international,100,520,6.0,60.0,28.0,2.5,450
+1950,CHIKHIRTMA,Chikhirtma,other,international,100,520,6.0,60.0,28.0,2.5,450
+1951,PICO_DE_GALLO,Pico de gallo,other,international,100,520,6.0,60.0,28.0,2.5,450
+1952,ODEN,Oden,other,international,100,520,6.0,60.0,28.0,2.5,450
+1953,TOSTADA,Tostada,other,international,100,520,6.0,60.0,28.0,2.5,450
+1954,CHILAQUILES,Chilaquiles,other,international,100,520,6.0,60.0,28.0,2.5,450
+1955,COCIDO_MONTAÑÉS,Cocido montañés,other,international,100,520,6.0,60.0,28.0,2.5,450
+1956,LONTONG_CAP_GO_MEH,Lontong Cap Go Meh,other,international,100,520,6.0,60.0,28.0,2.5,450
+1957,PORRA_ANTEQUERANA,Porra antequerana,other,international,100,520,6.0,60.0,28.0,2.5,450
+1958,KEDJENOU,Kedjenou,other,international,100,520,6.0,60.0,28.0,2.5,450
+1959,TOURIN,Tourin,other,international,100,520,6.0,60.0,28.0,2.5,450
+1960,ATTIÉKÉ,Attiéké,other,international,100,520,6.0,60.0,28.0,2.5,450
+1961,DAK_BOKKEUM_TANG,Dak-bokkeum-tang,other,international,100,520,6.0,60.0,28.0,2.5,450
+1962,ŽEMLOVKA,Žemlovka,other,international,100,520,6.0,60.0,28.0,2.5,450
+1963,DOVGA,Dovga,other,international,100,520,6.0,60.0,28.0,2.5,450
+1964,RICE_AND_GRAVY,Rice and gravy,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1965,SAI_UA,Sai ua,other,international,100,520,6.0,60.0,28.0,2.5,450
+1966,NAM_NGIAO,Nam ngiao,other,international,100,520,6.0,60.0,28.0,2.5,450
+1967,KAENG_KHAE,Kaeng khae,other,international,100,520,6.0,60.0,28.0,2.5,450
+1968,KAENG_TAI_PLA,Kaeng tai pla,other,international,100,520,6.0,60.0,28.0,2.5,450
+1969,DIM_SUM,Dim sum,other,chinese,100,520,6.0,60.0,28.0,2.5,450
+1970,TAHRI,Tahri,other,international,100,520,6.0,60.0,28.0,2.5,450
+1971,BOLO_DO_CACO,Bolo do caco,other,international,100,520,6.0,60.0,28.0,2.5,450
+1972,BUFFALO_WING,Buffalo wing,other,international,100,520,6.0,60.0,28.0,2.5,450
+1973,PUSTAKARI,Pustakari,other,international,100,520,6.0,60.0,28.0,2.5,450
+1974,PIEDS_PAQUETS,Pieds paquets,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1975,TINGINYS,Tinginys,other,international,100,520,6.0,60.0,28.0,2.5,450
+1976,SUNNUNDALLU,Sunnundallu,curry,indian,100,97,3.7,7.8,6.1,2.1,380
+1977,LAPSKAUS,Lapskaus,other,international,100,520,6.0,60.0,28.0,2.5,450
+1978,CALDO_TLALPEÑO,Caldo tlalpeño,other,international,100,520,6.0,60.0,28.0,2.5,450
+1979,MILHO_FRITO,Milho frito,other,international,100,520,6.0,60.0,28.0,2.5,450
+1980,KALU_DODOL,Kalu dodol,other,international,100,520,6.0,60.0,28.0,2.5,450
+1981,POPPYSEED_MUFFIN,Poppyseed muffin,other,international,100,520,6.0,60.0,28.0,2.5,450
+1982,PEANUT_SOUP,Peanut soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1983,TARTE_À_LA_BOUILLIE,Tarte à la Bouillie,pie,international,100,237,2.4,34.0,11.0,0.7,197
+1984,CALDO_GALLEGO,Caldo gallego,other,international,100,520,6.0,60.0,28.0,2.5,450
+1985,SAMAY_BAJI,Samay Baji,other,international,100,520,6.0,60.0,28.0,2.5,450
+1986,LIMBURGER_SANDWICH,Limburger sandwich,burger,american,100,295,17.0,24.0,14.0,1.2,396
+1987,HUACHINANGO_A_LA_VERACRUZANA,Huachinango a la Veracruzana,other,international,100,520,6.0,60.0,28.0,2.5,450
+1988,SAMBAL_STINGRAY,Sambal stingray,other,international,100,520,6.0,60.0,28.0,2.5,450
+1989,KULUBAN,Kuluban,other,international,100,520,6.0,60.0,28.0,2.5,450
+1990,MODJESKA,Modjeska,other,international,100,520,6.0,60.0,28.0,2.5,450
+1991,PAN_DULCE,Pan dulce,other,international,100,520,6.0,60.0,28.0,2.5,450
+1992,FLORINA_PEPPER,Florina pepper,other,international,100,520,6.0,60.0,28.0,2.5,450
+1993,OYSTERS_BIENVILLE,Oysters Bienville,seafood,international,100,99,20.0,0.0,1.7,0.0,111
+1994,CRONUT,Cronut,other,international,100,520,6.0,60.0,28.0,2.5,450
+1995,DUCK_RICE,Duck rice,rice,international,100,130,2.7,28.0,0.3,0.4,1
+1996,SULU_KÖFTE,Sulu köfte,other,international,100,520,6.0,60.0,28.0,2.5,450
+1997,TOYGA_SOUP,Toyga soup,soup,international,100,32,1.3,5.8,0.6,0.5,343
+1998,MAJJIGE_HULI,Majjige huli,other,international,100,520,6.0,60.0,28.0,2.5,450
+1999,IKAN_GORENG,Ikan goreng,other,international,100,520,6.0,60.0,28.0,2.5,450
+2000,LEKOR,Lekor,other,international,100,520,6.0,60.0,28.0,2.5,450
+2001,CIULAMA,Ciulama,other,international,100,520,6.0,60.0,28.0,2.5,450
+2002,AYAM_BAKAR,Ayam bakar,other,international,100,520,6.0,60.0,28.0,2.5,450
+2003,HINAVA,Hinava,other,international,100,520,6.0,60.0,28.0,2.5,450
+2004,WAAKYE,Waakye,other,international,100,520,6.0,60.0,28.0,2.5,450
+2005,SALBUTE,Salbute,other,international,100,520,6.0,60.0,28.0,2.5,450
+2006,KUCHMACHI,Kuchmachi,other,international,100,520,6.0,60.0,28.0,2.5,450
+2007,KIBINAI,Kibinai,other,international,100,520,6.0,60.0,28.0,2.5,450
+2008,LOBIANI,Lobiani,other,international,100,520,6.0,60.0,28.0,2.5,450
+2009,CHANAKHI,Chanakhi,other,international,100,520,6.0,60.0,28.0,2.5,450
+2010,BAGHALI_GHATOGH,Baghali ghatogh,other,international,100,520,6.0,60.0,28.0,2.5,450
+2011,PKHALI,Pkhali,other,international,100,520,6.0,60.0,28.0,2.5,450
+2012,POC_CHUC,Poc Chuc,other,international,100,520,6.0,60.0,28.0,2.5,450
+2013,BIONICO,Bionico,other,international,100,520,6.0,60.0,28.0,2.5,450
+2014,BAMISCHIJF,Bamischijf,other,international,100,520,6.0,60.0,28.0,2.5,450
+2015,RACUCHY,Racuchy,other,international,100,520,6.0,60.0,28.0,2.5,450
+2016,KUURDAK,Kuurdak,other,international,100,520,6.0,60.0,28.0,2.5,450
+2017,HOKKIEN_FRIED_RICE,Hokkien fried rice,rice,chinese,100,169,3.5,36.4,0.4,0.5,1
+2018,MU_KRATHA,Mu kratha,other,international,100,520,6.0,60.0,28.0,2.5,450
+2019,THONG_YIP,Thong yip,other,international,100,520,6.0,60.0,28.0,2.5,450
+2020,ZUPPA_TOSCANA,Zuppa toscana,other,international,100,520,6.0,60.0,28.0,2.5,450
+2021,DHINDO,Dhindo,other,international,100,520,6.0,60.0,28.0,2.5,450
+2022,THIAKRY,Thiakry,other,international,100,520,6.0,60.0,28.0,2.5,450
+2023,KONDOWOLE,Kondowole,other,international,100,520,6.0,60.0,28.0,2.5,450

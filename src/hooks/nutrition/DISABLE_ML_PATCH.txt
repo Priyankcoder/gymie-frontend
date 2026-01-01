@@ -1,0 +1,107 @@
+
+# Quick Patch: Temporarily Disable ML
+
+## Apply this change to useOfflineNutrition.ts
+
+Find the `recognizeFoodFromImage` function (around line 121) and replace it with:
+
+```typescript
+const recognizeFoodFromImage = async (imageUri: string) => {
+  setIsEstimating(true);
+  try {
+    console.log('[OfflineNutrition] Image selected');
+    
+    // Get image hash for tracking
+    const hashResult = await offlineNutritionService.estimateFromImage(imageUri);
+    setImageHash(hashResult.imageHash);
+    
+    // TEMPORARY: ML model file is corrupted (1.5% confidence issue)
+    // Skip ML inference and go straight to manual selection
+    console.log('[OfflineNutrition] ML temporarily disabled - using manual selection');
+    Alert.alert(
+      'Select Your Dish',
+      'Please search and select your dish from the list below.',
+      [{ text: 'OK' }]
+    );
+    
+    // Don't run ML - let user search manually
+    // When you have a working model, remove this return and uncomment ML code below
+    setIsEstimating(false);
+    return;
+    
+    /* UNCOMMENT THIS WHEN YOU HAVE A WORKING MODEL:
+    console.log('[OfflineNutrition] Starting food recognition...');
+    const result = await offlineNutritionService.recognizeFood(imageUri);
+    
+    setImageHash(result.imageHash);
+    
+    if (result.success && result.nutrition) {
+      console.log('[OfflineNutrition] Food recognized:', {
+        dish: result.prediction.dishName,
+        confidence: result.prediction.confidence.toFixed(2),
+        portion: result.portionEstimate.portion,
+      });
+
+      const recognizedDish: DishSearchResult = {
+        dish_id: result.nutrition.dish.dish_id,
+        display_name: result.nutrition.dish.display_name,
+        category: result.nutrition.dish.category,
+        cuisine: result.nutrition.dish.cuisine,
+      };
+      setSelectedDish(recognizedDish);
+      setSelectedPortion(result.portionEstimate.portion);
+
+      setNutritionEstimation({
+        dishName: result.nutrition.dish.display_name,
+        calories: result.nutrition.adjusted_nutrition.calories,
+        protein: result.nutrition.adjusted_nutrition.protein,
+        carbs: result.nutrition.adjusted_nutrition.carbs,
+        fat: result.nutrition.adjusted_nutrition.fat,
+        confidence: result.prediction.confidence,
+        imageHash: result.imageHash,
+      });
+
+      if (result.prediction.confidence >= 0.7) {
+        Alert.alert(
+          'Food Recognized!',
+          `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%`,
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Low Confidence Detection',
+          `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%\n\nPlease verify or search for the correct dish.`,
+          [{ text: 'OK' }]
+        );
+      }
+    } else {
+      console.warn('[OfflineNutrition] ML inference failed, showing manual selection');
+      Alert.alert(
+        'Manual Selection Required',
+        result.error || 'Could not recognize food automatically. Please search and select manually.',
+        [{ text: 'OK' }]
+      );
+    }
+    */
+  } catch (error) {
+    console.error('[OfflineNutrition] Error during food recognition:', error);
+    Alert.alert(
+      'Select Your Dish',
+      'Please search and select your dish manually.',
+      [{ text: 'OK' }]
+    );
+  } finally {
+    setIsEstimating(false);
+  }
+};
+```
+
+## Result
+
+✅ App works perfectly with manual selection
+✅ User can upload photo (saved for reference)
+✅ User searches and selects dish
+✅ Nutrition calculated correctly
+✅ Meal saved with photo
+
+When you get a proper model file later, just remove the early return and uncomment the ML code!

@@ -154,8 +154,17 @@ class OfflineNutritionService {
       
       // Step 3: Database lookup for nutrition
       const portionMultiplier = portionEstimationService.getMultiplier(portionEstimate.portion);
+      
+      // Normalize dish ID for database lookup (handle case sensitivity)
+      const normalizedDishId = prediction.dishId.toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
+      
+      console.log('[OfflineNutrition] Looking up nutrition for:', {
+        original: prediction.dishId,
+        normalized: normalizedDishId
+      });
+      
       const nutrition = await nutritionDatabaseService.getNutritionResult(
-        prediction.dishId,
+        normalizedDishId,
         portionMultiplier
       );
       

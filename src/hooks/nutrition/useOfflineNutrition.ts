@@ -50,7 +50,7 @@ interface UseOfflineNutritionReturn {
   estimateNutrition: () => Promise<void>;
   
   // Save meal
-  saveMeal: (mealType: MealType, onSuccess: () => void) => Promise<void>;
+  saveMeal: (mealType: MealType, onSuccess: () => void, editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; portionGrams: number }) => Promise<void>;
   
   // Reset
   reset: () => void;
@@ -94,7 +94,13 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
       const statistics = await offlineNutritionService.getStatistics();
       setStats(statistics);
       
-      console.log(`[OfflineNutrition] Loaded ${dishes.length} dishes`);
+      console.log(`[OfflineNutrition] Loaded ${dishes.length} dishes:`);
+      dishes.slice(0, 10).forEach((dish, i) => {
+        console.log(`  ${i + 1}. ${dish.display_name} (${dish.category})`);
+      });
+      if (dishes.length > 10) {
+        console.log(`  ... and ${dishes.length - 10} more`);
+      }
     } catch (error) {
       console.error('[OfflineNutrition] Error loading initial data:', error);
       Alert.alert('Error', 'Failed to load nutrition database');
@@ -127,7 +133,8 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
       setImageHash(result.imageHash);
       
       if (result.success && result.nutrition) {
-        console.log('[OfflineNutrition] Food recognized:', {
+        // Case 1: ML recognized AND nutrition data available
+        console.log('[OfflineNutrition] Food recognized with nutrition data:', {
           dish: result.prediction.dishName,
           confidence: result.prediction.confidence.toFixed(2),
           portion: result.portionEstimate.portion,
@@ -155,10 +162,17 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
         });
 
         // If confidence is high, show success message
-        if (result.prediction.confidence >= 0.7) {
+        if (result.prediction.confidence >= 0.8) {
           Alert.alert(
             'Food Recognized!',
             `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%`,
+            [{ text: 'OK' }]
+          );
+        } else if (result.prediction.confidence >= 0.5) {
+          // Medium confidence - auto-populate but show gentle warning
+          Alert.alert(
+            'Food Detected',
+            `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%\n\nNutrition data populated. Please verify if needed.`,
             [{ text: 'OK' }]
           );
         } else {
@@ -169,8 +183,20 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
             [{ text: 'OK' }]
           );
         }
+      } else if (result.success && !result.nutrition) {
+        // Case 2: ML recognized food but no nutrition data in database
+        console.log('[OfflineNutrition] Food recognized but no nutrition data:', {
+          dish: result.prediction.dishName,
+          confidence: result.prediction.confidence.toFixed(2),
+        });
+        
+        Alert.alert(
+          'Food Recognized - Data Not Available',
+          `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%\n\nThis food is not in our nutrition database yet. Please search manually to add nutrition information.`,
+          [{ text: 'OK' }]
+        );
       } else {
-        // ML failed, fall back to manual selection
+        // Case 3: ML failed completely
         console.warn('[OfflineNutrition] ML inference failed, showing manual selection');
         Alert.alert(
           'Manual Selection Required',
@@ -270,19 +296,32 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
     }
   };
 
-  const saveMeal = async (mealType: MealType, onSuccess: () => void) => {
+  const saveMeal = async (
+    mealType: MealType,
+    onSuccess: () => void,
+    editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; portionGrams: number }
+  ) => {
     if (!nutritionEstimation) {
       Alert.alert('Error', 'No nutrition estimation available');
       return;
     }
 
     try {
-      const newMeal: Omit<Meal, 'id'> = {
-        name: nutritionEstimation.dishName,
+      // Use edited values if provided, otherwise use original estimation
+      const finalNutrition = editedNutrition || {
         calories: nutritionEstimation.calories,
         protein: nutritionEstimation.protein,
         carbs: nutritionEstimation.carbs,
         fat: nutritionEstimation.fat,
+        portionGrams: 150, // default medium
+      };
+
+      const newMeal: Omit<Meal, 'id'> = {
+        name: `${nutritionEstimation.dishName} (${finalNutrition.portionGrams}g)`,
+        calories: finalNutrition.calories,
+        protein: finalNutrition.protein,
+        carbs: finalNutrition.carbs,
+        fat: finalNutrition.fat,
         imageUri: selectedImage || undefined,
         mealType,
         date: today,
@@ -293,7 +332,7 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
 
       await api.meals.create(newMeal);
       
-      console.log('[OfflineNutrition] Meal saved successfully');
+      console.log('[OfflineNutrition] Meal saved successfully with nutrition:', finalNutrition);
       reset();
       onSuccess();
     } catch (error) {

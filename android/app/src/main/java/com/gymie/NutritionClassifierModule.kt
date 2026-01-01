@@ -23,8 +23,8 @@ class NutritionClassifierModule(reactContext: ReactApplicationContext) :
     private var labels: List<String> = emptyList()
     private val MODEL_NAME = "vision_v1.tflite"
     private val LABELS_NAME = "labels.json"
-    private val INPUT_SIZE = 224
-    private val NUM_CLASSES = 101
+    private val INPUT_SIZE = 192  // Updated for new model
+    private val NUM_CLASSES = 2024  // Updated for new model
 
     init {
         loadModel()
@@ -76,22 +76,41 @@ class NutritionClassifierModule(reactContext: ReactApplicationContext) :
             val inputBuffer = bitmapToByteBuffer(resizedBitmap)
 
             // Run inference
-            val output = Array(1) { FloatArray(NUM_CLASSES) }
-            interpreter?.run(inputBuffer, output)
+            val outputBuffer = ByteBuffer.allocateDirect(NUM_CLASSES)
+            outputBuffer.order(ByteOrder.nativeOrder())
+            interpreter?.run(inputBuffer, outputBuffer)
+
+            // Dequantize output (UINT8 to probabilities)
+            outputBuffer.rewind()
+            val predictions = FloatArray(NUM_CLASSES)
+            for (i in 0 until NUM_CLASSES) {
+                // Convert UINT8 (0-255) to probability (0-1)
+                val quantizedValue = outputBuffer.get().toInt() and 0xFF
+                predictions[i] = quantizedValue / 255.0f
+            }
 
             // Get top predictions
-            val predictions = output[0]
             val topK = getTopK(predictions, 5)
 
             // Format result
             val result = Arguments.createMap().apply {
-                putString("label", labels[topK[0].first])
+                val topLabel = if (topK[0].first < labels.size) {
+                    labels[topK[0].first]
+                } else {
+                    "food_class_${topK[0].first}"
+                }
+                putString("label", topLabel)
                 putDouble("confidence", topK[0].second.toDouble())
                 
                 val top5Array = Arguments.createArray()
                 topK.forEach { (index, confidence) ->
                     val pred = Arguments.createMap().apply {
-                        putString("label", labels[index])
+                        val label = if (index < labels.size) {
+                            labels[index]
+                        } else {
+                            "food_class_$index"
+                        }
+                        putString("label", label)
                         putDouble("confidence", confidence.toDouble())
                     }
                     top5Array.pushMap(pred)
@@ -118,7 +137,8 @@ class NutritionClassifierModule(reactContext: ReactApplicationContext) :
     }
 
     private fun bitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
-        val byteBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * 3)
+        // Model is UINT8 quantized - allocate 1 byte per channel
+        val byteBuffer = ByteBuffer.allocateDirect(INPUT_SIZE * INPUT_SIZE * 3)
         byteBuffer.order(ByteOrder.nativeOrder())
 
         val intValues = IntArray(INPUT_SIZE * INPUT_SIZE)
@@ -129,10 +149,10 @@ class NutritionClassifierModule(reactContext: ReactApplicationContext) :
             for (j in 0 until INPUT_SIZE) {
                 val value = intValues[pixel++]
                 
-                // Normalize to [-1, 1]
-                byteBuffer.putFloat(((value shr 16 and 0xFF) - 127.5f) / 127.5f)
-                byteBuffer.putFloat(((value shr 8 and 0xFF) - 127.5f) / 127.5f)
-                byteBuffer.putFloat(((value and 0xFF) - 127.5f) / 127.5f)
+                // For UINT8 quantized model: directly use RGB values (0-255)
+                byteBuffer.put((value shr 16 and 0xFF).toByte())  // R
+                byteBuffer.put((value shr 8 and 0xFF).toByte())   // G
+                byteBuffer.put((value and 0xFF).toByte())          // B
             }
         }
 

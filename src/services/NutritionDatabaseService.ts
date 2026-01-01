@@ -69,7 +69,7 @@ class NutritionDatabaseService {
   private db: SQLite.SQLiteDatabase | null = null;
   private initialized = false;
   private readonly DB_NAME = 'nutrition.db';
-  private readonly DB_VERSION = '1.0.0';
+  private readonly DB_VERSION = '2.0.0'; // Updated to force reload with comprehensive data
 
   /**
    * Initialize database and create tables
@@ -200,7 +200,7 @@ class NutritionDatabaseService {
   }
 
   /**
-   * Seed initial dish data
+   * Seed initial dish data from comprehensive nutrition database
    */
   private async seedInitialData(): Promise<void> {
     if (!this.db) return;
@@ -215,81 +215,91 @@ class NutritionDatabaseService {
       return;
     }
 
-    console.log('[NutritionDB] Seeding initial data...');
+    console.log('[NutritionDB] Seeding comprehensive nutrition data...');
 
-    const sampleDishes = [
-      // Rice Dishes
+    try {
+      // Load comprehensive nutrition data from src/data
+      const nutritionData = require('../data/comprehensive_nutrition.json');
+      
+      console.log(`[NutritionDB] Loaded ${nutritionData.length} dishes from comprehensive database`);
+
+      // Insert in batches for better performance
+      const BATCH_SIZE = 50;
+      let inserted = 0;
+
+      for (let i = 0; i < nutritionData.length; i += BATCH_SIZE) {
+        const batch = nutritionData.slice(i, i + BATCH_SIZE);
+        
+        for (const dish of batch) {
+          try {
+            await this.db.runAsync(
+              'INSERT OR REPLACE INTO dish_master (dish_id, display_name, category, cuisine, aliases) VALUES (?, ?, ?, ?, ?)',
+              [
+                dish.dish_id,
+                dish.display_name,
+                dish.category,
+                dish.cuisine,
+                JSON.stringify([dish.display_name.toLowerCase()])
+              ]
+            );
+
+            await this.db.runAsync(
+              `INSERT OR REPLACE INTO dish_nutrition
+               (dish_id, base_serving_grams, calories, protein, carbs, fat, fiber, sodium)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                dish.dish_id,
+                dish.serving_grams,
+                dish.calories,
+                dish.protein,
+                dish.carbs,
+                dish.fat,
+                dish.fiber,
+                dish.sodium
+              ]
+            );
+
+            inserted++;
+          } catch (error) {
+            console.error(`[NutritionDB] Error inserting dish ${dish.dish_id}:`, error);
+          }
+        }
+
+        if ((i + BATCH_SIZE) % 500 === 0) {
+          console.log(`[NutritionDB] Progress: ${inserted}/${nutritionData.length} dishes inserted`);
+        }
+      }
+
+      console.log(`[NutritionDB] Successfully seeded ${inserted} dishes`);
+    } catch (error) {
+      console.error('[NutritionDB] Error loading comprehensive nutrition data:', error);
+      console.log('[NutritionDB] Falling back to minimal sample data...');
+      
+      // Fallback to minimal sample data if comprehensive data fails to load
+      await this.seedMinimalData();
+    }
+  }
+
+  /**
+   * Seed minimal sample data as fallback
+   */
+  private async seedMinimalData(): Promise<void> {
+    if (!this.db) return;
+
+    const minimalDishes = [
       { id: 'BIRYANI_CHICKEN', name: 'Chicken Biryani', category: 'rice', cuisine: 'indian',
         serving: 300, cal: 450, pro: 25, carb: 50, fat: 15, fiber: 3, sodium: 800 },
-      { id: 'BIRYANI_MUTTON', name: 'Mutton Biryani', category: 'rice', cuisine: 'indian',
-        serving: 300, cal: 520, pro: 28, carb: 52, fat: 20, fiber: 3, sodium: 850 },
-      { id: 'BIRYANI_VEGETABLE', name: 'Vegetable Biryani', category: 'rice', cuisine: 'indian',
-        serving: 300, cal: 380, pro: 10, carb: 58, fat: 12, fiber: 5, sodium: 750 },
-      { id: 'PULAO_VEGETABLE', name: 'Vegetable Pulao', category: 'rice', cuisine: 'indian',
-        serving: 250, cal: 280, pro: 6, carb: 50, fat: 8, fiber: 4, sodium: 600 },
-      { id: 'FRIED_RICE', name: 'Fried Rice', category: 'rice', cuisine: 'chinese',
-        serving: 250, cal: 350, pro: 8, carb: 55, fat: 12, fiber: 2, sodium: 900 },
-      { id: 'JEERA_RICE', name: 'Jeera Rice', category: 'rice', cuisine: 'indian',
-        serving: 200, cal: 240, pro: 5, carb: 45, fat: 5, fiber: 1.5, sodium: 400 },
-      
-      // Curry Dishes
       { id: 'DAL_MAKHANI', name: 'Dal Makhani', category: 'curry', cuisine: 'indian',
         serving: 200, cal: 220, pro: 10, carb: 25, fat: 10, fiber: 8, sodium: 650 },
-      { id: 'DAL_TADKA', name: 'Dal Tadka', category: 'curry', cuisine: 'indian',
-        serving: 200, cal: 180, pro: 9, carb: 22, fat: 6, fiber: 8, sodium: 580 },
       { id: 'BUTTER_CHICKEN', name: 'Butter Chicken', category: 'curry', cuisine: 'indian',
         serving: 250, cal: 380, pro: 28, carb: 8, fat: 28, fiber: 2, sodium: 750 },
-      { id: 'CHICKEN_CURRY', name: 'Chicken Curry', category: 'curry', cuisine: 'indian',
-        serving: 250, cal: 320, pro: 30, carb: 10, fat: 20, fiber: 2, sodium: 700 },
-      { id: 'RAJMA', name: 'Rajma', category: 'curry', cuisine: 'indian',
-        serving: 200, cal: 200, pro: 12, carb: 28, fat: 5, fiber: 10, sodium: 600 },
-      { id: 'CHOLE', name: 'Chole (Chickpea Curry)', category: 'curry', cuisine: 'indian',
-        serving: 200, cal: 210, pro: 11, carb: 30, fat: 6, fiber: 9, sodium: 620 },
-      { id: 'PANEER_BUTTER_MASALA', name: 'Paneer Butter Masala', category: 'curry', cuisine: 'indian',
-        serving: 200, cal: 320, pro: 14, carb: 12, fat: 25, fiber: 3, sodium: 700 },
-      { id: 'PALAK_PANEER', name: 'Palak Paneer', category: 'curry', cuisine: 'indian',
-        serving: 200, cal: 280, pro: 13, carb: 10, fat: 22, fiber: 4, sodium: 650 },
-      
-      // Bread
-      { id: 'ROTI', name: 'Roti (Chapati)', category: 'bread', cuisine: 'indian',
-        serving: 40, cal: 100, pro: 3, carb: 20, fat: 1, fiber: 2, sodium: 120 },
       { id: 'NAAN', name: 'Naan', category: 'bread', cuisine: 'indian',
         serving: 60, cal: 160, pro: 5, carb: 30, fat: 3, fiber: 1.5, sodium: 200 },
-      { id: 'PARATHA', name: 'Paratha', category: 'bread', cuisine: 'indian',
-        serving: 50, cal: 140, pro: 4, carb: 22, fat: 5, fiber: 2, sodium: 180 },
-      { id: 'KULCHA', name: 'Kulcha', category: 'bread', cuisine: 'indian',
-        serving: 60, cal: 150, pro: 4.5, carb: 28, fat: 3, fiber: 1.5, sodium: 190 },
-      
-      // Snacks
       { id: 'SAMOSA', name: 'Samosa', category: 'snacks', cuisine: 'indian',
         serving: 100, cal: 262, pro: 5, carb: 33, fat: 13, fiber: 3, sodium: 340 },
-      { id: 'PAKORA_VEGETABLE', name: 'Vegetable Pakora', category: 'snacks', cuisine: 'indian',
-        serving: 100, cal: 280, pro: 6, carb: 28, fat: 16, fiber: 3, sodium: 380 },
-      { id: 'VADA', name: 'Vada', category: 'snacks', cuisine: 'indian',
-        serving: 80, cal: 180, pro: 5, carb: 22, fat: 8, fiber: 3, sodium: 320 },
-      { id: 'DHOKLA', name: 'Dhokla', category: 'snacks', cuisine: 'indian',
-        serving: 100, cal: 160, pro: 6, carb: 28, fat: 3, fiber: 3, sodium: 280 },
-      
-      // Eggs
-      { id: 'EGG_BOILED', name: 'Boiled Egg', category: 'eggs', cuisine: 'indian',
-        serving: 50, cal: 78, pro: 6.3, carb: 0.6, fat: 5.3, fiber: 0, sodium: 62 },
-      { id: 'EGG_OMELET', name: 'Omelet', category: 'eggs', cuisine: 'indian',
-        serving: 100, cal: 154, pro: 13, carb: 1.1, fat: 11, fiber: 0, sodium: 180 },
-      { id: 'EGG_BHURJI', name: 'Egg Bhurji', category: 'eggs', cuisine: 'indian',
-        serving: 150, cal: 220, pro: 15, carb: 4, fat: 16, fiber: 1, sodium: 380 },
-      
-      // Breakfast
-      { id: 'IDLI', name: 'Idli', category: 'breakfast', cuisine: 'south_indian',
-        serving: 100, cal: 150, pro: 5, carb: 30, fat: 1, fiber: 2, sodium: 180 },
-      { id: 'DOSA', name: 'Dosa', category: 'breakfast', cuisine: 'south_indian',
-        serving: 120, cal: 180, pro: 6, carb: 32, fat: 3, fiber: 2, sodium: 220 },
-      { id: 'POHA', name: 'Poha', category: 'breakfast', cuisine: 'indian',
-        serving: 150, cal: 180, pro: 4, carb: 35, fat: 4, fiber: 2, sodium: 350 },
-      { id: 'UPMA', name: 'Upma', category: 'breakfast', cuisine: 'south_indian',
-        serving: 200, cal: 200, pro: 5, carb: 35, fat: 5, fiber: 3, sodium: 420 },
     ];
 
-    for (const dish of sampleDishes) {
+    for (const dish of minimalDishes) {
       await this.db.runAsync(
         'INSERT OR REPLACE INTO dish_master (dish_id, display_name, category, cuisine, aliases) VALUES (?, ?, ?, ?, ?)',
         [dish.id, dish.name, dish.category, dish.cuisine, JSON.stringify([dish.name.toLowerCase()])]
@@ -303,7 +313,7 @@ class NutritionDatabaseService {
       );
     }
 
-    console.log(`[NutritionDB] Seeded ${sampleDishes.length} dishes`);
+    console.log(`[NutritionDB] Seeded ${minimalDishes.length} minimal dishes`);
   }
 
   /**

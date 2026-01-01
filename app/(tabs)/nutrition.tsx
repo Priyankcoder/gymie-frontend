@@ -81,11 +81,18 @@ export default function NutritionScreen() {
     setShowDishSelectorModal(true);
   };
 
-  const handleSaveMeal = async (mealType: MealType) => {
-    await saveMeal(mealType, () => {
-      setShowDishSelectorModal(false);
-      refetch();
-    });
+  const handleSaveMeal = async (
+    mealType: MealType,
+    editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; portionGrams: number }
+  ) => {
+    await saveMeal(
+      mealType,
+      () => {
+        setShowDishSelectorModal(false);
+        refetch();
+      },
+      editedNutrition
+    );
   };
 
   const handleCloseDishSelector = () => {
