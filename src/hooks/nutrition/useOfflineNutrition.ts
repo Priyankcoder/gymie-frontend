@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import offlineNutritionService from '../../services/OfflineNutritionService';
+import offlineNutritionService from '../../services/offlineNutritionService';
 import { DishSearchResult, PortionSize } from '../../services/nutritionDatabase';
 import { api } from '../../services/api';
 import { Meal } from '../../types';

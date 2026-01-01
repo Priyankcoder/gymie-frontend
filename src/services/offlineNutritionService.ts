@@ -16,7 +16,7 @@
  * Based on: OFFLINE_FIRST_NUTRITION_ARCHITECTURE.md
  */
 
-import mlInferenceService, { MLPrediction } from './MLInferenceService';
+import mlInferenceService, { MLPrediction } from './mlInferenceService';
 import portionEstimationService, { PortionSize, PortionEstimateResult } from './PortionEstimationService';
 import nutritionDatabaseService, { NutritionResult } from './NutritionDatabaseService';
 import { Image } from 'react-native';

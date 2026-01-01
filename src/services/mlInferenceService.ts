@@ -1,10 +1,15 @@
 
 /**
  * ML Inference Service
- * 
+ *
  * Wrapper around the native NutritionClassifier module.
  * Handles ML model predictions using TensorFlow Lite on both Android and iOS.
- * 
+ *
+ * Model: Google AIY Vision Classifier Food V1
+ * - Input: 224x224 RGB images, FLOAT32 scaled to [0, 1]
+ * - Output: 2024 classes (1 background + 2023 food dishes)
+ * - Source: https://www.kaggle.com/models/google/aiy/tfLite/vision-classifier-food-v1
+ *
  * This service provides a clean TypeScript interface to the native ML module,
  * handling image URIs and returning structured prediction results.
  */
@@ -41,16 +46,28 @@ class MLInferenceService {
   /**
    * Initialize the ML service
    */
+  private initialized: boolean = false;
+
   async initialize(): Promise<void> {
     if (!this.isAvailable) {
       console.warn('[MLInferenceService] Native module not available. ML predictions will fail.');
       return;
     }
     
-    console.log('[MLInferenceService] Initialized successfully');
+    if (this.initialized) {
+      console.log('[MLInferenceService] Already initialized');
+      return;
+    }
     
-    // Optional: Warm up the model
-    await this.warmUp();
+    try {
+      console.log('[MLInferenceService] Initializing native module...');
+      await NutritionClassifier.initialize();
+      this.initialized = true;
+      console.log('[MLInferenceService] Initialized successfully');
+    } catch (error) {
+      console.error('[MLInferenceService] Initialization failed:', error);
+      throw new Error(`Failed to initialize ML model: ${error.message}`);
+    }
   }
 
   /**
@@ -71,7 +88,7 @@ class MLInferenceService {
    * Check if service is initialized
    */
   public isInitialized(): boolean {
-    return this.isAvailable;
+    return this.isAvailable && this.initialized;
   }
 
   /**
@@ -87,6 +104,10 @@ class MLInferenceService {
   ): Promise<MLPrediction> {
     if (!this.isAvailable) {
       throw new Error('ML inference is not available. Native module not loaded.');
+    }
+
+    if (!this.initialized) {
+      throw new Error('Model not initialized. Call initialize() first.');
     }
 
     if (!imageUri || !imageUri.startsWith('file://')) {
@@ -168,35 +189,38 @@ class MLInferenceService {
     options: MLInferenceOptions,
     inferenceTimeMs: number
   ): MLPrediction {
-    // Native module returns:
-    // {
-    //   label: string (dish_id),
-    //   confidence: number (0-1),
-    //   top5?: Array<{label: string, confidence: number}>
-    // }
+    // Native module returns an array of top predictions:
+    // [
+    //   { label: string, confidence: number },
+    //   { label: string, confidence: number },
+    //   ...
+    // ]
 
     const minConfidence = options.minConfidence ?? 0.0;
     
-    if (!nativeResult || !nativeResult.label) {
+    if (!Array.isArray(nativeResult) || nativeResult.length === 0) {
       throw new Error('Invalid prediction result from native module');
     }
 
-    if (nativeResult.confidence < minConfidence) {
+    // Top prediction is first in array
+    const topPrediction = nativeResult[0];
+    
+    if (topPrediction.confidence < minConfidence) {
       throw new Error(
-        `Confidence ${nativeResult.confidence.toFixed(2)} below threshold ${minConfidence}`
+        `Confidence ${topPrediction.confidence.toFixed(2)} below threshold ${minConfidence}`
       );
     }
 
     const prediction: MLPrediction = {
-      dishId: nativeResult.label,
-      dishName: this.formatDishName(nativeResult.label),
-      confidence: nativeResult.confidence,
+      dishId: topPrediction.label,
+      dishName: this.formatDishName(topPrediction.label),
+      confidence: topPrediction.confidence,
       inferenceTimeMs: inferenceTimeMs,
     };
 
-    // Include top 5 predictions if requested and available
-    if (options.returnTop5 && nativeResult.top5) {
-      prediction.top5Predictions = nativeResult.top5.map((item: any) => ({
+    // Include top 5 predictions
+    if (options.returnTop5 && nativeResult.length > 1) {
+      prediction.top5Predictions = nativeResult.map((item: any) => ({
         dishId: item.label,
         dishName: this.formatDishName(item.label),
         confidence: item.confidence,

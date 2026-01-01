@@ -6,7 +6,7 @@
  * TODO: Implement ONNX Runtime Web integration
  */
 
-import { MLPrediction, MLInferenceOptions } from './MLInferenceService';
+import { MLPrediction, MLInferenceOptions } from './mlInferenceService';
 
 class MLInferenceServiceWeb {
   private initialized = false;

@@ -1,23 +1,27 @@
 
 /**
  * Database Seeder
- * 
- * Seeds the SQLite database with initial nutrition data for Food101 dishes.
+ *
+ * Seeds the SQLite database with nutrition data for all 2024 food classes.
  * This runs once on first app launch to populate local database.
- * 
+ *
  * Based on: OFFLINE_FIRST_NUTRITION_ARCHITECTURE.md
  */
 
 import nutritionDatabaseService, { DishMaster, DishNutrition } from './NutritionDatabaseService';
+import FULL_NUTRITION_DATA from '../data/fullNutritionData.json';
 
 /**
- * Food101 dishes with estimated nutrition data
- * Values are per standard serving (medium portion)
+ * All 2024 food items with estimated nutrition data
+ * Generated from labels.json with category-based defaults
  */
-const FOOD101_NUTRITION_DATA: Array<{
+const FOOD_NUTRITION_DATA: Array<{
   master: DishMaster;
   nutrition: DishNutrition;
-}> = [
+}> = FULL_NUTRITION_DATA as any;
+
+// Keep a few manually curated examples for reference
+const MANUAL_EXAMPLES = [
   {
     master: {
       dish_id: 'apple_pie',
@@ -170,12 +174,12 @@ class DatabaseSeeder {
 
       // Seed data
       let seededCount = 0;
-      for (const item of FOOD101_NUTRITION_DATA) {
+      for (const item of FOOD_NUTRITION_DATA) {
         await this.seedDish(item.master, item.nutrition);
         seededCount++;
       }
 
-      console.log(`[DatabaseSeeder] Successfully seeded ${seededCount} dishes`);
+      console.log(`[DatabaseSeeder] Successfully seeded ${seededCount} dishes (all 2024 food items)`);
     } catch (error) {
       console.error('[DatabaseSeeder] Seeding failed:', error);
       throw error;

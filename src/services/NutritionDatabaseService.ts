@@ -215,13 +215,28 @@ class NutritionDatabaseService {
       return;
     }
 
-    console.log('[NutritionDB] Seeding comprehensive nutrition data...');
+    console.log('[NutritionDB] Seeding full nutrition data (2024 food items)...');
 
     try {
-      // Load comprehensive nutrition data from src/data
-      const nutritionData = require('../data/comprehensive_nutrition.json');
+      // Load full nutrition data (all 2024 food classes from ML model)
+      const fullData = require('../data/fullNutritionData.json');
+      const nutritionData = fullData.map((item: any) => ({
+        dish_id: item.master.dish_id,
+        display_name: item.master.display_name,
+        category: item.master.category,
+        cuisine: item.master.cuisine,
+        aliases: item.master.aliases,
+        // Map nutrition fields correctly
+        serving_grams: item.nutrition.base_serving_grams,
+        calories: item.nutrition.calories,
+        protein: item.nutrition.protein,
+        carbs: item.nutrition.carbs,
+        fat: item.nutrition.fat,
+        fiber: item.nutrition.fiber,
+        sodium: item.nutrition.sodium
+      }));
       
-      console.log(`[NutritionDB] Loaded ${nutritionData.length} dishes from comprehensive database`);
+      console.log(`[NutritionDB] Loaded ${nutritionData.length} dishes from full ML database`);
 
       // Insert in batches for better performance
       const BATCH_SIZE = 50;
