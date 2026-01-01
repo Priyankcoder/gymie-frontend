@@ -68,7 +68,7 @@ export interface ServiceStatus {
 
 class OfflineNutritionService {
   private initialized = false;
-  private confidenceThreshold = 0.70; // 70% confidence required
+  private confidenceThreshold = 0.05; // 5% confidence required (realistic for 2024 classes)
 
   /**
    * Initialize all services

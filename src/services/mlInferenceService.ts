@@ -229,11 +229,11 @@ class MLInferenceService {
       throw new Error('ML inference is not available');
     }
 
-    // Default info for vision_v1.0.0.tflite
+    // Google AIY Vision Classifier Food v1 specifications
     return {
       version: '1.0.0',
-      inputSize: 224,
-      numClasses: 101,
+      inputSize: 192,   // ✅ Google AIY uses 192x192
+      numClasses: 2024, // ✅ 2024 food classes
     };
   }
 
