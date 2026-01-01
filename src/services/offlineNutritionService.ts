@@ -110,6 +110,33 @@ class OfflineNutritionService {
     const startTime = Date.now();
     
     try {
+      // Check if ML is available
+      if (!mlInferenceService.isMLAvailable()) {
+        console.warn('[OfflineNutrition] ML service not available, returning error result');
+        const imageHash = await this.generateImageHash(imageUri);
+        return {
+          prediction: {
+            dishId: 'UNKNOWN',
+            dishName: 'Unknown',
+            confidence: 0,
+            inferenceTimeMs: 0,
+          },
+          portionEstimate: {
+            portion: 'medium',
+            dishRatio: 0,
+            confidence: 0,
+            method: 'area_heuristic',
+          },
+          nutrition: null,
+          imageHash,
+          timestamp: Date.now(),
+          processingTimeMs: Date.now() - startTime,
+          success: false,
+          error: 'ML inference not available. Native module not loaded. Please ensure the development build is properly configured.',
+          needsCorrection: true,
+        };
+      }
+
       // Step 1: Get image dimensions for portion estimation
       const dimensions = await this.getImageDimensions(imageUri);
       

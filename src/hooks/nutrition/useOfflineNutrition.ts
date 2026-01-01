@@ -118,6 +118,78 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
     }
   };
 
+  const recognizeFoodFromImage = async (imageUri: string) => {
+    setIsEstimating(true);
+    try {
+      console.log('[OfflineNutrition] Starting food recognition...');
+      const result = await offlineNutritionService.recognizeFood(imageUri);
+      
+      setImageHash(result.imageHash);
+      
+      if (result.success && result.nutrition) {
+        console.log('[OfflineNutrition] Food recognized:', {
+          dish: result.prediction.dishName,
+          confidence: result.prediction.confidence.toFixed(2),
+          portion: result.portionEstimate.portion,
+        });
+
+        // Auto-select the recognized dish
+        const recognizedDish: DishSearchResult = {
+          dish_id: result.nutrition.dish.dish_id,
+          display_name: result.nutrition.dish.display_name,
+          category: result.nutrition.dish.category,
+          cuisine: result.nutrition.dish.cuisine,
+        };
+        setSelectedDish(recognizedDish);
+        setSelectedPortion(result.portionEstimate.portion);
+
+        // Auto-populate nutrition estimation
+        setNutritionEstimation({
+          dishName: result.nutrition.dish.display_name,
+          calories: result.nutrition.adjusted_nutrition.calories,
+          protein: result.nutrition.adjusted_nutrition.protein,
+          carbs: result.nutrition.adjusted_nutrition.carbs,
+          fat: result.nutrition.adjusted_nutrition.fat,
+          confidence: result.prediction.confidence,
+          imageHash: result.imageHash,
+        });
+
+        // If confidence is high, show success message
+        if (result.prediction.confidence >= 0.7) {
+          Alert.alert(
+            'Food Recognized!',
+            `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%`,
+            [{ text: 'OK' }]
+          );
+        } else {
+          // Low confidence - suggest manual review
+          Alert.alert(
+            'Low Confidence Detection',
+            `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%\n\nPlease verify or search for the correct dish.`,
+            [{ text: 'OK' }]
+          );
+        }
+      } else {
+        // ML failed, fall back to manual selection
+        console.warn('[OfflineNutrition] ML inference failed, showing manual selection');
+        Alert.alert(
+          'Manual Selection Required',
+          result.error || 'Could not recognize food automatically. Please search and select manually.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('[OfflineNutrition] Error during food recognition:', error);
+      Alert.alert(
+        'Recognition Error',
+        'Could not recognize food automatically. Please search and select manually.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsEstimating(false);
+    }
+  };
+
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -128,14 +200,12 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
       });
 
       if (!result.canceled && result.assets[0]) {
-        setSelectedImage(result.assets[0].uri);
+        const imageUri = result.assets[0].uri;
+        setSelectedImage(imageUri);
         
-        // Get image hash for correction tracking
-        const estimation = await offlineNutritionService.estimateFromImage(result.assets[0].uri);
-        setImageHash(estimation.imageHash);
-        
-        // For now, show dish selection (Phase 2 will use ML)
-        console.log('[OfflineNutrition] Image selected, manual selection required');
+        // Automatically recognize food using ML
+        console.log('[OfflineNutrition] Image selected, running ML inference...');
+        await recognizeFoodFromImage(imageUri);
       }
     } catch (error) {
       console.error('[OfflineNutrition] Error picking image:', error);
