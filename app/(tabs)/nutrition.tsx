@@ -83,7 +83,7 @@ export default function NutritionScreen() {
 
   const handleSaveMeal = async (
     mealType: MealType,
-    editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; portionGrams: number }
+    editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; fiber: number; sodium: number; portionGrams: number }
   ) => {
     await saveMeal(
       mealType,
@@ -116,6 +116,8 @@ export default function NutritionScreen() {
         protein={nutritionTotals.protein}
         carbs={nutritionTotals.carbs}
         fat={nutritionTotals.fat}
+        fiber={nutritionTotals.fiber}
+        sodium={nutritionTotals.sodium}
         calorieGoal={calorieGoal}
       />
 

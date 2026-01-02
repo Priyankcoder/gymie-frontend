@@ -82,7 +82,33 @@ export default function ProfileScreen() {
   const saveGoal = async () => {
     if (!editingGoal) return;
     const value = parseFloat(editingGoal.value);
-    if (isNaN(value) || value <= 0) return;
+    
+    // Basic validation
+    if (isNaN(value) || value <= 0) {
+      Alert.alert('Invalid Input', 'Please enter a valid positive number');
+      return;
+    }
+
+    // Validate ranges based on goal type
+    const validationRules: Record<string, { min: number; max: number; unit: string }> = {
+      calorieGoal: { min: 800, max: 10000, unit: 'kcal' },
+      proteinGoal: { min: 10, max: 500, unit: 'g' },
+      carbsGoal: { min: 10, max: 1000, unit: 'g' },
+      fatGoal: { min: 10, max: 500, unit: 'g' },
+      fiberGoal: { min: 5, max: 100, unit: 'g' },
+      sodiumGoal: { min: 500, max: 10000, unit: 'mg' },
+      weight: { min: 20, max: 500, unit: preferences?.units || 'kg' },
+      height: { min: 100, max: 300, unit: 'cm' },
+    };
+
+    const rule = validationRules[editingGoal.key];
+    if (rule && (value < rule.min || value > rule.max)) {
+      Alert.alert(
+        'Invalid Range',
+        `${editingGoal.label} must be between ${rule.min} and ${rule.max} ${rule.unit}`
+      );
+      return;
+    }
 
     // If updating weight, also create a weight log entry to keep them in sync
     if (editingGoal.key === 'weight') {
@@ -97,9 +123,17 @@ export default function ProfileScreen() {
         await loadData();
       } catch (error) {
         console.error('❌ Error creating weight log:', error);
+        Alert.alert('Error', 'Failed to update weight. Please try again.');
+        return;
       }
     } else {
-      await updatePreferences({ [editingGoal.key]: value });
+      try {
+        await updatePreferences({ [editingGoal.key]: value });
+      } catch (error) {
+        console.error('❌ Error updating preference:', error);
+        Alert.alert('Error', 'Failed to update goal. Please try again.');
+        return;
+      }
     }
     
     setShowGoalModal(false);
@@ -246,6 +280,38 @@ export default function ProfileScreen() {
                 key: 'fatGoal',
                 label: 'Fat Goal',
                 value: (preferences?.fatGoal || 70).toString(),
+              });
+              setShowGoalModal(true);
+            }}
+          />
+          <SettingItem
+            icon="leaf-outline"
+            label="Fiber Goal"
+            value={`${preferences?.fiberGoal || 25}g`}
+            type="select"
+            hasBorder
+            valueColor="#10B981"
+            onPress={() => {
+              setEditingGoal({
+                key: 'fiberGoal',
+                label: 'Fiber Goal',
+                value: (preferences?.fiberGoal || 25).toString(),
+              });
+              setShowGoalModal(true);
+            }}
+          />
+          <SettingItem
+            icon="flash-outline"
+            label="Sodium Goal"
+            value={`${preferences?.sodiumGoal || 2300}mg`}
+            type="select"
+            hasBorder
+            valueColor="#F59E0B"
+            onPress={() => {
+              setEditingGoal({
+                key: 'sodiumGoal',
+                label: 'Sodium Goal (mg)',
+                value: (preferences?.sodiumGoal || 2300).toString(),
               });
               setShowGoalModal(true);
             }}

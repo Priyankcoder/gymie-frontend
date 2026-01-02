@@ -29,6 +29,8 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
   const [mealProtein, setMealProtein] = useState('');
   const [mealCarbs, setMealCarbs] = useState('');
   const [mealFat, setMealFat] = useState('');
+  const [mealFiber, setMealFiber] = useState('');
+  const [mealSodium, setMealSodium] = useState('');
 
   const today = getTodayString();
 
@@ -38,6 +40,8 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
     setMealProtein('');
     setMealCarbs('');
     setMealFat('');
+    setMealFiber('');
+    setMealSodium('');
   };
 
   const handleSave = async () => {
@@ -47,12 +51,48 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
     }
 
     try {
+      // Parse and validate all numeric inputs
+      const calories = parseInt(mealCalories) || 0;
+      const protein = parseInt(mealProtein) || 0;
+      const carbs = parseInt(mealCarbs) || 0;
+      const fat = parseInt(mealFat) || 0;
+      const fiber = parseInt(mealFiber) || 0;
+      const sodium = parseInt(mealSodium) || 0;
+
+      // Validate that values are within reasonable ranges
+      if (calories < 0 || calories > 10000) {
+        Alert.alert('Invalid Input', 'Calories must be between 0 and 10,000');
+        return;
+      }
+      if (protein < 0 || protein > 1000) {
+        Alert.alert('Invalid Input', 'Protein must be between 0 and 1,000g');
+        return;
+      }
+      if (carbs < 0 || carbs > 1000) {
+        Alert.alert('Invalid Input', 'Carbs must be between 0 and 1,000g');
+        return;
+      }
+      if (fat < 0 || fat > 1000) {
+        Alert.alert('Invalid Input', 'Fat must be between 0 and 1,000g');
+        return;
+      }
+      if (fiber < 0 || fiber > 500) {
+        Alert.alert('Invalid Input', 'Fiber must be between 0 and 500g');
+        return;
+      }
+      if (sodium < 0 || sodium > 50000) {
+        Alert.alert('Invalid Input', 'Sodium must be between 0 and 50,000mg');
+        return;
+      }
+
       const newMeal: Omit<Meal, 'id'> = {
-        name: mealName,
-        calories: parseInt(mealCalories) || 0,
-        protein: parseInt(mealProtein) || 0,
-        carbs: parseInt(mealCarbs) || 0,
-        fat: parseInt(mealFat) || 0,
+        name: mealName.trim(),
+        calories,
+        protein,
+        carbs,
+        fat,
+        fiber,
+        sodium,
         mealType,
         date: today,
         timestamp: Date.now(),
@@ -161,6 +201,38 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
                 value={mealFat}
                 onChangeText={setMealFat}
                 placeholder="Fat (g)"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.macroInputRow}>
+              <TextInput
+                style={[
+                  styles.macroInput,
+                  {
+                    backgroundColor: colors.inputBackground,
+                    color: colors.textPrimary,
+                    borderRadius: borderRadius.md,
+                  },
+                ]}
+                value={mealFiber}
+                onChangeText={setMealFiber}
+                placeholder="Fiber (g)"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={[
+                  styles.macroInput,
+                  {
+                    backgroundColor: colors.inputBackground,
+                    color: colors.textPrimary,
+                    borderRadius: borderRadius.md,
+                  },
+                ]}
+                value={mealSodium}
+                onChangeText={setMealSodium}
+                placeholder="Sodium (mg)"
                 placeholderTextColor={colors.textSecondary}
                 keyboardType="numeric"
               />

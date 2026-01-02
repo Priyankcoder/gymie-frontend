@@ -40,6 +40,12 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
         <Text style={[styles.macroText, { color: colors.fatColor }]}>
           F: {recipe.fat}g
         </Text>
+        <Text style={[styles.macroText, { color: '#10B981' }]}>
+          Fiber: {recipe.fiber}g
+        </Text>
+        <Text style={[styles.macroText, { color: '#F59E0B' }]}>
+          Na: {recipe.sodium}mg
+        </Text>
         <Text style={[styles.macroText, { color: colors.accentBlue }]}>
           {recipe.calories} kcal
         </Text>

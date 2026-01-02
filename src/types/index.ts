@@ -18,6 +18,8 @@ export interface UserPreferences {
   proteinGoal: number;
   carbsGoal: number;
   fatGoal: number;
+  fiberGoal: number;
+  sodiumGoal: number;
   stepsGoal: number;
   currentWeight?: number;
   targetWeight?: number;
@@ -174,6 +176,8 @@ export interface Meal {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sodium: number;
   imageUri?: string;
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   date: string;
@@ -189,6 +193,8 @@ export interface DailyNutrition {
   totalProtein: number;
   totalCarbs: number;
   totalFat: number;
+  totalFiber: number;
+  totalSodium: number;
 }
 
 // Nutrition Day (for backend API)
@@ -201,6 +207,8 @@ export interface NutritionDay {
   totalProtein: number;
   totalCarbs: number;
   totalFat: number;
+  totalFiber: number;
+  totalSodium: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -227,6 +235,8 @@ export interface Recipe {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sodium: number;
   servings: number;
   prepTime: number;
   cookTime: number;
@@ -286,6 +296,8 @@ export interface MealEstimation {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sodium: number;
   confidence: number;
   suggestions?: string[];
 }

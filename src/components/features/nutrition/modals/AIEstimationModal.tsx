@@ -94,6 +94,24 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
                   </Text>
                 </View>
               </View>
+              <View style={styles.estimationMacros}>
+                <View style={styles.estimationMacro}>
+                  <Text style={[styles.estimationValue, { color: colors.textPrimary }]}>
+                    {aiEstimation.fiber}g
+                  </Text>
+                  <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
+                    Fiber
+                  </Text>
+                </View>
+                <View style={styles.estimationMacro}>
+                  <Text style={[styles.estimationValue, { color: colors.textPrimary }]}>
+                    {aiEstimation.sodium}mg
+                  </Text>
+                  <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
+                    Sodium
+                  </Text>
+                </View>
+              </View>
               <View style={styles.mealTypeSelector}>
                 {(['breakfast', 'lunch', 'dinner', 'snack'] as MealType[]).map((type) => (
                   <Pressable

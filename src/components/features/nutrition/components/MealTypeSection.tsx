@@ -59,7 +59,7 @@ export const MealTypeSection: React.FC<MealTypeSectionProps> = ({
                 {meal.name}
               </Text>
               <Text style={[styles.mealMacros, { color: colors.textSecondary }]}>
-                P: {meal.protein}g • C: {meal.carbs}g • F: {meal.fat}g
+                P: {meal.protein}g • C: {meal.carbs}g • F: {meal.fat}g • Fiber: {meal.fiber || 0}g • Na: {meal.sodium || 0}mg
               </Text>
             </View>
             <Text style={[styles.mealCalories, { color: colors.accentBlue }]}>

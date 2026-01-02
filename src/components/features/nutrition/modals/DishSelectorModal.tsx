@@ -116,14 +116,14 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
       
       const currentMultiplier = portionMultipliers[selectedPortion];
       
-      // Divide by current multiplier to get base 100g values
+      // Divide by current multiplier to get base 100g values, with safety checks
       setBaseNutrition({
-        calories: nutritionEstimation.calories / currentMultiplier,
-        protein: nutritionEstimation.protein / currentMultiplier,
-        carbs: nutritionEstimation.carbs / currentMultiplier,
-        fat: nutritionEstimation.fat / currentMultiplier,
-        fiber: nutritionEstimation.fiber / currentMultiplier,
-        sodium: nutritionEstimation.sodium / currentMultiplier,
+        calories: (nutritionEstimation.calories || 0) / currentMultiplier,
+        protein: (nutritionEstimation.protein || 0) / currentMultiplier,
+        carbs: (nutritionEstimation.carbs || 0) / currentMultiplier,
+        fat: (nutritionEstimation.fat || 0) / currentMultiplier,
+        fiber: (nutritionEstimation.fiber || 0) / currentMultiplier,
+        sodium: (nutritionEstimation.sodium || 0) / currentMultiplier,
         baseServingGrams: 100, // Standard base serving from database
       });
     }

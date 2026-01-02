@@ -155,12 +155,12 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
         // Auto-populate nutrition estimation using base values (modal will scale)
         setNutritionEstimation({
           dishName: result.nutrition.dish.display_name,
-          calories: result.nutrition.nutrition.calories,
-          protein: result.nutrition.nutrition.protein,
-          carbs: result.nutrition.nutrition.carbs,
-          fat: result.nutrition.nutrition.fat,
-          fiber: result.nutrition.nutrition.fiber,
-          sodium: result.nutrition.nutrition.sodium,
+          calories: result.nutrition.nutrition.calories || 0,
+          protein: result.nutrition.nutrition.protein || 0,
+          carbs: result.nutrition.nutrition.carbs || 0,
+          fat: result.nutrition.nutrition.fat || 0,
+          fiber: result.nutrition.nutrition.fiber || 0,
+          sodium: result.nutrition.nutrition.sodium || 0,
           confidence: result.prediction.confidence,
           imageHash: result.imageHash,
         });
@@ -259,12 +259,12 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
       if (result) {
         setNutritionEstimation({
           dishName: result.dish.display_name,
-          calories: result.nutrition.calories,
-          protein: result.nutrition.protein,
-          carbs: result.nutrition.carbs,
-          fat: result.nutrition.fat,
-          fiber: result.nutrition.fiber,
-          sodium: result.nutrition.sodium,
+          calories: result.nutrition.calories || 0,
+          protein: result.nutrition.protein || 0,
+          carbs: result.nutrition.carbs || 0,
+          fat: result.nutrition.fat || 0,
+          fiber: result.nutrition.fiber || 0,
+          sodium: result.nutrition.sodium || 0,
           confidence: 1.0, // Manual selection has full confidence
           imageHash: imageHash || undefined,
         });
@@ -283,7 +283,7 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
   const saveMeal = async (
     mealType: MealType,
     onSuccess: () => void,
-    editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; portionGrams: number }
+    editedNutrition?: { calories: number; protein: number; carbs: number; fat: number; fiber: number; sodium: number; portionGrams: number }
   ) => {
     if (!nutritionEstimation) {
       Alert.alert('Error', 'No nutrition estimation available');
@@ -297,6 +297,8 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
         protein: nutritionEstimation.protein,
         carbs: nutritionEstimation.carbs,
         fat: nutritionEstimation.fat,
+        fiber: nutritionEstimation.fiber,
+        sodium: nutritionEstimation.sodium,
         portionGrams: 150, // default medium
       };
 
@@ -306,6 +308,8 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
         protein: finalNutrition.protein,
         carbs: finalNutrition.carbs,
         fat: finalNutrition.fat,
+        fiber: finalNutrition.fiber,
+        sodium: finalNutrition.sodium,
         imageUri: selectedImage || undefined,
         mealType,
         date: today,

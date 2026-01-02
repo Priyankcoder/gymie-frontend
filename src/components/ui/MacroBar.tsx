@@ -21,7 +21,12 @@ export const MacroBar: React.FC<MacroBarProps> = ({
   style,
 }) => {
   const { colors, typography, borderRadius } = useTheme();
-  const percentage = Math.min((value / maxValue) * 100, 100);
+  
+  // Handle edge cases: division by zero, negative values, NaN
+  const safeValue = Math.max(0, isNaN(value) ? 0 : value);
+  const safeMaxValue = Math.max(1, isNaN(maxValue) ? 1 : maxValue);
+  const percentage = Math.min((safeValue / safeMaxValue) * 100, 100);
+  
   const animatedWidth = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

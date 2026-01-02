@@ -9,6 +9,8 @@ interface NutritionTotals {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sodium: number;
 }
 
 interface UseNutritionDataReturn {
@@ -19,6 +21,8 @@ interface UseNutritionDataReturn {
   proteinGoal: number;
   carbsGoal: number;
   fatGoal: number;
+  fiberGoal: number;
+  sodiumGoal: number;
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -63,14 +67,18 @@ export const useNutritionData = (): UseNutritionDataReturn => {
       protein: acc.protein + meal.protein,
       carbs: acc.carbs + meal.carbs,
       fat: acc.fat + meal.fat,
+      fiber: acc.fiber + (meal.fiber || 0),
+      sodium: acc.sodium + (meal.sodium || 0),
     }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sodium: 0 }
   );
 
   const calorieGoal = preferences?.calorieGoal || 2200;
   const proteinGoal = preferences?.proteinGoal || 150;
   const carbsGoal = preferences?.carbsGoal || 250;
   const fatGoal = preferences?.fatGoal || 70;
+  const fiberGoal = preferences?.fiberGoal || 25;
+  const sodiumGoal = preferences?.sodiumGoal || 2300;
 
   const getMealsByType = (type: 'breakfast' | 'lunch' | 'dinner' | 'snack') =>
     todayMeals.filter((m) => m.mealType === type);
@@ -83,6 +91,8 @@ export const useNutritionData = (): UseNutritionDataReturn => {
     proteinGoal,
     carbsGoal,
     fatGoal,
+    fiberGoal,
+    sodiumGoal,
     loading,
     error,
     refetch: loadData,

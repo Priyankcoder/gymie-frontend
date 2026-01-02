@@ -539,6 +539,8 @@ export const localApi = {
       const protein = Math.floor(15 + Math.random() * 35);
       const carbs = Math.floor(30 + Math.random() * 70);
       const fat = Math.floor(8 + Math.random() * 30);
+      const fiber = Math.floor(2 + Math.random() * 8);
+      const sodium = Math.floor(200 + Math.random() * 600);
       const confidence = 0.7 + Math.random() * 0.25;
 
       return {
@@ -548,6 +550,8 @@ export const localApi = {
           protein,
           carbs,
           fat,
+          fiber,
+          sodium,
           confidence,
           suggestions: ['Grilled Chicken Breast', 'Steamed Rice', 'Mixed Vegetables'],
         },

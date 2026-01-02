@@ -261,14 +261,18 @@ export default function HomeScreen() {
       protein: acc.protein + meal.protein,
       carbs: acc.carbs + meal.carbs,
       fat: acc.fat + meal.fat,
+      fiber: acc.fiber + (meal.fiber || 0),
+      sodium: acc.sodium + (meal.sodium || 0),
     }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sodium: 0 }
   );
 
   const calorieGoal = preferences?.calorieGoal || 2200;
   const proteinGoal = preferences?.proteinGoal || 150;
   const carbsGoal = preferences?.carbsGoal || 250;
   const fatGoal = preferences?.fatGoal || 70;
+  const fiberGoal = preferences?.fiberGoal || 25;
+  const sodiumGoal = preferences?.sodiumGoal || 2300;
 
   const formatVolume = (volume: number) => {
     if (volume >= 1000000) return `${(volume / 1000000).toFixed(1)}M`;
@@ -495,6 +499,19 @@ export default function HomeScreen() {
                   value={nutritionTotals.fat}
                   maxValue={fatGoal}
                   color={colors.fatColor}
+                />
+                <MacroBar
+                  label="Fiber"
+                  value={nutritionTotals.fiber}
+                  maxValue={fiberGoal}
+                  color="#10B981"
+                />
+                <MacroBar
+                  label="Sodium"
+                  value={nutritionTotals.sodium}
+                  maxValue={sodiumGoal}
+                  unit="mg"
+                  color="#F59E0B"
                 />
               </View>
             </View>
