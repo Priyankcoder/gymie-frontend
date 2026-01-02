@@ -63,7 +63,7 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
               <View style={styles.estimationMacros}>
                 <View style={styles.estimationMacro}>
                   <Text style={[styles.estimationValue, { color: colors.textPrimary }]}>
-                    {aiEstimation.calories}
+                    {Math.round(aiEstimation.calories * 100) / 100}
                   </Text>
                   <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
                     kcal
@@ -71,7 +71,7 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
                 </View>
                 <View style={styles.estimationMacro}>
                   <Text style={[styles.estimationValue, { color: colors.proteinColor }]}>
-                    {aiEstimation.protein}g
+                    {Math.round(aiEstimation.protein * 100) / 100}g
                   </Text>
                   <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
                     Protein
@@ -79,7 +79,7 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
                 </View>
                 <View style={styles.estimationMacro}>
                   <Text style={[styles.estimationValue, { color: colors.carbsColor }]}>
-                    {aiEstimation.carbs}g
+                    {Math.round(aiEstimation.carbs * 100) / 100}g
                   </Text>
                   <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
                     Carbs
@@ -87,7 +87,7 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
                 </View>
                 <View style={styles.estimationMacro}>
                   <Text style={[styles.estimationValue, { color: colors.fatColor }]}>
-                    {aiEstimation.fat}g
+                    {Math.round(aiEstimation.fat * 100) / 100}g
                   </Text>
                   <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
                     Fat
@@ -97,7 +97,7 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
               <View style={styles.estimationMacros}>
                 <View style={styles.estimationMacro}>
                   <Text style={[styles.estimationValue, { color: colors.textPrimary }]}>
-                    {aiEstimation.fiber}g
+                    {Math.round(aiEstimation.fiber * 100) / 100}g
                   </Text>
                   <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
                     Fiber
@@ -105,7 +105,7 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
                 </View>
                 <View style={styles.estimationMacro}>
                   <Text style={[styles.estimationValue, { color: colors.textPrimary }]}>
-                    {aiEstimation.sodium}mg
+                    {Math.round(aiEstimation.sodium * 100) / 100}mg
                   </Text>
                   <Text style={[styles.estimationLabel, { color: colors.textSecondary }]}>
                     Sodium

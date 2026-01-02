@@ -69,7 +69,7 @@ class NutritionDatabaseService {
   private db: SQLite.SQLiteDatabase | null = null;
   private initialized = false;
   private readonly DB_NAME = 'nutrition.db';
-  private readonly DB_VERSION = '3.0.0'; // Updated to force reload with comprehensive CSV data
+  private readonly DB_VERSION = '3.1.0'; // Updated to force reload with 2-decimal precision rounding
 
   /**
    * Initialize database and create tables
@@ -264,6 +264,9 @@ class NutritionDatabaseService {
     console.log('[NutritionDB] Seeding full nutrition data (2024 food items)...');
 
     try {
+      // Helper function to round to 2 decimal places
+      const roundToTwo = (num: number): number => Math.round(num * 100) / 100;
+      
       // Load full nutrition data (all 2024 food classes from ML model)
       const fullData = require('../data/fullNutritionData.json');
       const nutritionData = fullData.map((item: any) => ({
@@ -272,14 +275,14 @@ class NutritionDatabaseService {
         category: item.master.category,
         cuisine: item.master.cuisine,
         aliases: item.master.aliases,
-        // Map nutrition fields correctly
-        serving_grams: item.nutrition.base_serving_grams,
-        calories: item.nutrition.calories,
-        protein: item.nutrition.protein,
-        carbs: item.nutrition.carbs,
-        fat: item.nutrition.fat,
-        fiber: item.nutrition.fiber,
-        sodium: item.nutrition.sodium
+        // Map nutrition fields correctly and round to 2 decimal places
+        serving_grams: roundToTwo(item.nutrition.base_serving_grams),
+        calories: roundToTwo(item.nutrition.calories),
+        protein: roundToTwo(item.nutrition.protein),
+        carbs: roundToTwo(item.nutrition.carbs),
+        fat: roundToTwo(item.nutrition.fat),
+        fiber: roundToTwo(item.nutrition.fiber),
+        sodium: roundToTwo(item.nutrition.sodium)
       }));
       
       console.log(`[NutritionDB] Loaded ${nutritionData.length} dishes from full ML database`);
@@ -446,17 +449,20 @@ class NutritionDatabaseService {
 
     if (!dish || !nutrition) return null;
 
+    // Helper function to round to 2 decimal places
+    const roundToTwo = (num: number): number => Math.round(num * 100) / 100;
+
     return {
       dish,
       nutrition,
       portion_multiplier: portionMultiplier,
       adjusted_nutrition: {
-        calories: nutrition.calories * portionMultiplier,
-        protein: nutrition.protein * portionMultiplier,
-        carbs: nutrition.carbs * portionMultiplier,
-        fat: nutrition.fat * portionMultiplier,
-        fiber: nutrition.fiber * portionMultiplier,
-        sodium: nutrition.sodium * portionMultiplier,
+        calories: roundToTwo(nutrition.calories * portionMultiplier),
+        protein: roundToTwo(nutrition.protein * portionMultiplier),
+        carbs: roundToTwo(nutrition.carbs * portionMultiplier),
+        fat: roundToTwo(nutrition.fat * portionMultiplier),
+        fiber: roundToTwo(nutrition.fiber * portionMultiplier),
+        sodium: roundToTwo(nutrition.sodium * portionMultiplier),
       },
     };
   }

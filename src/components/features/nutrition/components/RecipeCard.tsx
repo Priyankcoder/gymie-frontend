@@ -32,22 +32,22 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe }) => {
       </View>
       <View style={styles.macros}>
         <Text style={[styles.macroText, { color: colors.proteinColor }]}>
-          P: {recipe.protein}g
+          P: {Math.round(recipe.protein * 100) / 100}g
         </Text>
         <Text style={[styles.macroText, { color: colors.carbsColor }]}>
-          C: {recipe.carbs}g
+          C: {Math.round(recipe.carbs * 100) / 100}g
         </Text>
         <Text style={[styles.macroText, { color: colors.fatColor }]}>
-          F: {recipe.fat}g
+          F: {Math.round(recipe.fat * 100) / 100}g
         </Text>
         <Text style={[styles.macroText, { color: '#10B981' }]}>
-          Fiber: {recipe.fiber}g
+          Fiber: {Math.round(recipe.fiber * 100) / 100}g
         </Text>
         <Text style={[styles.macroText, { color: '#F59E0B' }]}>
-          Na: {recipe.sodium}mg
+          Na: {Math.round(recipe.sodium * 100) / 100}mg
         </Text>
         <Text style={[styles.macroText, { color: colors.accentBlue }]}>
-          {recipe.calories} kcal
+          {Math.round(recipe.calories * 100) / 100} kcal
         </Text>
       </View>
       <Text style={[styles.ingredients, { color: colors.textSecondary }]}>

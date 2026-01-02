@@ -59,11 +59,11 @@ export const MealTypeSection: React.FC<MealTypeSectionProps> = ({
                 {meal.name}
               </Text>
               <Text style={[styles.mealMacros, { color: colors.textSecondary }]}>
-                P: {meal.protein}g • C: {meal.carbs}g • F: {meal.fat}g • Fiber: {meal.fiber || 0}g • Na: {meal.sodium || 0}mg
+                P: {Math.round(meal.protein * 100) / 100}g • C: {Math.round(meal.carbs * 100) / 100}g • F: {Math.round(meal.fat * 100) / 100}g • Fiber: {Math.round((meal.fiber || 0) * 100) / 100}g • Na: {Math.round((meal.sodium || 0) * 100) / 100}mg
               </Text>
             </View>
             <Text style={[styles.mealCalories, { color: colors.accentBlue }]}>
-              {meal.calories} kcal
+              {Math.round(meal.calories * 100) / 100} kcal
             </Text>
           </View>
         ))

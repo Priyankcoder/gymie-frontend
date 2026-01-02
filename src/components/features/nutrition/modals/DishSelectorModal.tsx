@@ -116,14 +116,17 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
       
       const currentMultiplier = portionMultipliers[selectedPortion];
       
+      // Helper to round to 2 decimal places
+      const roundToTwo = (num: number): number => Math.round(num * 100) / 100;
+      
       // Divide by current multiplier to get base 100g values, with safety checks
       setBaseNutrition({
-        calories: (nutritionEstimation.calories || 0) / currentMultiplier,
-        protein: (nutritionEstimation.protein || 0) / currentMultiplier,
-        carbs: (nutritionEstimation.carbs || 0) / currentMultiplier,
-        fat: (nutritionEstimation.fat || 0) / currentMultiplier,
-        fiber: (nutritionEstimation.fiber || 0) / currentMultiplier,
-        sodium: (nutritionEstimation.sodium || 0) / currentMultiplier,
+        calories: roundToTwo((nutritionEstimation.calories || 0) / currentMultiplier),
+        protein: roundToTwo((nutritionEstimation.protein || 0) / currentMultiplier),
+        carbs: roundToTwo((nutritionEstimation.carbs || 0) / currentMultiplier),
+        fat: roundToTwo((nutritionEstimation.fat || 0) / currentMultiplier),
+        fiber: roundToTwo((nutritionEstimation.fiber || 0) / currentMultiplier),
+        sodium: roundToTwo((nutritionEstimation.sodium || 0) / currentMultiplier),
         baseServingGrams: 100, // Standard base serving from database
       });
     }
@@ -141,15 +144,18 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
   const getScaledNutrition = () => {
     if (!baseNutrition) return baseNutrition;
     
+    // Helper to round to 2 decimal places
+    const roundToTwo = (num: number): number => Math.round(num * 100) / 100;
+    
     // Scale from the actual base serving size (default 100g from database)
     const scale = portionGrams / baseNutrition.baseServingGrams;
     return {
-      calories: Math.round(baseNutrition.calories * scale),
-      protein: Math.round(baseNutrition.protein * scale * 10) / 10,
-      carbs: Math.round(baseNutrition.carbs * scale * 10) / 10,
-      fat: Math.round(baseNutrition.fat * scale * 10) / 10,
-      fiber: Math.round(baseNutrition.fiber * scale * 10) / 10,
-      sodium: Math.round(baseNutrition.sodium * scale),
+      calories: roundToTwo(baseNutrition.calories * scale),
+      protein: roundToTwo(baseNutrition.protein * scale),
+      carbs: roundToTwo(baseNutrition.carbs * scale),
+      fat: roundToTwo(baseNutrition.fat * scale),
+      fiber: roundToTwo(baseNutrition.fiber * scale),
+      sodium: roundToTwo(baseNutrition.sodium * scale),
     };
   };
   

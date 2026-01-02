@@ -133,7 +133,6 @@ export const MetricRing: React.FC<MetricRingProps> = ({
 
   useEffect(() => {
     const animations: Animated.CompositeAnimation[] = [
-      Animated.timing(animatedValue, APPLE_EASING),
       Animated.timing(animatedStrokeDashoffset, {
         toValue: targetStrokeDashoffset,
         ...APPLE_EASING,
@@ -180,9 +179,12 @@ export const MetricRing: React.FC<MetricRingProps> = ({
     Animated.parallel(animations).start();
   }, [value, targetStrokeDashoffset, isOverTarget, numCompleteOverflowRings, partialOverflowPercentage]);
 
+  // Helper function to round to 2 decimal places
+  const roundToTwo = (num: number): number => Math.round(num * 100) / 100;
+  
   const displayValue = showPercentage
     ? `${Math.round(percentage)}%`
-    : Math.round(value).toLocaleString();
+    : roundToTwo(value).toLocaleString();
 
   // Adjust font sizes for better fit
   const valueFontSize = size < 100 ? size * 0.14 : size * 0.16;
@@ -302,7 +304,7 @@ export const MetricRing: React.FC<MetricRingProps> = ({
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              {Math.round(maxValue).toLocaleString()}
+              {roundToTwo(maxValue).toLocaleString()}
             </Text>
           </View>
         )}
