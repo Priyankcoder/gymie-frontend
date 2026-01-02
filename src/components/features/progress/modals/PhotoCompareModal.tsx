@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,11 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { Button } from '../../../ui';
 import { ProgressPhoto } from '../../../../types';
@@ -24,7 +27,6 @@ interface PhotoCompareModalProps {
   onClose: () => void;
 }
 
-type FilterType = 'none' | 'grayscale' | 'sepia' | 'contrast' | 'brightness';
 type CompareMode = 'side-by-side' | 'overlay' | 'split';
 
 const AI_COMMENTS = [
@@ -47,31 +49,41 @@ export const PhotoCompareModal: React.FC<PhotoCompareModalProps> = ({
   onClose,
 }) => {
   const { colors, borderRadius } = useTheme();
-  const [filter, setFilter] = useState<FilterType>('none');
   const [compareMode, setCompareMode] = useState<CompareMode>('side-by-side');
   const [aiComment] = useState(AI_COMMENTS[Math.floor(Math.random() * AI_COMMENTS.length)]);
+  const comparisonRef = useRef(null);
 
   const selectedPhotos = photos.filter(p => selectedPhotoIds.includes(p.id));
   const [photo1, photo2] = selectedPhotos;
 
   if (!photo1 || !photo2) return null;
 
-  const getFilterStyle = (filterType: FilterType) => {
-    switch (filterType) {
-      case 'grayscale':
-        return { tintColor: '#808080' };
-      case 'sepia':
-        return { tintColor: '#704214' };
-      case 'contrast':
-        return { opacity: 1.2 };
-      case 'brightness':
-        return { opacity: 0.8 };
-      default:
-        return {};
+  const captureAndShare = async () => {
+    try {
+      // Capture the comparison view
+      const uri = await captureRef(comparisonRef, {
+        format: 'jpg',
+        quality: 0.9,
+      });
+
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert('Error', 'Sharing is not available on this device');
+        return;
+      }
+
+      // Share the image
+      await Sharing.shareAsync(uri, {
+        mimeType: 'image/jpeg',
+        dialogTitle: 'Share Your Progress',
+        UTI: 'public.jpeg',
+      });
+    } catch (error) {
+      console.error('Share error:', error);
+      Alert.alert('Error', 'Failed to share image');
     }
   };
-
-  const filterStyle = getFilterStyle(filter);
 
   const calculateDaysDifference = () => {
     const date1 = new Date(photo1.date);
@@ -100,7 +112,7 @@ export const PhotoCompareModal: React.FC<PhotoCompareModalProps> = ({
             <View style={styles.photoContainer}>
               <Image
                 source={{ uri: photo1.uri }}
-                style={[styles.comparePhoto, filterStyle]}
+                style={styles.comparePhoto}
                 resizeMode="cover"
               />
               <Text style={[styles.photoLabel, { color: colors.textSecondary }]}>
@@ -110,7 +122,7 @@ export const PhotoCompareModal: React.FC<PhotoCompareModalProps> = ({
             <View style={styles.photoContainer}>
               <Image
                 source={{ uri: photo2.uri }}
-                style={[styles.comparePhoto, filterStyle]}
+                style={styles.comparePhoto}
                 resizeMode="cover"
               />
               <Text style={[styles.photoLabel, { color: colors.textSecondary }]}>
@@ -125,12 +137,12 @@ export const PhotoCompareModal: React.FC<PhotoCompareModalProps> = ({
           <View style={styles.overlayContainer}>
             <Image
               source={{ uri: photo1.uri }}
-              style={[styles.fullPhoto, filterStyle]}
+              style={styles.fullPhoto}
               resizeMode="cover"
             />
             <Image
               source={{ uri: photo2.uri }}
-              style={[styles.fullPhoto, styles.overlayPhoto, filterStyle, { opacity: 0.5 }]}
+              style={[styles.fullPhoto, styles.overlayPhoto, { opacity: 0.5 }]}
               resizeMode="cover"
             />
           </View>
@@ -142,14 +154,14 @@ export const PhotoCompareModal: React.FC<PhotoCompareModalProps> = ({
             <View style={styles.splitLeft}>
               <Image
                 source={{ uri: photo1.uri }}
-                style={[styles.fullPhoto, filterStyle]}
+                style={styles.fullPhoto}
                 resizeMode="cover"
               />
             </View>
             <View style={styles.splitRight}>
               <Image
                 source={{ uri: photo2.uri }}
-                style={[styles.fullPhoto, filterStyle]}
+                style={styles.fullPhoto}
                 resizeMode="cover"
               />
             </View>
@@ -238,52 +250,22 @@ export const PhotoCompareModal: React.FC<PhotoCompareModalProps> = ({
             </ScrollView>
           </View>
 
-          {/* Filter Selector */}
-          <View style={styles.filterSelector}>
-            <Text style={[styles.sectionLabel, { color: colors.textPrimary }]}>
-              Filters
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterOptions}>
-              {(['none', 'grayscale', 'sepia', 'contrast', 'brightness'] as FilterType[]).map((f) => (
-                <Pressable
-                  key={f}
-                  style={[
-                    styles.filterButton,
-                    {
-                      backgroundColor: filter === f ? colors.accentBlue : colors.card,
-                      borderRadius: borderRadius.sm,
-                    },
-                  ]}
-                  onPress={() => setFilter(f)}
-                >
-                  <Text
-                    style={[
-                      styles.filterButtonText,
-                      { color: filter === f ? '#FFF' : colors.textPrimary },
-                    ]}
-                  >
-                    {f.charAt(0).toUpperCase() + f.slice(1)}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-
           {/* Photo Comparison */}
-          <View style={styles.comparisonContainer}>
+          <View style={styles.comparisonContainer} ref={comparisonRef} collapsable={false}>
             {renderComparison()}
           </View>
 
           {/* Share Button */}
           <View style={styles.actionContainer}>
             <Button
-              title="Share on Instagram"
-              onPress={() => {
-                // TODO: Implement share functionality
-                console.log('Share to Instagram');
-              }}
-              icon={<Ionicons name="logo-instagram" size={20} color="#FFF" style={{ marginRight: 8 }} />}
+              title="Share"
+              onPress={captureAndShare}
+              icon={<Ionicons name="share-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />}
+              style={styles.shareButton}
             />
+            <Text style={[styles.shareHint, { color: colors.textSecondary }]}>
+              Share to any app on your device
+            </Text>
           </View>
         </ScrollView>
       </View>
@@ -343,10 +325,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 16,
   },
-  filterSelector: {
-    marginBottom: 16,
-    paddingHorizontal: 16,
-  },
   sectionLabel: {
     fontSize: 14,
     fontWeight: '600',
@@ -362,18 +340,6 @@ const styles = StyleSheet.create({
   },
   modeButtonText: {
     fontSize: 14,
-    fontWeight: '600',
-  },
-  filterOptions: {
-    flexDirection: 'row',
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-  },
-  filterButtonText: {
-    fontSize: 13,
     fontWeight: '600',
   },
   comparisonContainer: {
@@ -440,5 +406,13 @@ const styles = StyleSheet.create({
   actionContainer: {
     padding: 16,
     paddingBottom: 32,
+  },
+  shareButton: {
+    marginBottom: 8,
+  },
+  shareHint: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: 8,
   },
 });
