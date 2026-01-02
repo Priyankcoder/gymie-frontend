@@ -69,7 +69,7 @@ class NutritionDatabaseService {
   private db: SQLite.SQLiteDatabase | null = null;
   private initialized = false;
   private readonly DB_NAME = 'nutrition.db';
-  private readonly DB_VERSION = '2.0.0'; // Updated to force reload with comprehensive data
+  private readonly DB_VERSION = '3.0.0'; // Updated to force reload with comprehensive CSV data
 
   /**
    * Initialize database and create tables
@@ -83,6 +83,9 @@ class NutritionDatabaseService {
     try {
       this.db = await SQLite.openDatabaseAsync(this.DB_NAME);
       
+      // Check if database version has changed - if so, clear and reseed
+      await this.checkAndUpdateVersion();
+      
       await this.createTables();
       await this.seedInitialData();
       await this.initializeMetadata();
@@ -92,6 +95,49 @@ class NutritionDatabaseService {
     } catch (error) {
       console.error('[NutritionDB] Initialization failed:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Check database version and clear if outdated
+   */
+  private async checkAndUpdateVersion(): Promise<void> {
+    if (!this.db) return;
+
+    try {
+      // Create metadata table if it doesn't exist
+      await this.db.execAsync(
+        `CREATE TABLE IF NOT EXISTS model_metadata (
+          model_type TEXT PRIMARY KEY,
+          version TEXT NOT NULL,
+          checksum TEXT NOT NULL,
+          size_bytes INTEGER NOT NULL,
+          updated_at INTEGER DEFAULT (strftime('%s', 'now'))
+        )`
+      );
+
+      // Check current version
+      const currentVersion = await this.db.getFirstAsync<{ version: string }>(
+        `SELECT version FROM model_metadata WHERE model_type = 'nutrition_db'`
+      );
+
+      if (currentVersion && currentVersion.version !== this.DB_VERSION) {
+        console.log(`[NutritionDB] Version changed from ${currentVersion.version} to ${this.DB_VERSION}`);
+        console.log('[NutritionDB] Clearing old data and reseeding...');
+        
+        // Clear all data from tables
+        await this.db.execAsync('DELETE FROM dish_master');
+        await this.db.execAsync('DELETE FROM dish_nutrition');
+        await this.db.execAsync('DELETE FROM user_corrections');
+        
+        console.log('[NutritionDB] Old data cleared, will reseed with new data');
+      } else if (!currentVersion) {
+        console.log('[NutritionDB] First time initialization');
+      } else {
+        console.log(`[NutritionDB] Database version ${this.DB_VERSION} is current`);
+      }
+    } catch (error) {
+      console.error('[NutritionDB] Version check failed:', error);
     }
   }
 

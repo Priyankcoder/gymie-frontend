@@ -161,48 +161,18 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
           imageHash: result.imageHash,
         });
 
-        // If confidence is high, show success message
-        if (result.prediction.confidence >= 0.8) {
-          Alert.alert(
-            'Food Recognized!',
-            `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%`,
-            [{ text: 'OK' }]
-          );
-        } else if (result.prediction.confidence >= 0.5) {
-          // Medium confidence - auto-populate but show gentle warning
-          Alert.alert(
-            'Food Detected',
-            `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%\n\nNutrition data populated. Please verify if needed.`,
-            [{ text: 'OK' }]
-          );
-        } else {
-          // Low confidence - suggest manual review
-          Alert.alert(
-            'Low Confidence Detection',
-            `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%\n\nPlease verify or search for the correct dish.`,
-            [{ text: 'OK' }]
-          );
-        }
+        // Confidence-based notifications removed - user sees results in modal
       } else if (result.success && !result.nutrition) {
         // Case 2: ML recognized food but no nutrition data in database
         console.log('[OfflineNutrition] Food recognized but no nutrition data:', {
           dish: result.prediction.dishName,
           confidence: result.prediction.confidence.toFixed(2),
         });
-        
-        Alert.alert(
-          'Food Recognized - Data Not Available',
-          `Detected: ${result.prediction.dishName}\nConfidence: ${(result.prediction.confidence * 100).toFixed(0)}%\n\nThis food is not in our nutrition database yet. Please search manually to add nutrition information.`,
-          [{ text: 'OK' }]
-        );
+        // No alert - user can search manually in the modal
       } else {
         // Case 3: ML failed completely
         console.warn('[OfflineNutrition] ML inference failed, showing manual selection');
-        Alert.alert(
-          'Manual Selection Required',
-          result.error || 'Could not recognize food automatically. Please search and select manually.',
-          [{ text: 'OK' }]
-        );
+        // No alert - modal will show search interface
       }
     } catch (error) {
       console.error('[OfflineNutrition] Error during food recognition:', error);
