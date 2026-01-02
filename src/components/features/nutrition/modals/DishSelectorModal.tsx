@@ -33,6 +33,8 @@ interface NutritionEstimation {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sodium: number;
   confidence: number;
   imageHash?: string;
 }
@@ -83,12 +85,15 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
   const MAX_WEIGHT = 550;
   const [portionGrams, setPortionGrams] = useState(150); // Default 150g
   
-  // Base nutrition values (for 150g serving)
+  // Base nutrition values and serving size
   const [baseNutrition, setBaseNutrition] = useState<{
     calories: number;
     protein: number;
     carbs: number;
     fat: number;
+    fiber: number;
+    sodium: number;
+    baseServingGrams: number; // Actual base serving size from database
   } | null>(null);
   
   // Animated values - initialize once
@@ -101,14 +106,28 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
   // Store base nutrition when estimation changes
   useEffect(() => {
     if (nutritionEstimation) {
+      // The nutritionEstimation comes with portion-adjusted values
+      // We need to reverse the portion multiplier to get base 100g values for accurate slider scaling
+      const portionMultipliers = {
+        small: 0.75,
+        medium: 1.0,
+        large: 1.3,
+      };
+      
+      const currentMultiplier = portionMultipliers[selectedPortion];
+      
+      // Divide by current multiplier to get base 100g values
       setBaseNutrition({
-        calories: nutritionEstimation.calories,
-        protein: nutritionEstimation.protein,
-        carbs: nutritionEstimation.carbs,
-        fat: nutritionEstimation.fat,
+        calories: nutritionEstimation.calories / currentMultiplier,
+        protein: nutritionEstimation.protein / currentMultiplier,
+        carbs: nutritionEstimation.carbs / currentMultiplier,
+        fat: nutritionEstimation.fat / currentMultiplier,
+        fiber: nutritionEstimation.fiber / currentMultiplier,
+        sodium: nutritionEstimation.sodium / currentMultiplier,
+        baseServingGrams: 100, // Standard base serving from database
       });
     }
-  }, [nutritionEstimation]);
+  }, [nutritionEstimation, selectedPortion]);
   
   // Sync bar width with portion grams when modal opens or value changes externally
   useEffect(() => {
@@ -122,12 +141,15 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
   const getScaledNutrition = () => {
     if (!baseNutrition) return baseNutrition;
     
-    const scale = portionGrams / 150; // Scale from base 150g
+    // Scale from the actual base serving size (default 100g from database)
+    const scale = portionGrams / baseNutrition.baseServingGrams;
     return {
       calories: Math.round(baseNutrition.calories * scale),
       protein: Math.round(baseNutrition.protein * scale * 10) / 10,
       carbs: Math.round(baseNutrition.carbs * scale * 10) / 10,
       fat: Math.round(baseNutrition.fat * scale * 10) / 10,
+      fiber: Math.round(baseNutrition.fiber * scale * 10) / 10,
+      sodium: Math.round(baseNutrition.sodium * scale),
     };
   };
   
@@ -501,6 +523,8 @@ export const DishSelectorModal: React.FC<DishSelectorModalProps> = ({
                       { label: 'PROTEIN', value: scaled.protein, unit: 'g', color: colors.proteinColor, icon: 'fitness' },
                       { label: 'CARBS', value: scaled.carbs, unit: 'g', color: colors.carbsColor, icon: 'nutrition' },
                       { label: 'FAT', value: scaled.fat, unit: 'g', color: colors.fatColor, icon: 'water' },
+                      { label: 'FIBER', value: scaled.fiber, unit: 'g', color: '#10B981', icon: 'leaf' },
+                      { label: 'SODIUM', value: scaled.sodium, unit: 'mg', color: '#F59E0B', icon: 'flash' },
                     ];
 
                     return metrics.map((metric) => (

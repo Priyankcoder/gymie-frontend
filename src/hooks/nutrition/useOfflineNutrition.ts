@@ -19,6 +19,8 @@ interface NutritionEstimation {
   protein: number;
   carbs: number;
   fat: number;
+  fiber: number;
+  sodium: number;
   confidence: number;
   imageHash?: string;
 }
@@ -150,13 +152,15 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
         setSelectedDish(recognizedDish);
         setSelectedPortion(result.portionEstimate.portion);
 
-        // Auto-populate nutrition estimation
+        // Auto-populate nutrition estimation using base values (modal will scale)
         setNutritionEstimation({
           dishName: result.nutrition.dish.display_name,
-          calories: result.nutrition.adjusted_nutrition.calories,
-          protein: result.nutrition.adjusted_nutrition.protein,
-          carbs: result.nutrition.adjusted_nutrition.carbs,
-          fat: result.nutrition.adjusted_nutrition.fat,
+          calories: result.nutrition.nutrition.calories,
+          protein: result.nutrition.nutrition.protein,
+          carbs: result.nutrition.nutrition.carbs,
+          fat: result.nutrition.nutrition.fat,
+          fiber: result.nutrition.nutrition.fiber,
+          sodium: result.nutrition.nutrition.sodium,
           confidence: result.prediction.confidence,
           imageHash: result.imageHash,
         });
@@ -246,15 +250,25 @@ export const useOfflineNutrition = (): UseOfflineNutritionReturn => {
 
     setIsEstimating(true);
     try {
-      const estimation = await offlineNutritionService.getNutritionForDish(
+      const result = await offlineNutritionService.getNutritionForDish(
         selectedDish.dish_id,
         selectedPortion,
         imageHash || undefined
       );
 
-      if (estimation) {
-        setNutritionEstimation(estimation);
-        console.log('[OfflineNutrition] Nutrition estimated:', estimation);
+      if (result) {
+        setNutritionEstimation({
+          dishName: result.dish.display_name,
+          calories: result.nutrition.calories,
+          protein: result.nutrition.protein,
+          carbs: result.nutrition.carbs,
+          fat: result.nutrition.fat,
+          fiber: result.nutrition.fiber,
+          sodium: result.nutrition.sodium,
+          confidence: 1.0, // Manual selection has full confidence
+          imageHash: imageHash || undefined,
+        });
+        console.log('[OfflineNutrition] Nutrition estimated:', result);
       } else {
         Alert.alert('Error', 'Failed to get nutrition data for selected dish');
       }
