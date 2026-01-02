@@ -35,30 +35,26 @@ export const NutritionSummaryCard: React.FC<NutritionSummaryCardProps> = ({
 
   return (
     <Card style={styles.card}>
-      {/* Featured Calorie Ring with subtle gradient background */}
-      <View style={styles.featuredSection}>
-        <View style={styles.featuredRingContainer}>
-          <View style={[styles.ringBackground, styles.featuredRingBg, styles.featuredSize]}>
+      {/* First Row: Calories, Protein, Carbs */}
+      <View style={[styles.macrosGrid, styles.firstRow]}>
+        <View style={styles.ringItem}>
+          <View style={[styles.ringBackground, styles.caloriesRingBg, styles.uniformSize]}>
             <MetricRing
               value={calories}
               maxValue={calorieGoal}
-              size={140}
-              strokeWidth={12}
+              size={95}
+              strokeWidth={9}
               color={colors.caloriesRing}
               label="Calories"
               unit="kcal"
             />
           </View>
-          <View style={[styles.iconBadgeFeatured, { backgroundColor: colors.caloriesRing }]}>
-            <Ionicons name="flame" size={18} color="white" />
+          <View style={[styles.iconBadge, { backgroundColor: colors.caloriesRing }]}>
+            <Ionicons name="flame" size={14} color="white" />
           </View>
         </View>
-      </View>
-
-      {/* First Row: Protein, Fiber, Carbs */}
-      <View style={styles.macrosGrid}>
         <View style={styles.ringItem}>
-          <View style={[styles.ringBackground, styles.proteinRingBg, styles.macroSize]}>
+          <View style={[styles.ringBackground, styles.proteinRingBg, styles.uniformSize]}>
             <MetricRing
               value={protein}
               maxValue={proteinGoal}
@@ -74,23 +70,7 @@ export const NutritionSummaryCard: React.FC<NutritionSummaryCardProps> = ({
           </View>
         </View>
         <View style={styles.ringItem}>
-          <View style={[styles.ringBackground, styles.fiberRingBg, styles.macroSize]}>
-            <MetricRing
-              value={fiber}
-              maxValue={fiberGoal}
-              size={95}
-              strokeWidth={9}
-              color="#10B981"
-              label="Fiber"
-              unit="g"
-            />
-          </View>
-          <View style={[styles.iconBadge, { backgroundColor: '#10B981' }]}>
-            <MaterialCommunityIcons name="barley" size={14} color="white" />
-          </View>
-        </View>
-        <View style={styles.ringItem}>
-          <View style={[styles.ringBackground, styles.carbsRingBg, styles.macroSize]}>
+          <View style={[styles.ringBackground, styles.carbsRingBg, styles.uniformSize]}>
             <MetricRing
               value={carbs}
               maxValue={carbsGoal}
@@ -107,10 +87,10 @@ export const NutritionSummaryCard: React.FC<NutritionSummaryCardProps> = ({
         </View>
       </View>
 
-      {/* Second Row: Fat, Sodium */}
-      <View style={styles.microGrid}>
+      {/* Second Row: Fat, Fiber, Sodium */}
+      <View style={[styles.macrosGrid, styles.lastRow]}>
         <View style={styles.ringItem}>
-          <View style={[styles.ringBackground, styles.fatRingBg, styles.macroSize]}>
+          <View style={[styles.ringBackground, styles.fatRingBg, styles.uniformSize]}>
             <MetricRing
               value={fat}
               maxValue={fatGoal}
@@ -126,7 +106,23 @@ export const NutritionSummaryCard: React.FC<NutritionSummaryCardProps> = ({
           </View>
         </View>
         <View style={styles.ringItem}>
-          <View style={[styles.ringBackground, styles.sodiumRingBg, styles.macroSize]}>
+          <View style={[styles.ringBackground, styles.fiberRingBg, styles.uniformSize]}>
+            <MetricRing
+              value={fiber}
+              maxValue={fiberGoal}
+              size={95}
+              strokeWidth={9}
+              color="#10B981"
+              label="Fiber"
+              unit="g"
+            />
+          </View>
+          <View style={[styles.iconBadge, { backgroundColor: '#10B981' }]}>
+            <MaterialCommunityIcons name="barley" size={14} color="white" />
+          </View>
+        </View>
+        <View style={styles.ringItem}>
+          <View style={[styles.ringBackground, styles.sodiumRingBg, styles.uniformSize]}>
             <MetricRing
               value={sodium}
               maxValue={sodiumGoal}
@@ -152,25 +148,23 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 16,
   },
-  featuredSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
   macrosGrid: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    marginBottom: 24,
-    paddingHorizontal: 8,
+    gap: 16,
+    paddingHorizontal: 0,
   },
-  microGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    alignItems: 'center',
-    paddingHorizontal: 8,
+  firstRow: {
+    marginTop: 0,
+    marginBottom: 28,
+  },
+  lastRow: {
+    marginBottom: 0,
   },
   ringItem: {
     alignItems: 'center',
+    justifyContent: 'center',
     flex: 1,
   },
   ringBackground: {
@@ -178,19 +172,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  featuredSize: {
-    width: 160,
-    height: 160,
-  },
-  macroSize: {
+  uniformSize: {
     width: 115,
     height: 115,
   },
-  microSize: {
-    width: 105,
-    height: 105,
-  },
-  featuredRingBg: {
+  caloriesRingBg: {
     backgroundColor: 'rgba(10, 116, 255, 0.05)', // Light blue for calories
   },
   proteinRingBg: {
@@ -208,25 +194,6 @@ const styles = StyleSheet.create({
   sodiumRingBg: {
     backgroundColor: 'rgba(245, 158, 11, 0.05)', // Light amber for sodium
   },
-  featuredRingContainer: {
-    position: 'relative',
-  },
-  iconBadgeFeatured: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 10,
-  },
   iconBadge: {
     position: 'absolute',
     top: -6,
@@ -241,22 +208,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 3,
     elevation: 3,
-    zIndex: 10,
-  },
-  iconBadgeSmall: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 2,
     zIndex: 10,
   },
 });
