@@ -12,7 +12,13 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --maxWorkers=2"
+    "test:ci": "jest --ci --coverage --maxWorkers=2",
+    "build:android:preview": "eas build --profile preview --platform android",
+    "build:android:production": "eas build --profile production --platform android",
+    "build:android:local": "cd android && ./gradlew assembleRelease && cd ..",
+    "build:android:local:aab": "cd android && ./gradlew bundleRelease && cd ..",
+    "prebuild:android": "npx expo prebuild --platform android",
+    "build:list": "eas build:list"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

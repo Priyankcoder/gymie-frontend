@@ -1,11 +1,32 @@
 
+import { Platform } from 'react-native';
+
+// Get the correct localhost address based on platform
+const getDefaultBaseURL = () => {
+  const envURL = process.env.EXPO_PUBLIC_API_URL;
+  
+  // If environment variable is set and doesn't use Android emulator address, use it
+  if (envURL && !envURL.includes('10.0.2.2')) {
+    return envURL;
+  }
+  
+  // Platform-specific localhost addresses
+  if (Platform.OS === 'android') {
+    // Android emulator uses 10.0.2.2 to access host machine's localhost
+    return 'http://10.0.2.2:8080/v1';
+  }
+  
+  // iOS simulator and web can use localhost directly
+  return 'http://localhost:8080/v1';
+};
+
 // API Configuration
 export const API_CONFIG = {
   // Set to true to use mock data, false to use real API
   USE_MOCK: false,
   
-  // API Base URL - update this for production
-  BASE_URL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080/v1',
+  // API Base URL - automatically detects platform
+  BASE_URL: getDefaultBaseURL(),
   
   // Request timeout in milliseconds
   TIMEOUT: 30000,
