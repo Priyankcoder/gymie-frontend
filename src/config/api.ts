@@ -24,10 +24,10 @@ const getDefaultBaseURL = () => {
 export const API_CONFIG = {
   // Set to true to use mock data, false to use real API
   USE_MOCK: false,
-  
+
   // API Base URL - automatically detects platform
-  BASE_URL: getDefaultBaseURL(),
-  
+  BASE_URL: process.env.EXPO_PUBLIC_API_URL || getDefaultBaseURL(),
+
   // Request timeout in milliseconds
   TIMEOUT: 30000,
 };
@@ -38,6 +38,8 @@ export const API_ENDPOINTS = {
   AUTH: {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
+    GOOGLE: '/auth/google',
+    APPLE: '/auth/apple',
     ME: '/auth/me',
   },
   

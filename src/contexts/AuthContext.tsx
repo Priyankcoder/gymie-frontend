@@ -17,6 +17,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
+  loginWithGoogle: (idToken: string, email: string | null, name: string | null, profileImage: string | null) => Promise<void>;
+  loginWithApple: (idToken: string, email: string | null, name: string | null) => Promise<void>;
   logout: () => Promise<void>;
   handleUnauthorized: () => Promise<void>;
   error: string | null;
@@ -114,6 +116,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (idToken: string, email: string | null, name: string | null, profileImage: string | null) => {
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      const response = await api.auth.loginWithGoogle(idToken, email, name, profileImage);
+      
+      if (response.token && response.user) {
+        await storeToken(response.token);
+        await storeUserData(response.user);
+        setToken(response.token);
+        setUser(response.user);
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Google sign-in failed. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithApple = async (idToken: string, email: string | null, name: string | null) => {
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      const response = await api.auth.loginWithApple(idToken, email, name);
+      
+      if (response.token && response.user) {
+        await storeToken(response.token);
+        await storeUserData(response.user);
+        setToken(response.token);
+        setUser(response.user);
+      } else {
+        throw new Error('Invalid response from server');
+      }
+    } catch (err: any) {
+      const errorMessage = err.message || 'Apple sign-in failed. Please try again.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       setIsLoading(true);
@@ -140,6 +190,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!token && !!user,
     login,
     register,
+    loginWithGoogle,
+    loginWithApple,
     logout,
     handleUnauthorized,
     error,

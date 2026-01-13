@@ -19,6 +19,20 @@ export const api = {
             user: { id: 1, email, name: "Mock User" },
           },
         }),
+        loginWithGoogle: async (idToken: string, email: string | null, name: string | null, profileImage: string | null) => ({
+          success: true,
+          data: {
+            token: "mock-token",
+            user: { id: 1, email: email || "mock@google.com", name: name || "Google User" },
+          },
+        }),
+        loginWithApple: async (idToken: string, email: string | null, name: string | null) => ({
+          success: true,
+          data: {
+            token: "mock-token",
+            user: { id: 1, email: email || "mock@apple.com", name: name || "Apple User" },
+          },
+        }),
         logout: async () => ({ success: true }),
         getCurrentUser: async () => ({
           success: true,
@@ -28,6 +42,8 @@ export const api = {
     : {
         register: realApi.authApi.register,
         login: realApi.authApi.login,
+        loginWithGoogle: realApi.authApi.loginWithGoogle,
+        loginWithApple: realApi.authApi.loginWithApple,
         logout: realApi.authApi.logout,
         getCurrentUser: realApi.authApi.getCurrentUser,
       },

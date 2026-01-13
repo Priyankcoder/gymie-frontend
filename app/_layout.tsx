@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -9,6 +9,9 @@ import { AppDataProvider } from '../src/contexts/AppDataContext';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { initializeGoogleSignIn } from '../src/services/socialAuth';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { SOCIAL_AUTH_CONFIG } from '../src/config/socialAuth';
 
 function RootLayoutNav() {
   const { isDark, colors } = useTheme();
@@ -31,7 +34,14 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  return (
+  useEffect(() => {
+    // Initialize Google Sign-In on native platforms
+    if (Platform.OS !== 'web') {
+      initializeGoogleSignIn();
+    }
+  }, []);
+
+  const content = (
     <ErrorBoundary>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <ThemeProvider>
@@ -44,6 +54,17 @@ export default function RootLayout() {
       </GestureHandlerRootView>
     </ErrorBoundary>
   );
+
+  // Wrap web with GoogleOAuthProvider
+  if (Platform.OS === 'web') {
+    return (
+      <GoogleOAuthProvider clientId={SOCIAL_AUTH_CONFIG.google.webClientId}>
+        {content}
+      </GoogleOAuthProvider>
+    );
+  }
+
+  return content;
 
   // Temporarily commented out SafeAreaProvider to debug
   // const content = (

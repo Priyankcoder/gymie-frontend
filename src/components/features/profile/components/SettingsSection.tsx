@@ -1,12 +1,17 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
-import { Card } from '../../../ui';
+import { useRouter } from 'expo-router';
+import { Card, ConfirmModal } from '../../../ui';
 import { SettingItem } from './SettingItem';
 import { useTheme } from '../../../../contexts/ThemeContext';
+import { useAuth } from '../../../../contexts/AuthContext';
 
 export const SettingsSection: React.FC = () => {
   const { colors, isDark, toggleTheme, typography } = useTheme();
+  const { logout } = useAuth();
+  const router = useRouter();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleNotifications = () => {
     Alert.alert('Notifications', 'Notification settings will be available soon!');
@@ -28,8 +33,23 @@ export const SettingsSection: React.FC = () => {
     Alert.alert('About', 'Gymie v1.0.0\n\nYour personal fitness companion');
   };
 
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutModal(false);
+    await logout();
+    router.replace('/(auth)/login');
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
   return (
-    <View style={styles.container}>
+    <>
+      <View style={styles.container}>
       {/* Preferences Section */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: colors.textSecondary, ...typography.caption }]}>
@@ -105,7 +125,35 @@ export const SettingsSection: React.FC = () => {
           />
         </Card>
       </View>
+
+      {/* Logout Section */}
+      <View style={styles.section}>
+        <Card style={styles.card}>
+          <SettingItem
+            icon="log-out-outline"
+            label="Logout"
+            type="navigation"
+            onPress={handleLogout}
+            iconColor={colors.error}
+            textColor={colors.error}
+          />
+        </Card>
+      </View>
     </View>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        visible={showLogoutModal}
+        title="Logout"
+        message="Are you sure you want to logout?"
+        confirmText="Logout"
+        cancelText="Cancel"
+        onConfirm={confirmLogout}
+        onCancel={cancelLogout}
+        destructive
+        icon="log-out-outline"
+      />
+    </>
   );
 };
 

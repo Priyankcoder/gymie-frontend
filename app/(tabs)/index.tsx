@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from '../../src/components/SafeAreaView';
 import { Card, MacroBar, MetricRing, QuickActionCard } from '../../src/components/ui';
 import { useTheme } from '../../src/contexts/ThemeContext';
+import { useAuth } from '../../src/contexts/AuthContext';
 import { api } from '../../src/services/api';
 import { useRefreshOnFocus } from '../../src/hooks';
 import { formatDate, getGreeting, getTodayString } from '../../src/utils';
@@ -27,6 +28,7 @@ import {
 
 export default function HomeScreen() {
   const { colors, spacing, borderRadius } = useTheme();
+  const { user } = useAuth();
   const router = useRouter();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -302,7 +304,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-              {getGreeting()} 💪
+              {getGreeting()}{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 💪
             </Text>
             <Text style={[styles.date, { color: colors.textPrimary }]}>
               {formatDate()}

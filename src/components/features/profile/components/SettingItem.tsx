@@ -15,6 +15,8 @@ interface SettingItemProps {
   onToggle?: (value: boolean) => void;
   hasBorder?: boolean;
   valueColor?: string;
+  iconColor?: string;
+  textColor?: string;
 }
 
 export const SettingItem: React.FC<SettingItemProps> = ({
@@ -26,6 +28,8 @@ export const SettingItem: React.FC<SettingItemProps> = ({
   onToggle,
   hasBorder = false,
   valueColor,
+  iconColor,
+  textColor,
 }) => {
   const { colors } = useTheme();
 
@@ -77,8 +81,8 @@ export const SettingItem: React.FC<SettingItemProps> = ({
       {...componentProps}
     >
       <View style={styles.labelContainer}>
-        <Ionicons name={icon} size={20} color={colors.textSecondary} />
-        <Text style={[styles.label, { color: colors.textPrimary }]}>
+        <Ionicons name={icon} size={20} color={iconColor || colors.textSecondary} />
+        <Text style={[styles.label, { color: textColor || colors.textPrimary }]}>
           {label}
         </Text>
       </View>

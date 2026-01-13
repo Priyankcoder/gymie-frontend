@@ -67,6 +67,67 @@ export const authApi = {
     }
   },
 
+  loginWithGoogle: async (idToken: string, email: string | null, name: string | null, profileImage: string | null) => {
+    try {
+      console.log('🚀 Google Login Request:', {
+        url: `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.GOOGLE}`,
+        data: { email, name }
+      });
+      
+      const response = await apiClient.post<
+        ApiResponse<{ token: string; user: User }>
+      >(API_ENDPOINTS.AUTH.GOOGLE, {
+        id_token: idToken,
+        email,
+        name,
+        profile_image: profileImage
+      });
+      
+      console.log('✅ Google Login Response:', response.status, response.data);
+
+      if (response.data.success && response.data.data) {
+        await storeToken(response.data.data.token);
+        await storeUserData(response.data.data.user);
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || "Google sign-in failed");
+    } catch (error) {
+      console.error('❌ Google Login Error:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  loginWithApple: async (idToken: string, email: string | null, name: string | null) => {
+    try {
+      console.log('🚀 Apple Login Request:', {
+        url: `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.APPLE}`,
+        data: { email, name }
+      });
+      
+      const response = await apiClient.post<
+        ApiResponse<{ token: string; user: User }>
+      >(API_ENDPOINTS.AUTH.APPLE, {
+        id_token: idToken,
+        email,
+        name
+      });
+      
+      console.log('✅ Apple Login Response:', response.status, response.data);
+
+      if (response.data.success && response.data.data) {
+        await storeToken(response.data.data.token);
+        await storeUserData(response.data.data.user);
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || "Apple sign-in failed");
+    } catch (error) {
+      console.error('❌ Apple Login Error:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
   logout: async () => {
     await clearStoredToken();
   },

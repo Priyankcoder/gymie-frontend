@@ -803,12 +803,36 @@ export default function WorkoutScreen() {
   const saveWorkout = async () => {
     if (!activeWorkout) return;
 
+    // Check if workout has exercises
+    if (!activeWorkout.exercises || activeWorkout.exercises.length === 0) {
+      Alert.alert(
+        'No Exercises',
+        'Please add at least one exercise before finishing the workout.',
+        [{ text: 'OK', style: 'default' }]
+      );
+      return;
+    }
+
+    // Check if any sets are completed
+    const hasCompletedSets = activeWorkout.exercises.some(ex =>
+      ex.sets.some(s => s.completed)
+    );
+
+    if (!hasCompletedSets) {
+      Alert.alert(
+        'No Completed Sets',
+        'Please complete at least one set before finishing the workout.',
+        [{ text: 'OK', style: 'default' }]
+      );
+      return;
+    }
+
     try {
       const duration = workoutStartTime
         ? Math.round((new Date().getTime() - workoutStartTime.getTime()) / 60000)
         : 45;
 
-      // Calculate workout stats
+      // Calculate workout stats - safe now that we've validated exercises exist
       const totalSets = activeWorkout.exercises.reduce(
         (sum, ex) => sum + ex.sets.filter(s => s.completed).length,
         0
@@ -1321,6 +1345,8 @@ export default function WorkoutScreen() {
             <Card key={exercise.id} style={styles.exerciseCard}>
               <Text
                 style={[styles.exerciseName, { color: colors.textPrimary }]}
+                numberOfLines={2}
+                ellipsizeMode="tail"
               >
                 {exercise.name}
               </Text>
@@ -1451,6 +1477,7 @@ export default function WorkoutScreen() {
           <Button
             title="Finish Workout"
             onPress={saveWorkout}
+            disabled={!activeWorkout?.exercises || activeWorkout.exercises.length === 0}
             style={{ marginBottom: 100 }}
           />
         </ScrollView>

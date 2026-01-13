@@ -1,12 +1,12 @@
 
 /**
  * Nutrition Database Service - Web Implementation
- * 
- * Uses expo-sqlite which supports web via WebSQL/IndexedDB.
+ *
+ * Uses AsyncStorage for web compatibility.
  * Provides the same interface as the native implementation.
  */
 
-import * as SQLite from 'expo-sqlite';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface DishMaster {
   dish_id: string;
@@ -64,9 +64,8 @@ export interface NutritionResult {
 }
 
 class NutritionDatabaseServiceWeb {
-  private db: SQLite.SQLiteDatabase | null = null;
   private initialized = false;
-  private readonly DB_NAME = 'nutrition.db';
+  private readonly STORAGE_PREFIX = 'nutrition_db';
   private readonly DB_VERSION = '1.0.0';
 
   async initialize(): Promise<void> {
@@ -75,116 +74,28 @@ class NutritionDatabaseServiceWeb {
       return;
     }
 
-    try {
-      console.log('[NutritionDB-Web] Initializing web database...');
-      this.db = await SQLite.openDatabaseAsync(this.DB_NAME);
-      
-      await this.createTables();
-      await this.initializeMetadata();
-      
-      this.initialized = true;
-      console.log('[NutritionDB-Web] Database initialized successfully');
-    } catch (error) {
-      console.error('[NutritionDB-Web] Initialization failed:', error);
-      throw error;
-    }
-  }
-
-  private async createTables(): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    await this.db.execAsync(`
-      CREATE TABLE IF NOT EXISTS dish_master (
-        dish_id TEXT PRIMARY KEY,
-        display_name TEXT NOT NULL,
-        category TEXT NOT NULL,
-        cuisine TEXT NOT NULL,
-        aliases TEXT,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS dish_nutrition (
-        dish_id TEXT PRIMARY KEY,
-        base_serving_grams REAL NOT NULL,
-        calories REAL NOT NULL,
-        protein REAL NOT NULL,
-        carbs REAL NOT NULL,
-        fat REAL NOT NULL,
-        fiber REAL NOT NULL,
-        sodium REAL NOT NULL,
-        FOREIGN KEY (dish_id) REFERENCES dish_master(dish_id)
-      );
-
-      CREATE TABLE IF NOT EXISTS user_corrections (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        image_hash TEXT NOT NULL,
-        predicted_dish_id TEXT NOT NULL,
-        corrected_dish_id TEXT,
-        predicted_portion TEXT NOT NULL,
-        corrected_portion TEXT,
-        confidence REAL NOT NULL,
-        synced INTEGER DEFAULT 0,
-        created_at INTEGER NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS model_metadata (
-        model_type TEXT PRIMARY KEY,
-        version TEXT NOT NULL,
-        checksum TEXT NOT NULL,
-        size_bytes INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL
-      );
-
-      CREATE INDEX IF NOT EXISTS idx_dish_category ON dish_master(category);
-      CREATE INDEX IF NOT EXISTS idx_dish_cuisine ON dish_master(cuisine);
-      CREATE INDEX IF NOT EXISTS idx_corrections_synced ON user_corrections(synced);
-    `);
-
-    console.log('[NutritionDB-Web] Tables created');
-  }
-
-  private async initializeMetadata(): Promise<void> {
-    if (!this.db) return;
-
-    const metadata = await this.db.getFirstAsync<ModelMetadata>(
-      'SELECT * FROM model_metadata WHERE model_type = ?',
-      ['nutrition_db']
-    );
-
-    if (!metadata) {
-      await this.db.runAsync(
-        `INSERT INTO model_metadata (model_type, version, checksum, size_bytes, updated_at)
-         VALUES (?, ?, ?, ?, ?)`,
-        ['nutrition_db', this.DB_VERSION, '', 0, Date.now()]
-      );
-    }
+    this.initialized = true;
+    console.log('[NutritionDB-Web] Web storage initialized successfully');
   }
 
   async getDishById(dishId: string): Promise<DishMaster | null> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    const dish = await this.db.getFirstAsync<DishMaster>(
-      'SELECT * FROM dish_master WHERE dish_id = ?',
-      [dishId]
-    );
-
-    if (dish && dish.aliases) {
-      dish.aliases = JSON.parse(dish.aliases as any);
+    try {
+      const data = await AsyncStorage.getItem(`${this.STORAGE_PREFIX}_dish_${dishId}`);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('[NutritionDB-Web] Error getting dish:', error);
+      return null;
     }
-
-    return dish || null;
   }
 
   async getNutritionById(dishId: string): Promise<DishNutrition | null> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    const nutrition = await this.db.getFirstAsync<DishNutrition>(
-      'SELECT * FROM dish_nutrition WHERE dish_id = ?',
-      [dishId]
-    );
-
-    return nutrition || null;
+    try {
+      const data = await AsyncStorage.getItem(`${this.STORAGE_PREFIX}_nutrition_${dishId}`);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('[NutritionDB-Web] Error getting nutrition:', error);
+      return null;
+    }
   }
 
   async getCompleteDishInfo(dishId: string, portionMultiplier: number = 1.0): Promise<NutritionResult | null> {
@@ -210,75 +121,51 @@ class NutritionDatabaseServiceWeb {
   }
 
   async searchDishes(query: string, limit: number = 10): Promise<DishMaster[]> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    const dishes = await this.db.getAllAsync<DishMaster>(
-      `SELECT * FROM dish_master 
-       WHERE display_name LIKE ? OR aliases LIKE ?
-       LIMIT ?`,
-      [`%${query}%`, `%${query}%`, limit]
-    );
-
-    return dishes.map(dish => {
-      if (dish.aliases) {
-        dish.aliases = JSON.parse(dish.aliases as any);
-      }
-      return dish;
-    });
+    // For web, return empty array - can be enhanced with actual search later
+    return [];
   }
 
   async getAllDishes(): Promise<DishMaster[]> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    const dishes = await this.db.getAllAsync<DishMaster>(
-      'SELECT * FROM dish_master ORDER BY display_name'
-    );
-
-    return dishes.map(dish => {
-      if (dish.aliases) {
-        dish.aliases = JSON.parse(dish.aliases as any);
-      }
-      return dish;
-    });
+    // For web, return empty array - can be enhanced to load from server
+    return [];
   }
 
   async addUserCorrection(correction: Omit<UserCorrection, 'id'>): Promise<void> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    await this.db.runAsync(
-      `INSERT INTO user_corrections 
-       (image_hash, predicted_dish_id, corrected_dish_id, predicted_portion, 
-        corrected_portion, confidence, synced, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        correction.image_hash,
-        correction.predicted_dish_id,
-        correction.corrected_dish_id,
-        correction.predicted_portion,
-        correction.corrected_portion,
-        correction.confidence,
-        correction.synced,
-        correction.created_at,
-      ]
-    );
+    try {
+      const corrections = await this.getUnsyncedCorrections();
+      corrections.push({ ...correction, id: Date.now() });
+      await AsyncStorage.setItem(
+        `${this.STORAGE_PREFIX}_corrections`,
+        JSON.stringify(corrections)
+      );
+    } catch (error) {
+      console.error('[NutritionDB-Web] Error adding correction:', error);
+    }
   }
 
   async getUnsyncedCorrections(): Promise<UserCorrection[]> {
-    if (!this.db) throw new Error('Database not initialized');
-
-    return await this.db.getAllAsync<UserCorrection>(
-      'SELECT * FROM user_corrections WHERE synced = 0'
-    );
+    try {
+      const data = await AsyncStorage.getItem(`${this.STORAGE_PREFIX}_corrections`);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('[NutritionDB-Web] Error getting corrections:', error);
+      return [];
+    }
   }
 
   async markCorrectionsSynced(ids: number[]): Promise<void> {
-    if (!this.db || ids.length === 0) return;
-
-    const placeholders = ids.map(() => '?').join(',');
-    await this.db.runAsync(
-      `UPDATE user_corrections SET synced = 1 WHERE id IN (${placeholders})`,
-      ids
-    );
+    try {
+      const corrections = await this.getUnsyncedCorrections();
+      const updated = corrections.map(c =>
+        ids.includes(c.id!) ? { ...c, synced: 1 } : c
+      );
+      await AsyncStorage.setItem(
+        `${this.STORAGE_PREFIX}_corrections`,
+        JSON.stringify(updated)
+      );
+    } catch (error) {
+      console.error('[NutritionDB-Web] Error marking synced:', error);
+    }
   }
 
   async getVersion(): Promise<string> {

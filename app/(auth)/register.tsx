@@ -17,10 +17,12 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
+import { GoogleSignInButton } from '../../src/components/features/auth/GoogleSignInButton';
+import { AppleSignInButton } from '../../src/components/features/auth/AppleSignInButton';
 
 export default function RegisterScreen() {
   const { colors, spacing, borderRadius } = useTheme();
-  const { register, isLoading, error, clearError } = useAuth();
+  const { register, loginWithGoogle, loginWithApple, isLoading, error, clearError } = useAuth();
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -60,6 +62,12 @@ export default function RegisterScreen() {
       newErrors.password = 'Password is required';
     } else if (password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
+    } else if (!/[A-Z]/.test(password)) {
+      newErrors.password = 'Password should include at least one uppercase letter';
+    } else if (!/[a-z]/.test(password)) {
+      newErrors.password = 'Password should include at least one lowercase letter';
+    } else if (!/[0-9]/.test(password)) {
+      newErrors.password = 'Password should include at least one number';
     }
 
     if (!confirmPassword) {
@@ -91,6 +99,47 @@ export default function RegisterScreen() {
     } catch (err: any) {
       Alert.alert('Registration Failed', err.message || 'Please try again.');
     }
+  };
+
+  const handleGoogleSignIn = async (
+    idToken: string,
+    email: string | null,
+    name: string | null,
+    profileImage: string | null
+  ) => {
+    try {
+      await loginWithGoogle(idToken, email, name, profileImage);
+      Alert.alert('Success', 'Signed in with Google successfully!', [
+        {
+          text: 'OK',
+          onPress: () => router.replace('/(tabs)'),
+        },
+      ]);
+    } catch (err: any) {
+      Alert.alert('Google Sign-In Failed', err.message || 'Please try again.');
+    }
+  };
+
+  const handleAppleSignIn = async (
+    idToken: string,
+    email: string | null,
+    name: string | null
+  ) => {
+    try {
+      await loginWithApple(idToken, email, name);
+      Alert.alert('Success', 'Signed in with Apple successfully!', [
+        {
+          text: 'OK',
+          onPress: () => router.replace('/(tabs)'),
+        },
+      ]);
+    } catch (err: any) {
+      Alert.alert('Apple Sign-In Failed', err.message || 'Please try again.');
+    }
+  };
+
+  const handleSocialAuthError = (error: string) => {
+    Alert.alert('Sign-In Error', error);
   };
 
   return (
@@ -278,6 +327,28 @@ export default function RegisterScreen() {
               )}
             </Pressable>
 
+            {/* Divider */}
+            <View style={styles.dividerContainer}>
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
+              <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            </View>
+
+            {/* Social Sign-In Buttons */}
+            <View style={styles.socialButtonsContainer}>
+              <GoogleSignInButton
+                onSuccess={handleGoogleSignIn}
+                onError={handleSocialAuthError}
+                disabled={isLoading}
+              />
+              {/* Apple Sign-In - Will be enabled for iOS app later */}
+              {/* <AppleSignInButton
+                onSuccess={handleAppleSignIn}
+                onError={handleSocialAuthError}
+                disabled={isLoading}
+              /> */}
+            </View>
+
             {/* Error Message */}
             {error && (
               <View style={[styles.errorContainer, { backgroundColor: `${colors.error}15` }]}>
@@ -409,5 +480,22 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  socialButtonsContainer: {
+    gap: 12,
   },
 });
