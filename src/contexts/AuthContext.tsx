@@ -99,10 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const response = await api.auth.register(email, password, name);
       
-      if (response.token && response.user) {
-        await storeToken(response.token);
+      if (response.user) {
+        // Only store token if it exists (will be empty for unverified users)
+        if (response.token) {
+          await storeToken(response.token);
+          setToken(response.token);
+        }
         await storeUserData(response.user);
-        setToken(response.token);
         setUser(response.user);
       } else {
         throw new Error('Invalid response from server');

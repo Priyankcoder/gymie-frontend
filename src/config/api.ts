@@ -2,15 +2,23 @@
 import { Platform } from 'react-native';
 
 // Get the correct localhost address based on platform
+// Production API URL - Update this with your actual backend URL
+const PRODUCTION_API_URL = 'https://gymie-api.onrender.com/v1';
+
 const getDefaultBaseURL = () => {
+  // 1. Check if explicit API URL is provided via environment variable
   const envURL = process.env.EXPO_PUBLIC_API_URL;
-  
-  // If environment variable is set and doesn't use Android emulator address, use it
-  if (envURL && !envURL.includes('10.0.2.2')) {
+  if (envURL) {
     return envURL;
   }
   
-  // Platform-specific localhost addresses
+  // 2. In production builds (release mode), always use production API
+  // __DEV__ is false in production/release builds
+  if (!__DEV__) {
+    return PRODUCTION_API_URL;
+  }
+  
+  // 3. In development mode, use platform-specific localhost
   if (Platform.OS === 'android') {
     // Android emulator uses 10.0.2.2 to access host machine's localhost
     return 'http://10.0.2.2:8080/v1';
@@ -25,11 +33,18 @@ export const API_CONFIG = {
   // Set to true to use mock data, false to use real API
   USE_MOCK: false,
 
-  // API Base URL - automatically detects platform
-  BASE_URL: process.env.EXPO_PUBLIC_API_URL || getDefaultBaseURL(),
+  // API Base URL - automatically detects environment and platform
+  // Priority:
+  // 1. EXPO_PUBLIC_API_URL env var (if set)
+  // 2. Production API (if release build)
+  // 3. Platform-specific localhost (if dev mode)
+  BASE_URL: getDefaultBaseURL(),
 
   // Request timeout in milliseconds
   TIMEOUT: 30000,
+  
+  // Helper to check if using production API
+  IS_PRODUCTION: !__DEV__,
 };
 
 // API Endpoints
@@ -41,6 +56,9 @@ export const API_ENDPOINTS = {
     GOOGLE: '/auth/google',
     APPLE: '/auth/apple',
     ME: '/auth/me',
+    VERIFY_EMAIL: '/auth/verify-email',
+    RESEND_VERIFICATION: '/auth/resend-verification',
+    VERIFICATION_STATUS: (email: string) => `/auth/verification-status/${email}`,
   },
   
   // Users

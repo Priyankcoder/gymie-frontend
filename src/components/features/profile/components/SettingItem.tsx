@@ -69,16 +69,34 @@ export const SettingItem: React.FC<SettingItemProps> = ({
     return null;
   };
 
-  const Component = type === 'toggle' || type === 'info' ? View : Pressable;
-  const componentProps = type === 'toggle' || type === 'info' ? {} : { onPress };
+  if (type === 'toggle' || type === 'info') {
+    return (
+      <View
+        style={[
+          styles.container,
+          hasBorder && { borderTopWidth: 1, borderTopColor: colors.border }
+        ]}
+      >
+        <View style={styles.labelContainer}>
+          <Ionicons name={icon} size={20} color={iconColor || colors.textSecondary} />
+          <Text style={[styles.label, { color: textColor || colors.textPrimary }]}>
+            {label}
+          </Text>
+        </View>
+        {renderValue()}
+      </View>
+    );
+  }
 
   return (
-    <Component
+    <Pressable
       style={[
         styles.container,
         hasBorder && { borderTopWidth: 1, borderTopColor: colors.border }
       ]}
-      {...componentProps}
+      onPress={onPress}
+      android_ripple={{ color: colors.border }}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >
       <View style={styles.labelContainer}>
         <Ionicons name={icon} size={20} color={iconColor || colors.textSecondary} />
@@ -87,7 +105,7 @@ export const SettingItem: React.FC<SettingItemProps> = ({
         </Text>
       </View>
       {renderValue()}
-    </Component>
+    </Pressable>
   );
 };
 

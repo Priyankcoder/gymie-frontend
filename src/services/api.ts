@@ -38,6 +38,18 @@ export const api = {
           success: true,
           data: { id: 1, email: "mock@example.com", name: "Mock User" },
         }),
+        verifyEmail: async (token: string) => ({
+          success: true,
+          data: { verified: true, email: "mock@example.com" },
+        }),
+        resendVerification: async (email: string) => ({
+          success: true,
+          data: { email },
+        }),
+        getVerificationStatus: async (email: string) => ({
+          email,
+          verified: true,
+        }),
       }
     : {
         register: realApi.authApi.register,
@@ -46,6 +58,9 @@ export const api = {
         loginWithApple: realApi.authApi.loginWithApple,
         logout: realApi.authApi.logout,
         getCurrentUser: realApi.authApi.getCurrentUser,
+        verifyEmail: realApi.authApi.verifyEmail,
+        resendVerification: realApi.authApi.resendVerification,
+        getVerificationStatus: realApi.authApi.getVerificationStatus,
       },
 
   // User Preferences

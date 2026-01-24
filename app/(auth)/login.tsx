@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from '../../src/components/SafeAreaView';
 import { useRouter } from 'expo-router';
@@ -19,11 +18,14 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { GoogleSignInButton } from '../../src/components/features/auth/GoogleSignInButton';
 import { AppleSignInButton } from '../../src/components/features/auth/AppleSignInButton';
+import { CustomModal } from '../../src/components/common/CustomModal';
+import { useCustomModal } from '../../src/hooks/useCustomModal';
 
 export default function LoginScreen() {
   const { colors, spacing, borderRadius } = useTheme();
   const { login, loginWithGoogle, loginWithApple, isLoading, error, clearError } = useAuth();
   const router = useRouter();
+  const modal = useCustomModal();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,14 +61,37 @@ export default function LoginScreen() {
     try {
       await login(email.trim().toLowerCase(), password);
       // Show success message and navigate
-      Alert.alert('Success', 'Logged in successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ]);
+      modal.showSuccess(
+        'Success',
+        'Logged in successfully!',
+        () => {
+          modal.hideModal();
+          router.replace('/(tabs)');
+        }
+      );
     } catch (err: any) {
-      Alert.alert('Login Failed', err.message || 'Please check your credentials and try again.');
+      const errorMessage = err.message || 'Please check your credentials and try again.';
+      
+      // Check if error is due to unverified email
+      if (errorMessage.toLowerCase().includes('email_not_verified') ||
+          errorMessage.toLowerCase().includes('not verified')) {
+        modal.showError(
+          'Email Not Verified',
+          'Please verify your email address before logging in. Check your inbox for the verification link.',
+          () => {
+            modal.hideModal();
+            router.push({
+              pathname: '/(auth)/verification-pending',
+              params: { email: email.trim().toLowerCase() }
+            });
+          }
+        );
+      } else {
+        modal.showError(
+          'Login Failed',
+          errorMessage
+        );
+      }
     }
   };
 
@@ -78,14 +103,19 @@ export default function LoginScreen() {
   ) => {
     try {
       await loginWithGoogle(idToken, email, name, profileImage);
-      Alert.alert('Success', 'Signed in with Google successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ]);
+      modal.showSuccess(
+        'Success',
+        'Signed in with Google successfully!',
+        () => {
+          modal.hideModal();
+          router.replace('/(tabs)');
+        }
+      );
     } catch (err: any) {
-      Alert.alert('Google Sign-In Failed', err.message || 'Please try again.');
+      modal.showError(
+        'Google Sign-In Failed',
+        err.message || 'Please try again.'
+      );
     }
   };
 
@@ -96,19 +126,24 @@ export default function LoginScreen() {
   ) => {
     try {
       await loginWithApple(idToken, email, name);
-      Alert.alert('Success', 'Signed in with Apple successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ]);
+      modal.showSuccess(
+        'Success',
+        'Signed in with Apple successfully!',
+        () => {
+          modal.hideModal();
+          router.replace('/(tabs)');
+        }
+      );
     } catch (err: any) {
-      Alert.alert('Apple Sign-In Failed', err.message || 'Please try again.');
+      modal.showError(
+        'Apple Sign-In Failed',
+        err.message || 'Please try again.'
+      );
     }
   };
 
   const handleSocialAuthError = (error: string) => {
-    Alert.alert('Sign-In Error', error);
+    modal.showError('Sign-In Error', error);
   };
 
   return (
@@ -267,6 +302,22 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Custom Modal */}
+      <CustomModal
+        visible={modal.visible}
+        type={modal.config.type}
+        title={modal.config.title}
+        message={modal.config.message}
+        primaryButtonText={modal.config.primaryButtonText}
+        secondaryButtonText={modal.config.secondaryButtonText}
+        onPrimaryPress={() => {
+          modal.config.onPrimaryPress?.();
+          modal.hideModal();
+        }}
+        onSecondaryPress={modal.config.onSecondaryPress}
+        onClose={modal.hideModal}
+      />
     </SafeAreaView>
   );
 }

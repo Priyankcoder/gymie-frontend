@@ -18,7 +18,21 @@
     "build:android:local": "cd android && ./gradlew assembleRelease && cd ..",
     "build:android:local:aab": "cd android && ./gradlew bundleRelease && cd ..",
     "prebuild:android": "npx expo prebuild --platform android",
-    "build:list": "eas build:list"
+    "build:list": "eas build:list",
+    "android:build": "./build-android.sh",
+    "android:build-debug": "cd android && ./gradlew assembleDebug && cd ..",
+    "android:build-release": "cd android && ./gradlew assembleRelease && cd ..",
+    "android:install": "adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
+    "android:install-release": "adb install -r android/app/build/outputs/apk/release/app-release.apk",
+    "android:uninstall": "adb uninstall com.gymie",
+    "android:devices": "adb devices",
+    "android:logcat": "adb logcat",
+    "android:logcat-app": "adb logcat | grep -i gymie",
+    "android:clean": "cd android && ./gradlew clean && cd ..",
+    "android:studio": "open -a 'Android Studio' android",
+    "android:emulator-list": "$ANDROID_HOME/emulator/emulator -list-avds",
+    "android:reverse-port": "adb reverse tcp:8080 tcp:8080",
+    "android:shake": "adb shell input keyevent 82"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

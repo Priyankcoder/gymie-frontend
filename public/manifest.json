@@ -1,0 +1,105 @@
+
+{
+  "name": "Gymie - Workout & Nutrition Tracker",
+  "short_name": "Gymie",
+  "description": "Track workouts, calories, and body metrics. Visualize progress over time. Built for serious training with complete data privacy.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "categories": ["health", "fitness", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Gymie Home Screen"
+    },
+    {
+      "src": "/screenshots/nutrition.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "AI Food Recognition"
+    },
+    {
+      "src": "/screenshots/workout.png",
+      "sizes": "1170x2532",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Smart Workouts"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log Meal",
+      "short_name": "Log Meal",
+      "description": "Quickly log a meal with AI recognition",
+      "url": "/nutrition/log",
+      "icons": [
+        {
+          "src": "/icons/meal-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Start Workout",
+      "short_name": "Workout",
+      "description": "Begin your workout session",
+      "url": "/workout/start",
+      "icons": [
+        {
+          "src": "/icons/workout-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.gymie.app",
+      "id": "com.gymie.app"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/gymie/id123456789"
+    }
+  ],
+  "prefer_related_applications": true
+}

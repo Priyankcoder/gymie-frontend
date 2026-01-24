@@ -29,8 +29,12 @@ export const authApi = {
       console.log('✅ Register Response:', response.status, response.data);
 
       if (response.data.success && response.data.data) {
-        await storeToken(response.data.data.token);
-        await storeUserData(response.data.data.user);
+        // Don't store token yet - user needs to verify email first
+        // Token will be empty until email is verified
+        if (response.data.data.token) {
+          await storeToken(response.data.data.token);
+          await storeUserData(response.data.data.user);
+        }
         return response.data.data;
       }
 
@@ -94,6 +98,79 @@ export const authApi = {
       throw new Error(response.data.message || "Google sign-in failed");
     } catch (error) {
       console.error('❌ Google Login Error:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  verifyEmail: async (token: string) => {
+    try {
+      console.log('🚀 Verify Email Request:', {
+        url: `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.VERIFY_EMAIL}`,
+        token
+      });
+      
+      const response = await apiClient.get<
+        ApiResponse<{ verified: boolean; email: string }>
+      >(`${API_ENDPOINTS.AUTH.VERIFY_EMAIL}?token=${token}`);
+      
+      console.log('✅ Verify Email Response:', response.status, response.data);
+
+      if (response.data.success) {
+        return response.data;
+      }
+
+      throw new Error(response.data.message || "Email verification failed");
+    } catch (error) {
+      console.error('❌ Verify Email Error:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  resendVerification: async (email: string) => {
+    try {
+      console.log('🚀 Resend Verification Request:', {
+        url: `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.RESEND_VERIFICATION}`,
+        email
+      });
+      
+      const response = await apiClient.post<ApiResponse<{ email: string }>>(
+        API_ENDPOINTS.AUTH.RESEND_VERIFICATION,
+        { email }
+      );
+      
+      console.log('✅ Resend Verification Response:', response.status, response.data);
+
+      if (response.data.success) {
+        return response.data;
+      }
+
+      throw new Error(response.data.message || "Failed to resend verification email");
+    } catch (error) {
+      console.error('❌ Resend Verification Error:', error);
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  getVerificationStatus: async (email: string) => {
+    try {
+      console.log('🚀 Get Verification Status Request:', {
+        url: `${apiClient.defaults.baseURL}${API_ENDPOINTS.AUTH.VERIFICATION_STATUS(email)}`,
+        email
+      });
+      
+      const response = await apiClient.get<
+        ApiResponse<{ email: string; verified: boolean; cooldownRemaining?: number }>
+      >(API_ENDPOINTS.AUTH.VERIFICATION_STATUS(email));
+      
+      console.log('✅ Get Verification Status Response:', response.status, response.data);
+
+      if (response.data.success && response.data.data) {
+        return response.data.data;
+      }
+
+      throw new Error(response.data.message || "Failed to get verification status");
+    } catch (error) {
+      console.error('❌ Get Verification Status Error:', error);
       throw new Error(handleApiError(error));
     }
   },

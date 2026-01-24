@@ -147,7 +147,99 @@ case $BUILD_METHOD in
                     echo "✅ Build successful!"
                     echo "📦 APK location: android/$OUTPUT_PATH"
                     echo ""
-                    echo "Install with: adb install $OUTPUT_PATH"
+                    
+                    # Check for running emulators
+                    echo "📱 Checking for Android emulator..."
+                    RUNNING_EMULATORS=$(adb devices | grep -c "emulator")
+                    
+                    if [ "$RUNNING_EMULATORS" -eq 0 ]; then
+                        echo "⚠️  No emulator running. Starting emulator..."
+                        
+                        # List available AVDs
+                        if [ ! -f "$ANDROID_HOME/emulator/emulator" ]; then
+                            echo "❌ Emulator not found at $ANDROID_HOME/emulator/emulator"
+                            exit 1
+                        fi
+                        
+                        AVDS=$($ANDROID_HOME/emulator/emulator -list-avds 2>/dev/null)
+                        
+                        if [ -z "$AVDS" ]; then
+                            echo "❌ No Android Virtual Devices found."
+                            echo "Please create an AVD in Android Studio first:"
+                            echo "Tools → Device Manager → Create Device"
+                            exit 1
+                        fi
+                        
+                        # Get first AVD
+                        FIRST_AVD=$(echo "$AVDS" | head -n 1)
+                        echo "🚀 Starting emulator: $FIRST_AVD"
+                        
+                        # Export library path for macOS
+                        export DYLD_LIBRARY_PATH="$ANDROID_HOME/emulator/lib64:$ANDROID_HOME/emulator/lib64/qt/lib"
+                        
+                        # Start emulator in background with proper settings
+                        nohup "$ANDROID_HOME/emulator/emulator" -avd "$FIRST_AVD" -netdelay none -netspeed full > /dev/null 2>&1 &
+                        EMULATOR_PID=$!
+                        
+                        # Wait for device to be detected
+                        echo "⏳ Waiting for emulator to start (this may take 1-2 minutes)..."
+                        timeout=120
+                        elapsed=0
+                        while [ $elapsed -lt $timeout ]; do
+                            if adb devices | grep -q "emulator"; then
+                                break
+                            fi
+                            sleep 2
+                            elapsed=$((elapsed + 2))
+                        done
+                        
+                        if [ $elapsed -ge $timeout ]; then
+                            echo "❌ Emulator failed to start within timeout"
+                            exit 1
+                        fi
+                        
+                        # Wait for boot to complete
+                        echo "⏳ Waiting for emulator to fully boot..."
+                        adb wait-for-device
+                        
+                        while [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+                            sleep 2
+                        done
+                        
+                        # Give it a few more seconds to fully initialize
+                        sleep 5
+                        
+                        echo "✅ Emulator ready!"
+                    else
+                        echo "✅ Found running emulator"
+                    fi
+                    
+                    # Install APK
+                    echo ""
+                    echo "📲 Installing APK on emulator..."
+                    adb install -r "$OUTPUT_PATH"
+                    
+                    if [ $? -eq 0 ]; then
+                        echo "✅ APK installed successfully!"
+                        
+                        # Get package name from build.gradle
+                        PACKAGE_NAME=$(grep "applicationId" app/build.gradle | sed 's/.*"\(.*\)".*/\1/' | tr -d ' ')
+                        
+                        if [ -n "$PACKAGE_NAME" ]; then
+                            echo ""
+                            echo "🚀 Launching app..."
+                            adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+                            
+                            echo ""
+                            echo "✅ App launched in emulator!"
+                            echo ""
+                            echo "💡 You can now interact with your app in the emulator"
+                            echo "💡 To view logs: adb logcat"
+                        fi
+                    else
+                        echo "❌ Failed to install APK"
+                        echo "Try manually: adb install -r $OUTPUT_PATH"
+                    fi
                 fi
                 ;;
             2)

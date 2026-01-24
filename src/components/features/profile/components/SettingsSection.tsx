@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Card, ConfirmModal } from '../../../ui';
+import { Card } from '../../../ui';
+import { CustomModal } from '../../../common/CustomModal';
 import { SettingItem } from './SettingItem';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { useAuth } from '../../../../contexts/AuthContext';
@@ -142,16 +143,16 @@ export const SettingsSection: React.FC = () => {
     </View>
 
       {/* Logout Confirmation Modal */}
-      <ConfirmModal
+      <CustomModal
         visible={showLogoutModal}
+        type="destructive"
         title="Logout"
         message="Are you sure you want to logout?"
-        confirmText="Logout"
-        cancelText="Cancel"
-        onConfirm={confirmLogout}
-        onCancel={cancelLogout}
-        destructive
-        icon="log-out-outline"
+        primaryButtonText="Logout"
+        secondaryButtonText="Cancel"
+        onPrimaryPress={confirmLogout}
+        onSecondaryPress={cancelLogout}
+        customIcon="log-out-outline"
       />
     </>
   );

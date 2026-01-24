@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { SafeAreaView } from '../../src/components/SafeAreaView';
 import { useRouter } from 'expo-router';
@@ -19,11 +18,14 @@ import { useTheme } from '../../src/contexts/ThemeContext';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { GoogleSignInButton } from '../../src/components/features/auth/GoogleSignInButton';
 import { AppleSignInButton } from '../../src/components/features/auth/AppleSignInButton';
+import { CustomModal } from '../../src/components/common/CustomModal';
+import { useCustomModal } from '../../src/hooks/useCustomModal';
 
 export default function RegisterScreen() {
   const { colors, spacing, borderRadius } = useTheme();
   const { register, loginWithGoogle, loginWithApple, isLoading, error, clearError } = useAuth();
   const router = useRouter();
+  const modal = useCustomModal();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -89,15 +91,20 @@ export default function RegisterScreen() {
 
     try {
       await register(email.trim().toLowerCase(), password, name.trim());
-      // Show success message and navigate
-      Alert.alert('Success', 'Account created successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ]);
+      
+      // Ensure modal is hidden before navigation
+      modal.hideModal();
+      
+      // Registration successful - redirect to verification pending screen
+      router.replace({
+        pathname: '/(auth)/verification-pending',
+        params: { email: email.trim().toLowerCase() }
+      });
     } catch (err: any) {
-      Alert.alert('Registration Failed', err.message || 'Please try again.');
+      modal.showError(
+        'Registration Failed',
+        err.message || 'Please try again.'
+      );
     }
   };
 
@@ -109,14 +116,19 @@ export default function RegisterScreen() {
   ) => {
     try {
       await loginWithGoogle(idToken, email, name, profileImage);
-      Alert.alert('Success', 'Signed in with Google successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ]);
+      modal.showSuccess(
+        'Success',
+        'Signed in with Google successfully!',
+        () => {
+          modal.hideModal();
+          router.replace('/(tabs)');
+        }
+      );
     } catch (err: any) {
-      Alert.alert('Google Sign-In Failed', err.message || 'Please try again.');
+      modal.showError(
+        'Google Sign-In Failed',
+        err.message || 'Please try again.'
+      );
     }
   };
 
@@ -127,19 +139,24 @@ export default function RegisterScreen() {
   ) => {
     try {
       await loginWithApple(idToken, email, name);
-      Alert.alert('Success', 'Signed in with Apple successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ]);
+      modal.showSuccess(
+        'Success',
+        'Signed in with Apple successfully!',
+        () => {
+          modal.hideModal();
+          router.replace('/(tabs)');
+        }
+      );
     } catch (err: any) {
-      Alert.alert('Apple Sign-In Failed', err.message || 'Please try again.');
+      modal.showError(
+        'Apple Sign-In Failed',
+        err.message || 'Please try again.'
+      );
     }
   };
 
   const handleSocialAuthError = (error: string) => {
-    Alert.alert('Sign-In Error', error);
+    modal.showError('Sign-In Error', error);
   };
 
   return (
@@ -367,6 +384,22 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Custom Modal */}
+      <CustomModal
+        visible={modal.visible}
+        type={modal.config.type}
+        title={modal.config.title}
+        message={modal.config.message}
+        primaryButtonText={modal.config.primaryButtonText}
+        secondaryButtonText={modal.config.secondaryButtonText}
+        onPrimaryPress={() => {
+          modal.config.onPrimaryPress?.();
+          modal.hideModal();
+        }}
+        onSecondaryPress={modal.config.onSecondaryPress}
+        onClose={modal.hideModal}
+      />
     </SafeAreaView>
   );
 }

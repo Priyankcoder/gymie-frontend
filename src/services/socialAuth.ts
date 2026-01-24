@@ -22,8 +22,6 @@ export interface SocialAuthResult {
  * Call this on app start
  */
 export const initializeGoogleSignIn = () => {
-  if (Platform.OS !== 'ios') return;
-  
   try {
     GoogleSignin.configure({
       webClientId: SOCIAL_AUTH_CONFIG.google.webClientId,
@@ -31,7 +29,7 @@ export const initializeGoogleSignIn = () => {
       offlineAccess: SOCIAL_AUTH_CONFIG.google.offlineAccess,
       forceCodeForRefreshToken: SOCIAL_AUTH_CONFIG.google.forceCodeForRefreshToken,
     });
-    console.log('✅ Google Sign-In configured');
+    console.log('✅ Google Sign-In configured for', Platform.OS);
   } catch (error) {
     console.error('❌ Failed to configure Google Sign-In:', error);
   }
