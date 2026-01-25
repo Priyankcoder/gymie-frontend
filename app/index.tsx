@@ -12,8 +12,8 @@ export default function Index() {
   const segments = useSegments();
 
   useEffect(() => {
-    // Skip redirects on web - show landing page instead
-    if (Platform.OS === 'web' && !isAuthenticated) {
+    // Skip redirects on web ONLY for root path - allow auth routes to load
+    if (Platform.OS === 'web' && !isAuthenticated && segments.length === 0) {
       return;
     }
 
@@ -36,8 +36,8 @@ export default function Index() {
     }
   }, [isAuthenticated, isLoading, segments]);
 
-  // Show landing page on web for unauthenticated users
-  if (Platform.OS === 'web' && !isAuthenticated && !isLoading) {
+  // Show landing page on web for unauthenticated users AT ROOT PATH ONLY
+  if (Platform.OS === 'web' && !isAuthenticated && !isLoading && segments.length === 0) {
     return <LandingPage />;
   }
 
