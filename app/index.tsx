@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { View, ActivityIndicator, StyleSheet, Platform } from "react-native";
 import { useRouter, useSegments } from "expo-router";
 import { useAuth } from "../src/contexts/AuthContext";
 import { useTheme } from "../src/contexts/ThemeContext";
+import LandingPage from "../src/components/landing/LandingPage";
 
 export default function Index() {
   const { colors } = useTheme();
@@ -10,6 +11,7 @@ export default function Index() {
   const router = useRouter();
   const segments = useSegments();
   
+  const isWeb = Platform.OS === 'web';
   const isRootPath = segments.length === 0;
 
   useEffect(() => {
@@ -24,8 +26,9 @@ export default function Index() {
       return;
     }
 
-    // Unauthenticated users at root should go to login (web & mobile)
-    if (!isAuthenticated) {
+    // Mobile unauthenticated users at root should go to login
+    // Web users stay on landing page (no redirect)
+    if (!isWeb && !isAuthenticated) {
       router.replace("/(auth)/login");
     }
   }, [isAuthenticated, isLoading, segments]);
@@ -37,6 +40,20 @@ export default function Index() {
   }
 
   // Show loading spinner while checking auth (only at root)
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.accentBlue} />
+      </View>
+    );
+  }
+
+  // Show landing page on web at root path (unauthenticated)
+  if (isWeb && !isAuthenticated) {
+    return <LandingPage />;
+  }
+
+  // Fallback loading (shouldn't normally reach here)
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ActivityIndicator size="large" color={colors.accentBlue} />
