@@ -10,34 +10,30 @@ export default function Index() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const segments = useSegments();
+  
+  const isWeb = Platform.OS === 'web';
+  const isRootPath = segments.length === 0;
+  const inAuthGroup = segments[0] === "(auth)";
 
   useEffect(() => {
-    // Skip redirects on web ONLY for root path - allow auth routes to load
-    if (Platform.OS === 'web' && !isAuthenticated && segments.length === 0) {
+    if (isLoading) return;
+
+    // Authenticated users should be in main app, not auth screens
+    if (isAuthenticated && (inAuthGroup || isRootPath)) {
+      router.replace("/(tabs)");
       return;
     }
 
-    if (isLoading) return;
-
-    const inAuthGroup = segments[0] === "(auth)";
-
-    if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to login if not authenticated (mobile only)
-      router.replace("/(auth)/login");
-    } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to main app if authenticated
-      router.replace("/(tabs)");
-    } else if (isAuthenticated && segments.length === 0) {
-      // First load after authentication
-      router.replace("/(tabs)");
-    } else if (!isAuthenticated && segments.length === 0 && Platform.OS !== 'web') {
-      // First load without authentication (mobile only)
+    // Mobile: redirect unauthenticated users to login
+    if (!isWeb && !isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)/login");
     }
+
+    // Web: handled by render logic below (shows landing page or auth routes)
   }, [isAuthenticated, isLoading, segments]);
 
-  // Show landing page on web for unauthenticated users AT ROOT PATH ONLY
-  if (Platform.OS === 'web' && !isAuthenticated && !isLoading && segments.length === 0) {
+  // Show landing page on web at root path (unauthenticated)
+  if (isWeb && !isAuthenticated && !isLoading && isRootPath) {
     return <LandingPage />;
   }
 
