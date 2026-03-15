@@ -21,8 +21,13 @@
     "build:android:local:aab": "cd android && ./gradlew bundleRelease && cd ..",
     "prebuild:android": "npx expo prebuild --platform android",
     "build:list": "eas build:list",
+
+    "ios:build": "bash scripts/ios-dev.sh",
+    "ios:sim": "bash scripts/ios-dev.sh",
+    "ios:sim:clean": "bash scripts/ios-dev.sh --clean",
     "android:build": "./build-android.sh",
     "android:build-debug": "cd android && ./gradlew assembleDebug && cd ..",
+
     "android:build-release": "cd android && ./gradlew assembleRelease && cd ..",
     "android:install": "adb install -r android/app/build/outputs/apk/debug/app-debug.apk",
     "android:install-release": "adb install -r android/app/build/outputs/apk/release/app-release.apk",

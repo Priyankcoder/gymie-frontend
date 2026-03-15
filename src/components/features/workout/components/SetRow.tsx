@@ -4,8 +4,8 @@
  * Displays a single set with reps, weight inputs and completion toggle
  */
 
-import React from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TextInput, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { WorkoutSet } from '../../../../types';
@@ -30,6 +30,30 @@ export const SetRow: React.FC<SetRowProps> = ({
   isCelebrating = false,
 }) => {
   const { colors, borderRadius } = useTheme();
+  const checkScale = useRef(new Animated.Value(1)).current;
+  const rowOpacity = useRef(new Animated.Value(1)).current;
+
+  // Spring bounce when set is completed
+  useEffect(() => {
+    if (set.completed) {
+      Animated.sequence([
+        Animated.spring(checkScale, {
+          toValue: 1.35,
+          tension: 200,
+          friction: 5,
+          useNativeDriver: true,
+        }),
+        Animated.spring(checkScale, {
+          toValue: 1,
+          tension: 120,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      checkScale.setValue(1);
+    }
+  }, [set.completed]);
 
   return (
     <View style={styles.setRow}>
@@ -81,35 +105,38 @@ export const SetRow: React.FC<SetRowProps> = ({
         editable={!set.completed}
       />
 
-      <Pressable
-        onPress={() => onCompleteSet(set.id)}
-        style={[
-          styles.checkButton,
-          {
-            backgroundColor: set.completed
-              ? colors.success
-              : colors.inputBackground,
-            borderRadius: borderRadius.md,
-          },
-          isCelebrating && styles.celebrating,
-        ]}
-      >
-        <Ionicons
-          name={set.completed ? 'checkmark' : 'checkmark-outline'}
-          size={isCelebrating ? 24 : 20}
-          color={set.completed ? '#FFF' : colors.textSecondary}
-        />
-        {isCelebrating && (
-          <View style={styles.celebration}>
-            <Text style={styles.celebrationText}>💪</Text>
-          </View>
-        )}
-      </Pressable>
+      <Animated.View style={{ transform: [{ scale: checkScale }], marginLeft: 8 }}>
+        <Pressable
+          onPress={() => onCompleteSet(set.id)}
+          style={({ pressed }) => [
+            styles.checkButton,
+            {
+              backgroundColor: set.completed
+                ? colors.success
+                : colors.inputBackground,
+              borderRadius: borderRadius.md,
+            },
+            isCelebrating && styles.celebrating,
+            pressed && styles.checkPressed,
+          ]}
+        >
+          <Ionicons
+            name={set.completed ? 'checkmark' : 'checkmark-outline'}
+            size={isCelebrating ? 24 : 20}
+            color={set.completed ? '#FFF' : colors.textSecondary}
+          />
+          {isCelebrating && (
+            <View style={styles.celebration}>
+              <Text style={styles.celebrationText}>💪</Text>
+            </View>
+          )}
+        </Pressable>
+      </Animated.View>
 
       {canRemove && (
         <Pressable
           onPress={() => onRemoveSet(set.id)}
-          style={styles.removeButton}
+          style={({ pressed }) => [styles.removeButton, pressed && { opacity: 0.6 }]}
         >
           <Ionicons name="close-circle" size={20} color={colors.error} />
         </Pressable>
@@ -139,7 +166,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   completedInput: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   setX: {
     marginHorizontal: 8,
@@ -152,13 +179,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 8,
+  },
+  checkPressed: {
+    opacity: 0.75,
   },
   removeButton: {
     marginLeft: 8,
   },
   celebrating: {
-    transform: [{ scale: 1.2 }],
     shadowColor: '#4CAF50',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,

@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   Pressable,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from '../../src/components/SafeAreaView';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -58,6 +59,17 @@ export default function NutritionScreen() {
   } = useOfflineNutrition();
 
   const [selectedTab, setSelectedTab] = useState<'diary' | 'recipes'>('diary');
+  const [tabWidth, setTabWidth] = useState(0);
+  const tabIndicatorX = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(tabIndicatorX, {
+      toValue: selectedTab === 'diary' ? 0 : tabWidth,
+      tension: 300,
+      friction: 25,
+      useNativeDriver: true,
+    }).start();
+  }, [selectedTab, tabWidth]);
   const [showAddMealModal, setShowAddMealModal] = useState(false);
   const [showDishSelectorModal, setShowDishSelectorModal] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealType>('breakfast');
@@ -148,14 +160,14 @@ export default function NutritionScreen() {
         <Text style={[styles.title, { color: colors.textPrimary }]}>Nutrition</Text>
       </View>
 
-      <View style={[styles.tabContainer, { borderBottomColor: colors.border }]}>
+      <View
+        style={[styles.tabContainer, { borderBottomColor: colors.border }]}
+        onLayout={(e) => setTabWidth(e.nativeEvent.layout.width / 2)}
+      >
         {(['diary', 'recipes'] as const).map((tab) => (
           <Pressable
             key={tab}
-            style={[
-              styles.tab,
-              selectedTab === tab && { borderBottomColor: colors.accentBlue, borderBottomWidth: 2 },
-            ]}
+            style={styles.tab}
             onPress={() => setSelectedTab(tab)}
           >
             <Text
@@ -168,6 +180,16 @@ export default function NutritionScreen() {
             </Text>
           </Pressable>
         ))}
+        <Animated.View
+          style={[
+            styles.tabIndicator,
+            {
+              backgroundColor: colors.accentBlue,
+              width: tabWidth,
+              transform: [{ translateX: tabIndicatorX }],
+            },
+          ]}
+        />
       </View>
 
       {selectedTab === 'diary' && renderDiaryTab()}
@@ -217,6 +239,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderBottomWidth: 1,
     marginHorizontal: 16,
+    position: 'relative',
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    height: 2,
+    borderRadius: 1,
   },
   tab: {
     flex: 1,
