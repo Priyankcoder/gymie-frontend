@@ -41,7 +41,7 @@
           }
         }
       ],
-      "./plugins/withNutritionClassifier.js"
+      "react-native-edge-to-edge"
     ],
     "experiments": {
       "typedRoutes": true,

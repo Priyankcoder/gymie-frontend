@@ -8,6 +8,7 @@ import {
   User,
   Workout,
   NutritionDay,
+  Meal,
   ProgressPhoto,
   WeightEntry,
 } from "../types";
@@ -453,6 +454,102 @@ export const nutritionApi = {
       };
     } catch (error) {
       throw new Error(handleApiError(error));
+    }
+  },
+
+  // Get or create a nutrition day for the given date, returns the day id
+  getOrCreateNutritionDayId: async (date: string): Promise<number> => {
+    const existing = await nutritionApi.getNutritionByDate(date);
+    if (existing) return (existing as any).id;
+
+    const newDay = await nutritionApi.createNutritionDay({
+      date: new Date(date).toISOString(),
+      meals: [],
+      totalCalories: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      totalFiber: 0,
+      totalSodium: 0,
+    });
+    return (newDay as any).id;
+  },
+
+  // Add a meal to the backend. Returns frontend Meal with composite id "nutritionDayId:mealId"
+  addMeal: async (meal: Omit<Meal, 'id'>): Promise<ApiResponse<Meal>> => {
+    try {
+      const nutritionDayId = await nutritionApi.getOrCreateNutritionDayId(meal.date);
+
+      const response = await apiClient.post<ApiResponse<any>>(
+        API_ENDPOINTS.NUTRITION.ADD_MEAL(nutritionDayId),
+        {
+          mealType: meal.mealType,
+          name: meal.name,
+          calories: meal.calories,
+          protein: meal.protein,
+          carbs: meal.carbs,
+          fat: meal.fat,
+        }
+      );
+
+      if (response.data.success && response.data.data) {
+        const backendMeal = response.data.data;
+        const frontendMeal: Meal = {
+          ...meal,
+          id: `${nutritionDayId}:${backendMeal.id}`,
+        };
+        return { success: true, data: frontendMeal };
+      }
+
+      throw new Error('Failed to add meal');
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  // Delete a meal by composite id "nutritionDayId:mealId"
+  deleteMeal: async (id: string): Promise<ApiResponse<boolean>> => {
+    try {
+      const [nutritionDayId, mealId] = id.split(':').map(Number);
+      await apiClient.delete(
+        API_ENDPOINTS.NUTRITION.DELETE_MEAL(nutritionDayId, mealId)
+      );
+      return { success: true, data: true };
+    } catch (error) {
+      throw new Error(handleApiError(error));
+    }
+  },
+
+  // Get all meals for a given date, flattened from backend NutritionDay → Meal[]
+  getMealsByDate: async (date: string): Promise<ApiResponse<Meal[]>> => {
+    try {
+      const day = await nutritionApi.getNutritionByDate(date);
+      if (!day) return { success: true, data: [] };
+
+      const backendDay = day as any;
+      const meals: Meal[] = [];
+
+      for (const backendMeal of backendDay.meals || []) {
+        for (const food of backendMeal.foods || []) {
+          meals.push({
+            id: `${backendDay.id}:${backendMeal.id}`,
+            name: food.name,
+            calories: Math.round(food.calories * food.quantity),
+            protein: Math.round(food.protein * food.quantity),
+            carbs: Math.round(food.carbs * food.quantity),
+            fat: Math.round(food.fat * food.quantity),
+            fiber: 0,
+            sodium: 0,
+            mealType: backendMeal.name.toLowerCase() as Meal['mealType'],
+            date,
+            timestamp: new Date(backendMeal.createdAt || date).getTime(),
+          });
+        }
+      }
+
+      return { success: true, data: meals };
+    } catch (error) {
+      return { success: true, data: [] };
     }
   },
 };
