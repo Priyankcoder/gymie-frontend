@@ -88,6 +88,8 @@ export const API_ENDPOINTS = {
     BY_DATE: '/nutrition/date',
     BY_RANGE: '/nutrition/range',
     STATS: '/nutrition/stats',
+    ADD_MEAL: (id: number) => `/nutrition/${id}/meals`,
+    DELETE_MEAL: (id: number, mealId: number) => `/nutrition/${id}/meals/${mealId}`,
   },
   
   // Progress

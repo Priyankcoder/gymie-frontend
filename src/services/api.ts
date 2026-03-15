@@ -124,9 +124,16 @@ export const api = {
         getNutritionStats: realApi.nutritionApi.getNutritionStats,
       },
 
-  // Meals - Using mock API until backend implements these endpoints
-  // TODO: Implement meals API in backend
-  meals: localApi.meals,
+  // Meals
+  meals: API_CONFIG.USE_MOCK
+    ? localApi.meals
+    : {
+        getAll: async () => ({ success: true, data: [] }),
+        getByDate: realApi.nutritionApi.getMealsByDate,
+        create: realApi.nutritionApi.addMeal,
+        update: async (_id: string, _updates: any) => ({ success: true, data: null }),
+        delete: realApi.nutritionApi.deleteMeal,
+      },
 
   // Progress
   progress: API_CONFIG.USE_MOCK
