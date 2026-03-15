@@ -1362,27 +1362,6 @@ export default function WorkoutScreen() {
           style={styles.workoutContainer}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.workoutHeader}>
-            <TextInput
-              style={[
-                styles.workoutNameInput,
-                {
-                  color: colors.textPrimary,
-                  borderBottomColor: colors.border,
-                },
-              ]}
-              value={activeWorkout.name}
-              onChangeText={(text) =>
-                setActiveWorkout({ ...activeWorkout, name: text })
-              }
-              placeholder="Workout Name"
-              placeholderTextColor={colors.textSecondary}
-            />
-            <Pressable onPress={cancelWorkout}>
-              <Ionicons name="close-circle" size={28} color={colors.error} />
-            </Pressable>
-          </View>
-
           {/* Auto-Timer Setting */}
           <View style={[styles.settingsRow, { backgroundColor: colors.cardBackground, borderColor: colors.border }]}>
             <View style={styles.settingsInfo}>
@@ -1409,12 +1388,12 @@ export default function WorkoutScreen() {
                 {exercise.name}
               </Text>
               {/* Sets header */}
-              <View style={[styles.setsHeader, { paddingHorizontal: 0 }]}>
+              <View style={styles.setsHeader}>
                 <Text style={[styles.setLabel, { color: colors.textSecondary, width: 28 }]}>SET</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1, textAlign: 'center' }]}>KG</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 16, textAlign: 'center' }]}></Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1, textAlign: 'center' }]}>REPS</Text>
-                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 44 }]}></Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1 }]}>KG</Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 16 }]}></Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, flex: 1 }]}>REPS</Text>
+                <Text style={[styles.setLabel, { color: colors.textSecondary, width: 40 }]}></Text>
               </View>
 
               {exercise.sets.map((set, index) => (
@@ -1688,10 +1667,21 @@ export default function WorkoutScreen() {
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
     >
-      <View style={styles.header}>
-        <Text style={[styles.title, { color: colors.textPrimary }]}>
-          Workout
-        </Text>
+      <View style={[styles.header, activeWorkout && selectedTab === 'log' && { flexDirection: 'row', alignItems: 'center' }]}>
+        {activeWorkout && selectedTab === 'log' ? (
+          <>
+            <Pressable onPress={cancelWorkout} style={{ marginRight: 10, padding: 4 }}>
+              <Ionicons name="chevron-back" size={26} color={colors.textPrimary} />
+            </Pressable>
+            <Text style={[styles.title, { color: colors.textPrimary, flex: 1 }]} numberOfLines={1}>
+              {activeWorkout.name || 'Workout'}
+            </Text>
+          </>
+        ) : (
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Workout
+          </Text>
+        )}
       </View>
 
       {renderTabs()}
@@ -3385,12 +3375,13 @@ const styles = StyleSheet.create({
   exerciseName: {
     fontSize: 18,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: 20,
   },
   setsHeader: {
     flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     marginBottom: 8,
-    paddingHorizontal: 4,
   },
   setLabel: {
     fontSize: 11,
@@ -3400,8 +3391,8 @@ const styles = StyleSheet.create({
   setRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
     gap: 8,
+    marginBottom: 10,
   },
   setNumberBadge: {
     width: 28,
