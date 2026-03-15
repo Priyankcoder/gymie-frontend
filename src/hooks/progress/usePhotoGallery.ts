@@ -110,22 +110,28 @@ export const usePhotoGallery = (
         }
         
         // Upload to cloud in background
-        console.log('🚀 Initiating cloud upload for photo:', response.data.id);
-        photoSyncService.uploadPhoto(response.data).then(result => {
-          console.log('📤 Upload result:', result);
+        const photoToUpload = response.data;
+        photoSyncService.uploadPhoto(photoToUpload).then(async result => {
           if (result.success && result.cloudUrl) {
-            console.log('✅ Photo uploaded to cloud:', result.cloudUrl);
-          } else if (result.willRetry) {
-            console.log('⏳ Photo will be synced when connection is available');
+            // Persist cloudUrl and synced status to local storage
+            await api.photos.update(photoToUpload.id, {
+              cloudUrl: result.cloudUrl,
+              synced: true,
+              syncedAt: new Date().toISOString(),
+            });
+            setProgressPhotos(prev =>
+              prev.map(p =>
+                p.id === photoToUpload.id
+                  ? { ...p, cloudUrl: result.cloudUrl, synced: true }
+                  : p
+              )
+            );
           } else if (result.error?.includes('Authentication')) {
-            console.error('🔐 Authentication required');
             Alert.alert(
               'Login Required',
               'Please login to sync your photos to the cloud.',
               [{ text: 'OK' }]
             );
-          } else {
-            console.log('❌ Upload failed:', result.error);
           }
         }).catch(error => {
           console.error('❌ Upload promise rejected:', error);

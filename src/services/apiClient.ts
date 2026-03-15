@@ -3,6 +3,13 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import { API_CONFIG } from '../config/api';
 import { getStoredToken, clearStoredToken } from './authStorage';
 
+// Global unauthorized handler - set by AuthContext
+let unauthorizedHandler: (() => Promise<void>) | null = null;
+
+export const setApiUnauthorizedHandler = (handler: () => Promise<void>) => {
+  unauthorizedHandler = handler;
+};
+
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
@@ -33,9 +40,11 @@ apiClient.interceptors.response.use(
   },
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid - clear stored token
+      // Token expired or invalid - clear token and notify AuthContext
       await clearStoredToken();
-      // You might want to navigate to login screen here
+      if (unauthorizedHandler) {
+        await unauthorizedHandler();
+      }
     }
     return Promise.reject(error);
   }

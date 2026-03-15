@@ -28,6 +28,15 @@ const getDefaultBaseURL = () => {
   return 'http://localhost:8080/v1';
 };
 
+// Cloudinary Configuration (direct upload from frontend)
+export const CLOUDINARY_CONFIG = {
+  CLOUD_NAME: process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || '',
+  UPLOAD_PRESET: process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '',
+  get UPLOAD_URL() {
+    return `https://api.cloudinary.com/v1_1/${this.CLOUD_NAME}/image/upload`;
+  },
+};
+
 // API Configuration
 export const API_CONFIG = {
   // Set to true to use mock data, false to use real API

@@ -5,6 +5,7 @@ import { ProgressPhoto } from "../types";
 import { storage } from "./localStorage";
 import { getStoredToken } from "./authStorage";
 import { API_CONFIG } from "../config/api";
+import { uploadToCloudinary } from "./userProfileApi";
 
 const PHOTOS_DIR = FileSystem.documentDirectory
   ? `${FileSystem.documentDirectory}progress_photos/`
@@ -196,18 +197,16 @@ class PhotoSyncService {
   }
 
   /**
-   * Upload photo to backend
+   * Upload photo to Cloudinary, then register the URL with the backend
    */
   async uploadPhoto(
     photo: ProgressPhoto
-  ): Promise<{ success: boolean; cloudUrl?: string }> {
+  ): Promise<{ success: boolean; cloudUrl?: string; willRetry?: boolean; error?: string }> {
     try {
       console.log("🔄 Starting upload for photo:", photo.id);
-      
-      // Skip NetInfo check on web (browsers handle this differently)
+
       if (!isWeb) {
         const netInfo = await NetInfo.fetch();
-        console.log("📡 Network status:", netInfo.isConnected);
         if (!netInfo.isConnected) {
           console.log("📴 No internet connection, queuing photo for later sync");
           await this.addToSyncQueue(photo.id);
@@ -215,156 +214,63 @@ class PhotoSyncService {
         }
       }
 
-      let photoBlob: Blob;
-
-      if (isWeb) {
-        // On web, get blob from IndexedDB (should already be there from savePhotoLocally)
-        console.log("📂 Retrieving photo from IndexedDB:", photo.id);
-        const cachedBlob = await getPhotoFromIndexedDB(photo.id);
-        if (cachedBlob) {
-          photoBlob = cachedBlob;
-          console.log("✅ Photo found in IndexedDB, size:", cachedBlob.size);
-        } else {
-          console.error("❌ Photo not found in IndexedDB:", photo.id);
-          return { success: false, willRetry: false };
-        }
-      } else {
-        // Check if file exists locally on native
-        const fileInfo = await FileSystem.getInfoAsync(photo.uri);
-        if (!fileInfo.exists) {
-          console.error("❌ Photo file not found:", photo.uri);
-          return { success: false };
-        }
+      // Step 1: Upload image directly to Cloudinary
+      console.log("☁️ Uploading to Cloudinary:", photo.id);
+      let cloudinaryUrl: string;
+      try {
+        // On web, photo.uri may be a blob URL — fetch it and re-create a file:// -style data URI
+        cloudinaryUrl = await uploadToCloudinary(photo.uri);
+        console.log("✅ Cloudinary upload success:", cloudinaryUrl);
+      } catch (err) {
+        console.error("❌ Cloudinary upload failed:", err);
+        await this.addToSyncQueue(photo.id);
+        return { success: false, willRetry: true, error: err instanceof Error ? err.message : 'Cloudinary upload failed' };
       }
 
-      // Backend endpoint - uses centralized API config
-      const BACKEND_URL = API_CONFIG.BASE_URL;
-      console.log("🌐 Backend URL:", BACKEND_URL);
-
-      // Create form data for upload
-      const formData = new FormData();
-      console.log("📦 Creating FormData...");
-
-      if (isWeb) {
-        // On web, append the blob directly
-        console.log("🌐 Web platform: appending blob to FormData");
-        formData.append("photo", photoBlob!, `${photo.id}.jpg`);
-      } else {
-        // On native, append file URI
-        console.log("📱 Native platform: appending file URI to FormData");
-        formData.append("photo", {
-          uri: photo.uri,
-          type: "image/jpeg",
-          name: `${photo.id}.jpg`,
-        } as any);
-      }
-
-      // Ensure date is in RFC3339 format (ISO 8601)
-      const dateStr = new Date(photo.date).toISOString();
-      formData.append("date", dateStr);
-      formData.append("notes", photo.notes || "");
-
-      // Optional weight
-      if (photo.weight !== undefined && photo.weight !== null) {
-        formData.append("weight", photo.weight.toString());
-      }
-
-      console.log(
-        "☁️ Uploading photo to backend:",
-        photo.id,
-        "date:",
-        dateStr,
-        "weight:",
-        photo.weight
-      );
-      console.log(
-        "FormData entries:",
-        Array.from(formData.entries()).map(([k, v]) => [
-          k,
-          typeof v === "object" ? "File" : v,
-        ])
-      );
-
-      // Get auth token
-      console.log("🔑 Getting auth token...");
+      // Step 2: Register the Cloudinary URL with our backend
       const token = await getStoredToken();
-      console.log("🔑 Auth token:", token ? `Present (${token.substring(0, 20)}...)` : "❌ MISSING");
-      
       if (!token) {
-        console.error("❌ No auth token available - user needs to login");
-        return {
-          success: false,
-          error: "Authentication required",
-          details: "Please login to upload photos",
-          willRetry: false, // Don't retry without token
-        };
+        console.error("❌ No auth token available");
+        return { success: false, willRetry: false, error: "Authentication required" };
       }
-      
-      const headers: HeadersInit = {
-        "Authorization": `Bearer ${token}`,
-      };
-      // DO NOT set Content-Type - let the browser set it with boundary for multipart/form-data
 
-      const uploadUrl = `${BACKEND_URL}/progress/photos`;
-      console.log("🚀 About to POST to:", uploadUrl);
-      console.log("📋 Headers:", { Authorization: "Bearer ***" });
-      
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers,
-        body: formData,
+      const body = JSON.stringify({
+        imageUrl: cloudinaryUrl,
+        date: new Date(photo.date).toISOString(),
+        notes: photo.notes || "",
+        ...(photo.weight !== undefined && photo.weight !== null ? { weight: photo.weight } : {}),
       });
 
-      console.log("📡 Upload response status:", response.status);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/progress/photos`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body,
+      });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("✅ Photo uploaded successfully:", photo.id);
+        console.log("✅ Photo registered with backend:", photo.id);
         await this.removeFromSyncQueue(photo.id);
-        return { success: true, cloudUrl: data.url };
+        return { success: true, cloudUrl: data.data?.imageUrl ?? cloudinaryUrl };
       } else if (response.status === 401) {
-        // Unauthorized - don't retry, user needs to login
-        const errorText = await response.text();
-        console.error("🔐 Authentication failed - token may be expired");
-        
-        // Trigger logout via registered handler
+        console.error("🔐 Authentication failed");
         if (this.unauthorizedHandler) {
           await this.unauthorizedHandler();
         }
-        
-        return {
-          success: false,
-          error: "Authentication failed",
-          details: "Please login again",
-          willRetry: false,
-        };
+        return { success: false, willRetry: false, error: "Authentication failed" };
       } else {
         const errorText = await response.text();
-        console.error("❌ Upload failed:", response.status, errorText);
-        
-        // Add to sync queue for retry (non-auth errors)
+        console.error("❌ Backend registration failed:", response.status, errorText);
         await this.addToSyncQueue(photo.id);
-        
-        // Return detailed error information
-        return {
-          success: false,
-          error: `Upload failed: ${response.status}`,
-          details: errorText,
-          willRetry: true
-        };
+        return { success: false, willRetry: true, error: `Backend error: ${response.status}` };
       }
     } catch (error) {
       console.error("❌ Error uploading photo:", error);
-      
-      // Add to sync queue for retry
       await this.addToSyncQueue(photo.id);
-      
-      // Return detailed error information
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        willRetry: true
-      };
+      return { success: false, willRetry: true, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
@@ -486,16 +392,18 @@ class PhotoSyncService {
    */
   async deletePhotoFromCloud(photoId: string): Promise<boolean> {
     try {
-      // Use centralized API config
-      const BACKEND_URL = API_CONFIG.BASE_URL;
+      const token = await getStoredToken();
+      if (!token) {
+        console.error("❌ No auth token available for delete");
+        return false;
+      }
 
       const response = await fetch(
-        `${BACKEND_URL}/progress/photos/${photoId}`,
+        `${API_CONFIG.BASE_URL}/progress/photos/${photoId}`,
         {
           method: "DELETE",
           headers: {
-            // Add auth token here
-            // 'Authorization': `Bearer ${token}`,
+            "Authorization": `Bearer ${token}`,
           },
         }
       );
