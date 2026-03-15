@@ -686,6 +686,15 @@ export const localApi = {
       return { success: true, data: newPhoto };
     },
 
+    async update(id: string, updates: Partial<ProgressPhoto>): Promise<ApiResponse<ProgressPhoto | null>> {
+      const photos = await storage.get<ProgressPhoto[]>(storage.keys.PROGRESS_PHOTOS) || [];
+      const index = photos.findIndex(p => p.id === id);
+      if (index === -1) return { success: false, data: null };
+      photos[index] = { ...photos[index], ...updates };
+      await storage.set(storage.keys.PROGRESS_PHOTOS, photos);
+      return { success: true, data: photos[index] };
+    },
+
     async delete(id: string): Promise<ApiResponse<boolean>> {
       await randomDelay();
       const photos = await storage.get<ProgressPhoto[]>(storage.keys.PROGRESS_PHOTOS) || [];

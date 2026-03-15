@@ -376,7 +376,7 @@ export const nutritionApi = {
       }
 
       return null;
-    } catch (error) {
+    } catch (error: any) {
       // Return null if not found instead of throwing
       if (error.response?.status === 404) {
         return null;
@@ -485,10 +485,10 @@ export const nutritionApi = {
         {
           mealType: meal.mealType,
           name: meal.name,
-          calories: meal.calories,
-          protein: meal.protein,
-          carbs: meal.carbs,
-          fat: meal.fat,
+          calories: Math.round(meal.calories),
+          protein: Math.round(meal.protein),
+          carbs: Math.round(meal.carbs),
+          fat: Math.round(meal.fat),
         }
       );
 

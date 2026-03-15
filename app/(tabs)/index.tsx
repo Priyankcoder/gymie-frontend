@@ -27,10 +27,11 @@ import {
 } from '../../src/types';
 
 export default function HomeScreen() {
-  const { colors, spacing, borderRadius } = useTheme();
+  const { colors, spacing } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
 
+  const [greeting, setGreeting] = useState(getGreeting());
   const [refreshing, setRefreshing] = useState(false);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [todayMeals, setTodayMeals] = useState<Meal[]>([]);
@@ -87,8 +88,9 @@ export default function HomeScreen() {
 
 
       // Calculate streak from workouts
-      if (allWorkouts.length > 0) {
-        const sortedWorkouts = [...allWorkouts].sort(
+      const completedWorkouts = allWorkouts.filter(w => w.completed);
+      if (completedWorkouts.length > 0) {
+        const sortedWorkouts = [...completedWorkouts].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
 
@@ -98,7 +100,8 @@ export default function HomeScreen() {
         let lastDate: Date | null = null;
 
         // Calculate current streak (consecutive days from today backwards)
-        const todayDate = new Date(today);
+        // Use local midnight directly to avoid UTC/local timezone mismatch
+        const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0);
         
         for (const workout of sortedWorkouts) {
@@ -138,10 +141,10 @@ export default function HomeScreen() {
         
         longestStreak = Math.max(longestStreak, tempStreak);
 
-        // Calculate this week's workouts (last 7 days)
+        // Calculate this week's workouts (last 7 days, completed only)
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        const thisWeekWorkouts = allWorkouts.filter(
+        const thisWeekWorkouts = completedWorkouts.filter(
           w => new Date(w.date) >= weekAgo
         ).length;
 
@@ -149,9 +152,9 @@ export default function HomeScreen() {
           currentStreak,
           longestStreak,
           thisWeekWorkouts,
-          lastWorkoutDate: allWorkouts.length > 0 ? allWorkouts[0].date : today,
+          lastWorkoutDate: sortedWorkouts[0].date,
         });
-        
+
       } else {
         setStreakData({
           currentStreak: 0,
@@ -225,6 +228,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
+      setGreeting(getGreeting());
     }, [loadData])
   );
 
@@ -282,7 +286,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-              {getGreeting()}{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 💪
+              {greeting}{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 💪
             </Text>
             <Text style={[styles.date, { color: colors.textPrimary }]}>
               {formatDate()}

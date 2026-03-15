@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getStoredUserData } from '../services/authStorage';
 import { userProfileDatabase, UserProfile as DBUserProfile } from '../services/UserProfileDatabaseService';
-import { userProfileApi, UserProfileData } from '../services/userProfileApi';
+import { userProfileApi, uploadToCloudinary, UserProfileData } from '../services/userProfileApi';
 import { API_CONFIG } from '../config/api';
 
 const DEFAULT_USER_ID = 'local_user'; // Default user ID for local-only mode
@@ -178,16 +178,23 @@ export const useProfile = (): UseProfileReturn => {
       }
 
       if (!API_CONFIG.USE_MOCK) {
+        // If a new local image was picked, upload it to Cloudinary first to get a permanent URL
+        let resolvedPicture = updates.profilePicture;
+        if (resolvedPicture && resolvedPicture.startsWith('file://')) {
+          resolvedPicture = await uploadToCloudinary(resolvedPicture);
+          dbUpdates.profile_picture = resolvedPicture;
+        }
+
         // REAL MODE: Update backend first, then local cache
         await userProfileApi.updateProfile({
           displayName: updates.displayName,
-          profilePicture: updates.profilePicture,
+          profilePicture: resolvedPicture,
           bio: updates.bio,
         });
-        
+
         // Update local cache
         await userProfileDatabase.updateProfile(userId, dbUpdates);
-        
+
         // Refresh from backend to get latest data
         const updatedBackendProfile = await userProfileApi.getProfile();
         setProfile(fromBackendProfile(updatedBackendProfile));

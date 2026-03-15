@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { api } from '../services/api';
 import { photoSyncService } from '../services/photoSyncService';
+import { setApiUnauthorizedHandler } from '../services/apiClient';
 import { getStoredToken, getStoredUser, storeToken, storeUserData, clearStoredToken, clearStoredUser } from '../services/authStorage';
 
 interface User {
@@ -45,9 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check for existing auth on mount
   useEffect(() => {
     checkAuth();
-    
-    // Register unauthorized handler for photo sync service
+
+    // Register unauthorized handler for photo sync service and apiClient
     photoSyncService.setUnauthorizedHandler(handleUnauthorized);
+    setApiUnauthorizedHandler(handleUnauthorized);
   }, []);
 
   const checkAuth = async () => {
