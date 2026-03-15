@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { MealEstimation } from '../../../../types';
@@ -30,11 +31,13 @@ export const AIEstimationModal: React.FC<AIEstimationModalProps> = ({
   onSelectMealType,
 }) => {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-        <View style={[styles.content, { backgroundColor: colors.card }]}>
+        <View style={[styles.content, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.dragHandle} />
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary }]}>AI Estimation</Text>
             <Pressable onPress={onClose}>
@@ -154,7 +157,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '85%',
-    paddingBottom: 40,
   },
   header: {
     flexDirection: 'row',
@@ -227,5 +229,14 @@ const styles = StyleSheet.create({
   mealTypeOptionText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.4)',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 4,
   },
 });

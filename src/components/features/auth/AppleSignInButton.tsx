@@ -23,6 +23,8 @@ export const AppleSignInButton: React.FC<AppleSignInButtonProps> = ({
   const [available, setAvailable] = useState(false);
 
   useEffect(() => {
+    // Apple Sign-In is only available on iOS 13+
+    if (Platform.OS !== 'ios') return;
     checkAvailability();
   }, []);
 

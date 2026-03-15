@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -23,6 +24,10 @@ const TabIcon: React.FC<TabIconProps> = ({ name, color, focused }) => {
 
 export default function TabLayout() {
   const { colors, isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  // Use real safe area bottom inset so gesture-nav Android and notched iOS both get proper spacing
+  const tabBarPaddingBottom = Math.max(insets.bottom, 8);
+  const tabBarHeight = tabBarPaddingBottom + 56; // 56px for icon + label
 
   return (
     <Tabs
@@ -34,9 +39,9 @@ export default function TabLayout() {
           backgroundColor: colors.tabBarBackground,
           borderTopColor: colors.tabBarBorder,
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 88 : 65,
+          height: tabBarHeight,
           paddingTop: 8,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+          paddingBottom: tabBarPaddingBottom,
         },
         tabBarLabelStyle: {
           fontSize: 11,

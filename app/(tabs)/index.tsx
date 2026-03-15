@@ -47,7 +47,6 @@ export default function HomeScreen() {
 
   const loadData = useCallback(async () => {
     try {
-      console.log('🏠 Home: Loading data...');
       const [
         prefsRes,
         mealsRes,
@@ -61,13 +60,6 @@ export default function HomeScreen() {
         api.workouts.getAll(),
         api.prs.getAll(),
       ]);
-
-      console.log('🏠 Home: Responses received');
-      console.log('🏠 Prefs:', prefsRes);
-      console.log('🏠 Meals:', mealsRes);
-      console.log('🏠 Today Workouts:', todayWorkoutsRes);
-      console.log('🏠 All Workouts:', allWorkoutsRes);
-      console.log('🏠 PRs:', prsRes);
 
       // Handle preferences (object, not array)
       if (prefsRes && !Array.isArray(prefsRes)) {
@@ -93,7 +85,6 @@ export default function HomeScreen() {
         ? allWorkoutsRes
         : (allWorkoutsRes?.data || []);
 
-      console.log('🏠 Processing', allWorkouts.length, 'workouts for stats');
 
       // Calculate streak from workouts
       if (allWorkouts.length > 0) {
@@ -161,11 +152,6 @@ export default function HomeScreen() {
           lastWorkoutDate: allWorkouts.length > 0 ? allWorkouts[0].date : today,
         });
         
-        console.log('✅ Home: Calculated streak data:', {
-          currentStreak,
-          longestStreak,
-          thisWeekWorkouts,
-        });
       } else {
         setStreakData({
           currentStreak: 0,
@@ -216,12 +202,6 @@ export default function HomeScreen() {
         allTime: Math.round(allTimeVolume),
       });
 
-      console.log('✅ Home: Calculated volume stats:', {
-        thisWeek: thisWeekVolume,
-        lastWeek: lastWeekVolume,
-        thisMonth: thisMonthVolume,
-        allTime: allTimeVolume,
-      });
 
       // Handle PRs
       const prsData = Array.isArray(prsRes) ? prsRes : (prsRes?.data || []);
@@ -231,12 +211,10 @@ export default function HomeScreen() {
         weekAgo.setDate(weekAgo.getDate() - 7);
         const recent = prsData.filter(pr => new Date(pr.date) >= weekAgo);
         setRecentPRs(recent.slice(0, 3));
-        console.log('✅ Home: Set recent PRs:', recent.length);
       }
 
-      console.log('✅ Home: Data loaded successfully');
     } catch (error) {
-      console.error('❌ Home: Error loading data:', error);
+      console.error('Home: Error loading data:', error);
     }
   }, [today]);
 
@@ -322,7 +300,7 @@ export default function HomeScreen() {
               </View>
               <View style={styles.streakInfo}>
                 <Text style={[styles.streakValue, { color: colors.textPrimary }]}>
-                  {streakData?.currentStreak || 0}
+                  {streakData ? streakData.currentStreak : '--'}
                 </Text>
                 <Text style={[styles.streakLabel, { color: colors.textSecondary }]}>
                   Day Streak
@@ -331,7 +309,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.streakMeta}>
               <Text style={[styles.streakMetaText, { color: colors.textSecondary }]}>
-                Best: {streakData?.longestStreak || 0} days
+                Best: {streakData ? streakData.longestStreak : '--'} days
               </Text>
             </View>
           </Card>
@@ -344,7 +322,7 @@ export default function HomeScreen() {
               </View>
               <View style={styles.weekInfo}>
                 <Text style={[styles.weekValue, { color: colors.textPrimary }]}>
-                  {streakData?.thisWeekWorkouts || 0}
+                  {streakData ? streakData.thisWeekWorkouts : '--'}
                 </Text>
                 <Text style={[styles.weekLabel, { color: colors.textSecondary }]}>
                   This Week
@@ -403,14 +381,14 @@ export default function HomeScreen() {
             )}
           </View>
           <Text style={[styles.volumeValue, { color: colors.textPrimary }]}>
-            {formatVolume(volumeStats?.thisWeek || 0)} kg
+            {volumeStats ? `${formatVolume(volumeStats.thisWeek)} kg` : '--'}
           </Text>
           <Text style={[styles.volumeHint, { color: colors.textSecondary }]}>
             💡 Higher volume = more muscle stimulus
           </Text>
           <View style={[styles.volumeDivider, { backgroundColor: colors.border }]} />
           <Text style={[styles.volumeSubtext, { color: colors.textSecondary }]}>
-            All time: {formatVolume(volumeStats?.allTime || 0)} kg lifted
+            All time: {volumeStats ? `${formatVolume(volumeStats.allTime)} kg` : '--'} lifted
           </Text>
         </Card>
 

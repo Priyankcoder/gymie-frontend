@@ -14,9 +14,9 @@ import {
   Pressable,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { ExerciseInfo } from '../../../../types';
 
@@ -34,6 +34,7 @@ export const ExercisePickerModal: React.FC<ExercisePickerModalProps> = ({
   onSelectExercise,
 }) => {
   const { colors, borderRadius } = useTheme();
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredExercises = exercises.filter((ex) =>
@@ -53,10 +54,10 @@ export const ExercisePickerModal: React.FC<ExercisePickerModalProps> = ({
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="padding"
         style={styles.overlay}
       >
-        <View style={[styles.container, { backgroundColor: colors.card }]}>
+        <View style={[styles.container, { backgroundColor: colors.card, paddingBottom: insets.bottom }]}>
           {/* Header */}
           <View style={[styles.header, { borderBottomColor: colors.border }]}>
             <Text style={[styles.title, { color: colors.textPrimary }]}>

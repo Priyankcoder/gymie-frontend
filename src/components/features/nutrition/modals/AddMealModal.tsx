@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, Modal, Pressable, TextInput, Alert, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { api } from '../../../../services/api';
@@ -24,6 +25,7 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
   onSuccess,
 }) => {
   const { colors, borderRadius } = useTheme();
+  const insets = useSafeAreaInsets();
   const [mealName, setMealName] = useState('');
   const [mealCalories, setMealCalories] = useState('');
   const [mealProtein, setMealProtein] = useState('');
@@ -115,8 +117,12 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-        <View style={[styles.content, { backgroundColor: colors.card }]}>
+      <KeyboardAvoidingView
+        behavior="padding"
+        style={[styles.overlay, { backgroundColor: 'rgba(0,0,0,0.5)' }]}
+      >
+        <View style={[styles.content, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.dragHandle} />
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary }]}>
               Add {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
@@ -126,6 +132,10 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
             </Pressable>
           </View>
 
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
           <View style={styles.body}>
             <TextInput
               style={[
@@ -140,6 +150,7 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
               onChangeText={setMealName}
               placeholder="Meal name"
               placeholderTextColor={colors.textSecondary}
+              autoFocus
             />
             <View style={styles.macroInputRow}>
               <TextInput
@@ -239,8 +250,9 @@ export const AddMealModal: React.FC<AddMealModalProps> = ({
             </View>
             <Button title="Add Meal" onPress={handleSave} style={{ marginTop: 16 }} />
           </View>
+          </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -254,7 +266,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '85%',
-    paddingBottom: 40,
   },
   header: {
     flexDirection: 'row',
@@ -287,5 +298,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     marginBottom: 12,
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.4)',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 4,
   },
 });

@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0AD64E91916DDA2C0F7F3C99 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34162955F9B5DE18683A8BDB /* ExpoModulesProvider.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		658A3F8B3E7D37F6AA820603 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BBBB4549780AE67D2628F55 /* ExpoModulesProvider.swift */; };
+		B0C7D88B6AC6B5648689BF93 /* libPods-Gymie.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C8D745FEF31E5302613BA979 /* libPods-Gymie.a */; };
+		B88D06E542323EDD358795E2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 39F2BBE75171E9347CA267D4 /* PrivacyInfo.xcprivacy */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		D1D2069DB35F5C1F426F9A5C /* libPods-Gymie.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F1A2C9AEF52E047FEB4E7ABA /* libPods-Gymie.a */; };
-		E0D9D42AFBE7DD0DEAF7F7C1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = F213230F9D806E2B60D31ED8 /* PrivacyInfo.xcprivacy */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,16 +20,16 @@
 		13B07F961A680F5B00A75B9A /* Gymie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gymie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Gymie/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Gymie/Info.plist; sourceTree = "<group>"; };
-		532EE16563D616D9D7C445E2 /* Pods-Gymie.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gymie.release.xcconfig"; path = "Target Support Files/Pods-Gymie/Pods-Gymie.release.xcconfig"; sourceTree = "<group>"; };
-		5576A5164C355C24B9D8AB48 /* Pods-Gymie.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gymie.debug.xcconfig"; path = "Target Support Files/Pods-Gymie/Pods-Gymie.debug.xcconfig"; sourceTree = "<group>"; };
-		9BBBB4549780AE67D2628F55 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Gymie/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		194D18DA405C8458B5E2A3F9 /* Pods-Gymie.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gymie.release.xcconfig"; path = "Target Support Files/Pods-Gymie/Pods-Gymie.release.xcconfig"; sourceTree = "<group>"; };
+		34162955F9B5DE18683A8BDB /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Gymie/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		39F2BBE75171E9347CA267D4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = Gymie/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		93E8FAEBA47920D141FA1EC9 /* Pods-Gymie.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Gymie.debug.xcconfig"; path = "Target Support Files/Pods-Gymie/Pods-Gymie.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Gymie/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		C8D745FEF31E5302613BA979 /* libPods-Gymie.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Gymie.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Gymie/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Gymie-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Gymie-Bridging-Header.h"; path = "Gymie/Gymie-Bridging-Header.h"; sourceTree = "<group>"; };
-		F1A2C9AEF52E047FEB4E7ABA /* libPods-Gymie.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Gymie.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		F213230F9D806E2B60D31ED8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Gymie/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D1D2069DB35F5C1F426F9A5C /* libPods-Gymie.a in Frameworks */,
+				B0C7D88B6AC6B5648689BF93 /* libPods-Gymie.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				F213230F9D806E2B60D31ED8 /* PrivacyInfo.xcprivacy */,
+				39F2BBE75171E9347CA267D4 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Gymie;
 			sourceTree = "<group>";
@@ -62,7 +62,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				F1A2C9AEF52E047FEB4E7ABA /* libPods-Gymie.a */,
+				C8D745FEF31E5302613BA979 /* libPods-Gymie.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -81,8 +81,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				B350181FB1379E16B61C6A22 /* Pods */,
-				ABA12A24B2E3DD1F790B07C0 /* ExpoModulesProviders */,
+				A18B20F1E848581FB6A8D6B5 /* Pods */,
+				C85DF252777362E9CBFD1523 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -97,29 +97,20 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		ABA12A24B2E3DD1F790B07C0 /* ExpoModulesProviders */ = {
+		8A8635DF528C405E78495AC6 /* Gymie */ = {
 			isa = PBXGroup;
 			children = (
-				AC03537F363E8703BAAD3D53 /* Gymie */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
-		AC03537F363E8703BAAD3D53 /* Gymie */ = {
-			isa = PBXGroup;
-			children = (
-				9BBBB4549780AE67D2628F55 /* ExpoModulesProvider.swift */,
+				34162955F9B5DE18683A8BDB /* ExpoModulesProvider.swift */,
 			);
 			name = Gymie;
 			sourceTree = "<group>";
 		};
-		B350181FB1379E16B61C6A22 /* Pods */ = {
+		A18B20F1E848581FB6A8D6B5 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				5576A5164C355C24B9D8AB48 /* Pods-Gymie.debug.xcconfig */,
-				532EE16563D616D9D7C445E2 /* Pods-Gymie.release.xcconfig */,
+				93E8FAEBA47920D141FA1EC9 /* Pods-Gymie.debug.xcconfig */,
+				194D18DA405C8458B5E2A3F9 /* Pods-Gymie.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -132,6 +123,14 @@
 			path = Gymie/Supporting;
 			sourceTree = "<group>";
 		};
+		C85DF252777362E9CBFD1523 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				8A8635DF528C405E78495AC6 /* Gymie */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -140,13 +139,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Gymie" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				2BAE9872007605453CA8C9CA /* [Expo] Configure project */,
+				2B1B95F37825EEE7626B736E /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				FCDDF33FEDD163961ECF69AD /* [CP] Embed Pods Frameworks */,
+				B86524363B6B2682BC3219E3 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +195,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				E0D9D42AFBE7DD0DEAF7F7C1 /* PrivacyInfo.xcprivacy in Resources */,
+				B88D06E542323EDD358795E2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,7 +241,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		2BAE9872007605453CA8C9CA /* [Expo] Configure project */ = {
+		2B1B95F37825EEE7626B736E /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -273,10 +272,13 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Gymie/Pods-Gymie-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/AppAuth/AppAuthCore_Privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoSystemUI/ExpoSystemUI_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/GTMSessionFetcher/GTMSessionFetcher_Core_Privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/GoogleSignIn/GoogleSignIn.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNSVG/RNSVGFilters.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
@@ -285,10 +287,13 @@
 			);
 			name = "[CP] Copy Pods Resources";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AppAuthCore_Privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoSystemUI_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GTMSessionFetcher_Core_Privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleSignIn.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNSVGFilters.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
@@ -300,7 +305,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Gymie/Pods-Gymie-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FCDDF33FEDD163961ECF69AD /* [CP] Embed Pods Frameworks */ = {
+		B86524363B6B2682BC3219E3 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -330,7 +335,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				658A3F8B3E7D37F6AA820603 /* ExpoModulesProvider.swift in Sources */,
+				0AD64E91916DDA2C0F7F3C99 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,12 +344,15 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5576A5164C355C24B9D8AB48 /* Pods-Gymie.debug.xcconfig */;
+			baseConfigurationReference = 93E8FAEBA47920D141FA1EC9 /* Pods-Gymie.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Gymie/Gymie.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q44TYY45GK;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -365,6 +373,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.Gymie;
 				PRODUCT_NAME = Gymie;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Gymie/Gymie-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -375,12 +384,15 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 532EE16563D616D9D7C445E2 /* Pods-Gymie.release.xcconfig */;
+			baseConfigurationReference = 194D18DA405C8458B5E2A3F9 /* Pods-Gymie.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Gymie/Gymie.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Q44TYY45GK;
 				INFOPLIST_FILE = Gymie/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -396,6 +408,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.Gymie;
 				PRODUCT_NAME = Gymie;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "Gymie/Gymie-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

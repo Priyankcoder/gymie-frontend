@@ -10,9 +10,12 @@ import {
   Image,
   Alert,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { Button } from '../../../ui';
 
@@ -36,6 +39,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onSave,
 }) => {
   const { colors, typography } = useTheme();
+  const insets = useSafeAreaInsets();
   const [displayName, setDisplayName] = useState('');
   const [profilePicture, setProfilePicture] = useState<string | undefined>();
   const [isSaving, setIsSaving] = useState(false);
@@ -58,7 +62,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -114,7 +118,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         profilePicture,
       });
       onClose();
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to update profile. Please try again.');
     } finally {
       setIsSaving(false);
@@ -123,8 +127,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.overlay}>
-        <View style={[styles.content, { backgroundColor: colors.card }]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.overlay}
+      >
+        <View style={[styles.content, { backgroundColor: colors.card, paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.dragHandle} />
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary, ...typography.h2 }]}>
               Edit Profile
@@ -222,7 +230,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             />
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -318,5 +326,14 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flex: 1,
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.4)',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 4,
   },
 });

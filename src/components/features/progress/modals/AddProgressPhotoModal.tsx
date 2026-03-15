@@ -9,8 +9,9 @@ import {
   TextInput,
   Image,
   KeyboardAvoidingView,
-  Platform,
+  ScrollView,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { Button } from '../../../ui';
@@ -31,6 +32,7 @@ export const AddProgressPhotoModal: React.FC<AddProgressPhotoModalProps> = ({
   units = 'kg',
 }) => {
   const { colors, borderRadius } = useTheme();
+  const insets = useSafeAreaInsets();
   const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -51,10 +53,11 @@ export const AddProgressPhotoModal: React.FC<AddProgressPhotoModalProps> = ({
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior="padding"
         style={styles.overlay}
       >
-        <View style={[styles.content, { backgroundColor: colors.background }]}>
+        <View style={[styles.content, { backgroundColor: colors.background, paddingBottom: insets.bottom + 16 }]}>
+          <View style={styles.dragHandle} />
           {/* Header */}
           <View style={styles.header}>
             <Text style={[styles.title, { color: colors.textPrimary }]}>
@@ -65,6 +68,7 @@ export const AddProgressPhotoModal: React.FC<AddProgressPhotoModalProps> = ({
             </Pressable>
           </View>
 
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           {/* Photo Preview */}
           {photoUri && (
             <Image
@@ -151,6 +155,7 @@ export const AddProgressPhotoModal: React.FC<AddProgressPhotoModalProps> = ({
               style={styles.button}
             />
           </View>
+          </ScrollView>
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -235,5 +240,14 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  dragHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.4)',
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 4,
   },
 });

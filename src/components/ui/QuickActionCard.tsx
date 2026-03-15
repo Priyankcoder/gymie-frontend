@@ -1,6 +1,7 @@
 
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface QuickActionCardProps {
@@ -58,6 +59,7 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
           </Text>
         )}
       </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} style={styles.chevron} />
     </Pressable>
   );
 };
@@ -90,6 +92,10 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 13,
     marginTop: 2,
+  },
+  chevron: {
+    opacity: 0.4,
+    marginLeft: 4,
   },
 });
 
