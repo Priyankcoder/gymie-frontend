@@ -7,6 +7,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { WorkoutSet } from '../../../../types';
 
@@ -107,7 +108,10 @@ export const SetRow: React.FC<SetRowProps> = ({
 
       <Animated.View style={{ transform: [{ scale: checkScale }], marginLeft: 8 }}>
         <Pressable
-          onPress={() => onCompleteSet(set.id)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            onCompleteSet(set.id);
+          }}
           style={({ pressed }) => [
             styles.checkButton,
             {
@@ -135,7 +139,10 @@ export const SetRow: React.FC<SetRowProps> = ({
 
       {canRemove && (
         <Pressable
-          onPress={() => onRemoveSet(set.id)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            onRemoveSet(set.id);
+          }}
           style={({ pressed }) => [styles.removeButton, pressed && { opacity: 0.6 }]}
         >
           <Ionicons name="close-circle" size={20} color={colors.error} />

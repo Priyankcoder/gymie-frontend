@@ -7,6 +7,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Card } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { Exercise, WorkoutSet } from '../../../../types';
@@ -47,7 +48,10 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           </Text>
         </View>
         <Pressable
-          onPress={() => onRemoveExercise(exercise.id)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            onRemoveExercise(exercise.id);
+          }}
           style={styles.removeExerciseButton}
         >
           <Ionicons name="trash-outline" size={20} color={colors.error} />
@@ -85,7 +89,10 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
 
       <Pressable
         style={[styles.addSetButton, { borderColor: colors.border }]}
-        onPress={() => onAddSet(exercise.id)}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onAddSet(exercise.id);
+        }}
       >
         <Ionicons name="add" size={20} color={colors.accentBlue} />
         <Text style={[styles.addSetText, { color: colors.accentBlue }]}>
