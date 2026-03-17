@@ -1,5 +1,6 @@
 
 import { storage } from './localStorage';
+import { syncExercisesIfNeeded, getCachedExercises } from './exerciseSync';
 import {
   Workout,
   WorkoutTemplate,
@@ -707,20 +708,21 @@ export const localApi = {
   // ==================== Exercise Database ====================
   exercises: {
     async getAll(): Promise<ApiResponse<ExerciseInfo[]>> {
-      await randomDelay();
-      const exercises = await storage.get<ExerciseInfo[]>(storage.keys.EXERCISES);
-      if (exercises && exercises.length > 0) {
-        return { success: true, data: exercises };
-      }
-      return { success: true, data: defaultExercises };
+      // Syncs from free-exercise-db CDN on first launch or weekly refresh.
+      // Returns cached data instantly on subsequent calls.
+      const exercises = await syncExercisesIfNeeded();
+      return { success: true, data: exercises };
     },
 
     async search(query: string): Promise<ApiResponse<ExerciseInfo[]>> {
-      await randomDelay();
-      const exercises = await storage.get<ExerciseInfo[]>(storage.keys.EXERCISES) || defaultExercises;
+      // Uses cached data only — no network call during search.
+      const exercises = await getCachedExercises();
+      const q = query.toLowerCase();
       const filtered = exercises.filter(e =>
-        e.name.toLowerCase().includes(query.toLowerCase()) ||
-        e.category.toLowerCase().includes(query.toLowerCase())
+        e.name.toLowerCase().includes(q) ||
+        e.category.toLowerCase().includes(q) ||
+        e.primaryMuscles?.some(m => m.toLowerCase().includes(q)) ||
+        e.equipment?.some(eq => eq.toLowerCase().includes(q))
       );
       return { success: true, data: filtered };
     },
@@ -1137,50 +1139,6 @@ const defaultTemplates: WorkoutTemplate[] = [
       { name: 'Romanian Deadlift', targetSets: 3, targetReps: 10 },
     ],
   },
-];
-
-// Default Exercise Database
-const defaultExercises: ExerciseInfo[] = [
-  // Chest
-  { id: '1', name: 'Bench Press', category: 'chest', muscleGroups: ['chest', 'triceps', 'shoulders'], equipment: ['barbell', 'bench'], isCompound: true },
-  { id: '2', name: 'Incline Dumbbell Press', category: 'chest', muscleGroups: ['upper chest', 'shoulders', 'triceps'], equipment: ['dumbbells', 'bench'], isCompound: true },
-  { id: '3', name: 'Dumbbell Fly', category: 'chest', muscleGroups: ['chest'], equipment: ['dumbbells', 'bench'], isCompound: false },
-  { id: '4', name: 'Push Ups', category: 'chest', muscleGroups: ['chest', 'triceps', 'shoulders'], equipment: [], isCompound: true },
-  { id: '5', name: 'Cable Crossover', category: 'chest', muscleGroups: ['chest'], equipment: ['cable machine'], isCompound: false },
-  
-  // Back
-  { id: '6', name: 'Deadlift', category: 'back', muscleGroups: ['lower back', 'glutes', 'hamstrings'], equipment: ['barbell'], isCompound: true },
-  { id: '7', name: 'Barbell Row', category: 'back', muscleGroups: ['lats', 'rhomboids', 'biceps'], equipment: ['barbell'], isCompound: true },
-  { id: '8', name: 'Pull Ups', category: 'back', muscleGroups: ['lats', 'biceps'], equipment: ['pull-up bar'], isCompound: true },
-  { id: '9', name: 'Lat Pulldown', category: 'back', muscleGroups: ['lats', 'biceps'], equipment: ['cable machine'], isCompound: true },
-  { id: '10', name: 'Seated Cable Row', category: 'back', muscleGroups: ['lats', 'rhomboids', 'biceps'], equipment: ['cable machine'], isCompound: true },
-  
-  // Shoulders
-  { id: '11', name: 'Overhead Press', category: 'shoulders', muscleGroups: ['shoulders', 'triceps'], equipment: ['barbell'], isCompound: true },
-  { id: '12', name: 'Lateral Raise', category: 'shoulders', muscleGroups: ['side deltoids'], equipment: ['dumbbells'], isCompound: false },
-  { id: '13', name: 'Face Pull', category: 'shoulders', muscleGroups: ['rear deltoids', 'traps'], equipment: ['cable machine'], isCompound: false },
-  { id: '14', name: 'Arnold Press', category: 'shoulders', muscleGroups: ['shoulders'], equipment: ['dumbbells'], isCompound: true },
-  
-  // Arms
-  { id: '15', name: 'Barbell Curl', category: 'arms', muscleGroups: ['biceps'], equipment: ['barbell'], isCompound: false },
-  { id: '16', name: 'Tricep Pushdown', category: 'arms', muscleGroups: ['triceps'], equipment: ['cable machine'], isCompound: false },
-  { id: '17', name: 'Hammer Curl', category: 'arms', muscleGroups: ['biceps', 'forearms'], equipment: ['dumbbells'], isCompound: false },
-  { id: '18', name: 'Skull Crushers', category: 'arms', muscleGroups: ['triceps'], equipment: ['ez bar', 'bench'], isCompound: false },
-  
-  // Legs
-  { id: '19', name: 'Squat', category: 'legs', muscleGroups: ['quads', 'glutes', 'hamstrings'], equipment: ['barbell', 'squat rack'], isCompound: true },
-  { id: '20', name: 'Leg Press', category: 'legs', muscleGroups: ['quads', 'glutes'], equipment: ['leg press machine'], isCompound: true },
-  { id: '21', name: 'Romanian Deadlift', category: 'legs', muscleGroups: ['hamstrings', 'glutes'], equipment: ['barbell'], isCompound: true },
-  { id: '22', name: 'Leg Extension', category: 'legs', muscleGroups: ['quads'], equipment: ['leg extension machine'], isCompound: false },
-  { id: '23', name: 'Leg Curl', category: 'legs', muscleGroups: ['hamstrings'], equipment: ['leg curl machine'], isCompound: false },
-  { id: '24', name: 'Calf Raise', category: 'legs', muscleGroups: ['calves'], equipment: ['calf raise machine'], isCompound: false },
-  { id: '25', name: 'Lunges', category: 'legs', muscleGroups: ['quads', 'glutes'], equipment: ['dumbbells'], isCompound: true },
-  
-  // Core
-  { id: '26', name: 'Plank', category: 'core', muscleGroups: ['abs', 'obliques'], equipment: [], isCompound: false },
-  { id: '27', name: 'Cable Crunch', category: 'core', muscleGroups: ['abs'], equipment: ['cable machine'], isCompound: false },
-  { id: '28', name: 'Hanging Leg Raise', category: 'core', muscleGroups: ['lower abs'], equipment: ['pull-up bar'], isCompound: false },
-  { id: '29', name: 'Russian Twist', category: 'core', muscleGroups: ['obliques'], equipment: [], isCompound: false },
 ];
 
 export default localApi;

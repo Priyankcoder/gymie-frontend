@@ -1,13 +1,14 @@
 
 import React, { ReactNode } from 'react';
-import { 
-  Pressable, 
-  Text, 
-  StyleSheet, 
-  ViewStyle, 
-  TextStyle, 
-  ActivityIndicator 
+import {
+  Pressable,
+  Text,
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
+  ActivityIndicator
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface ButtonProps {
@@ -107,9 +108,14 @@ export const Button: React.FC<ButtonProps> = ({
     ...(style ? [style] : []),
   ];
 
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={handlePress}
       disabled={disabled || loading}
       style={({ pressed }) => [
         buttonStyle,

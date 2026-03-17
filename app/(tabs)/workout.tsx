@@ -6,7 +6,6 @@ import {
   Alert,
   Animated,
   Dimensions,
-  FlatList,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -20,6 +19,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "../../src/components/SafeAreaView";
 import { Button, Card } from "../../src/components/ui";
+import { ExerciseDetailModal } from "../../src/components/features/workout/modals/ExerciseDetailModal";
+import { ExercisePickerModal } from "../../src/components/features/workout/modals/ExercisePickerModal";
 import { useTheme } from "../../src/contexts/ThemeContext";
 import prebuiltPlanTemplates from "../../src/data/prebuiltPlans";
 import { api } from "../../src/services/api";
@@ -89,7 +90,6 @@ export default function WorkoutScreen() {
   });
   const [restTime, setRestTime] = useState(90);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedTab, setSelectedTab] = useState<"log" | "plans" | "history">(
     (params.tab as "log" | "plans" | "history") || "log"
   );
@@ -97,6 +97,7 @@ export default function WorkoutScreen() {
   const [calendarStartDate, setCalendarStartDate] = useState(new Date());
   const [autoRestTimer, setAutoRestTimer] = useState(false); // OFF by default
   const [showQuickRest, setShowQuickRest] = useState(false);
+  const [detailExercise, setDetailExercise] = useState<ExerciseInfo | null>(null);
   const [showPRCelebration, setShowPRCelebration] = useState(false);
   const [prDetails, setPRDetails] = useState<{
     exerciseName: string;
@@ -491,16 +492,22 @@ export default function WorkoutScreen() {
     const today = new Date().toISOString();
     setWorkoutStartTime(new Date());
 
-    const exercises: Exercise[] = template.exercises.map((te, index) => ({
-      id: `ex-${Date.now()}-${index}`,
-      name: te.name,
-      sets: Array.from({ length: te.targetSets }, (_, i) => ({
-        id: `set-${Date.now()}-${index}-${i}`,
-        reps: typeof te.targetReps === "number" ? te.targetReps : 10,
-        weight: 0,
-        completed: false,
-      })),
-    }));
+    const exercises: Exercise[] = template.exercises.map((te, index) => {
+      const info = exerciseList.find(
+        (e) => e.name.toLowerCase() === te.name.toLowerCase()
+      );
+      return {
+        id: `ex-${Date.now()}-${index}`,
+        name: te.name,
+        exerciseDbId: info?.id,
+        sets: Array.from({ length: te.targetSets }, (_, i) => ({
+          id: `set-${Date.now()}-${index}-${i}`,
+          reps: typeof te.targetReps === "number" ? te.targetReps : 10,
+          weight: 0,
+          completed: false,
+        })),
+      };
+    });
 
     setActiveWorkout({
       id: "",
@@ -520,16 +527,22 @@ export default function WorkoutScreen() {
     setWorkoutStartTime(new Date());
 
     const exercises: Exercise[] = todaysWorkout.day.exercises.map(
-      (te, index) => ({
-        id: `ex-${Date.now()}-${index}`,
-        name: te.name,
-        sets: Array.from({ length: te.targetSets }, (_, i) => ({
-          id: `set-${Date.now()}-${index}-${i}`,
-          reps: typeof te.targetReps === "number" ? te.targetReps : 10,
-          weight: te.targetWeight || 0,
-          completed: false,
-        })),
-      })
+      (te, index) => {
+        const info = exerciseList.find(
+          (e) => e.name.toLowerCase() === te.name.toLowerCase()
+        );
+        return {
+          id: `ex-${Date.now()}-${index}`,
+          name: te.name,
+          exerciseDbId: info?.id,
+          sets: Array.from({ length: te.targetSets }, (_, i) => ({
+            id: `set-${Date.now()}-${index}-${i}`,
+            reps: typeof te.targetReps === "number" ? te.targetReps : 10,
+            weight: te.targetWeight || 0,
+            completed: false,
+          })),
+        };
+      }
     );
 
     setActiveWorkout({
@@ -547,6 +560,7 @@ export default function WorkoutScreen() {
     const newExercise: Exercise = {
       id: `ex-${Date.now()}`,
       name: exercise.name,
+      exerciseDbId: exercise.id, // preserve DB reference for images/instructions
       sets: [{ id: `set-${Date.now()}`, reps: 0, weight: 0, completed: false }],
     };
 
@@ -555,7 +569,6 @@ export default function WorkoutScreen() {
       exercises: [...activeWorkout.exercises, newExercise],
     });
     setShowExerciseModal(false);
-    setSearchQuery("");
   };
 
   const addExerciseToDay = (exercise: ExerciseInfo) => {
@@ -563,6 +576,7 @@ export default function WorkoutScreen() {
 
     const newExercise: TemplateExercise = {
       name: exercise.name,
+      exerciseDbId: exercise.id,
       targetSets: 3,
       targetReps: 10,
     };
@@ -578,7 +592,6 @@ export default function WorkoutScreen() {
       days: updatedDays,
     });
     setShowDayExercisesModal(false);
-    setSearchQuery("");
   };
 
   const removeExerciseFromDay = (dayIndex: number, exerciseIndex: number) => {
@@ -1153,10 +1166,6 @@ export default function WorkoutScreen() {
     return days;
   };
 
-  const filteredExercises = exerciseList.filter((ex) =>
-    ex.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -1378,15 +1387,32 @@ export default function WorkoutScreen() {
             />
           </View>
 
-          {activeWorkout.exercises.map((exercise) => (
+          {activeWorkout.exercises.map((exercise) => {
+            // Prefer ID match (set when added from picker); fall back to name match
+            // for exercises loaded from templates/plans created before this field existed.
+            const exerciseInfo = exercise.exerciseDbId
+              ? exerciseList.find((e) => e.id === exercise.exerciseDbId)
+              : exerciseList.find((e) => e.name.toLowerCase() === exercise.name.toLowerCase());
+            return (
             <Card key={exercise.id} style={styles.exerciseCard}>
-              <Text
-                style={[styles.exerciseName, { color: colors.textPrimary }]}
-                numberOfLines={2}
-                ellipsizeMode="tail"
-              >
-                {exercise.name}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                <Text
+                  style={[styles.exerciseName, { color: colors.textPrimary, flex: 1, marginBottom: 0 }]}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {exercise.name}
+                </Text>
+                {exerciseInfo && (
+                  <Pressable
+                    onPress={() => setDetailExercise(exerciseInfo)}
+                    style={{ padding: 6 }}
+                    hitSlop={8}
+                  >
+                    <Ionicons name="information-circle-outline" size={22} color={colors.accentBlue} />
+                  </Pressable>
+                )}
+              </View>
               {/* Sets header */}
               <View style={styles.setsHeader}>
                 <Text style={[styles.setLabel, { color: colors.textSecondary, width: 28 }]}>SET</Text>
@@ -1490,7 +1516,8 @@ export default function WorkoutScreen() {
                 </Text>
               </Pressable>
             </Card>
-          ))}
+            );
+          })}
 
           <Button
             title="Add Exercise"
@@ -1690,142 +1717,28 @@ export default function WorkoutScreen() {
       {selectedTab === "plans" && renderPlansTab()}
       {selectedTab === "history" && renderHistoryTab()}
 
+      {/* Exercise Detail Modal */}
+      <ExerciseDetailModal
+        visible={detailExercise !== null}
+        exercise={detailExercise}
+        onClose={() => setDetailExercise(null)}
+      />
+
       {/* Exercise Selection Modal */}
-      <Modal visible={showExerciseModal} animationType="slide" transparent>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={styles.modalOverlay}
-        >
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <View
-              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
-            >
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                Add Exercise
-              </Text>
-              <Pressable onPress={() => setShowExerciseModal(false)}>
-                <Ionicons name="close" size={24} color={colors.textSecondary} />
-              </Pressable>
-            </View>
-            <TextInput
-              style={[
-                styles.searchInput,
-                {
-                  backgroundColor: colors.inputBackground,
-                  color: colors.textPrimary,
-                  borderRadius: borderRadius.md,
-                },
-              ]}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Search exercises..."
-              placeholderTextColor={colors.textSecondary}
-            />
-            <FlatList
-              data={filteredExercises}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <Pressable
-                  style={[
-                    styles.exerciseItem,
-                    { borderBottomColor: colors.border },
-                  ]}
-                  onPress={() => addExercise(item)}
-                >
-                  <Text
-                    style={[
-                      styles.exerciseItemName,
-                      { color: colors.textPrimary },
-                    ]}
-                  >
-                    {item.name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.exerciseItemCategory,
-                      { color: colors.textSecondary },
-                    ]}
-                  >
-                    {item.category}
-                  </Text>
-                </Pressable>
-              )}
-              style={styles.exerciseList}
-              keyboardShouldPersistTaps="handled"
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <ExercisePickerModal
+        visible={showExerciseModal}
+        exercises={exerciseList}
+        onClose={() => setShowExerciseModal(false)}
+        onSelectExercise={addExercise}
+      />
 
       {/* Day Exercises Modal (for plan customization) */}
-      <Modal
+      <ExercisePickerModal
         visible={showDayExercisesModal}
-        animationType="slide"
-        presentationStyle="pageSheet"
-      >
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card, flex: 1 }]}>
-            <View
-              style={[styles.modalHeader, { borderBottomColor: colors.border }]}
-            >
-              <Text style={[styles.modalTitle, { color: colors.textPrimary }]}>
-                Add Exercise to Day
-              </Text>
-              <Pressable onPress={() => setShowDayExercisesModal(false)}>
-                <Ionicons name="close" size={24} color={colors.textSecondary} />
-              </Pressable>
-            </View>
-            <TextInput
-              style={[
-                styles.searchInput,
-                {
-                  backgroundColor: colors.inputBackground,
-                  color: colors.textPrimary,
-                  borderRadius: borderRadius.md,
-                },
-              ]}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Search exercises..."
-              placeholderTextColor={colors.textSecondary}
-            />
-            <FlatList
-              data={filteredExercises}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <Pressable
-                  style={[
-                    styles.exerciseItem,
-                    { borderBottomColor: colors.border },
-                  ]}
-                  onPress={() => addExerciseToDay(item)}
-                >
-                  <Text
-                    style={[
-                      styles.exerciseItemName,
-                      { color: colors.textPrimary },
-                    ]}
-                  >
-                    {item.name}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.exerciseItemCategory,
-                      { color: colors.textSecondary },
-                    ]}
-
-
-                  >
-                    {item.category}
-                  </Text>
-                </Pressable>
-              )}
-              style={styles.exerciseList}
-              keyboardShouldPersistTaps="handled"
-            />
-          </View>
-        </SafeAreaView>
-      </Modal>
+        exercises={exerciseList}
+        onClose={() => setShowDayExercisesModal(false)}
+        onSelectExercise={addExerciseToDay}
+      />
 
       {/* Template Selection Modal */}
       <Modal visible={showTemplateModal} animationType="slide" transparent>

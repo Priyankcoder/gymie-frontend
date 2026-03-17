@@ -2,6 +2,7 @@
 import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, Pressable, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface QuickActionCardProps {
@@ -26,7 +27,10 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
 
   return (
     <Pressable
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
       style={({ pressed }) => [
         styles.container,
         {

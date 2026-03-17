@@ -15,6 +15,7 @@ import {
   Platform,
   Dimensions,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -52,6 +53,23 @@ export const CustomModal: React.FC<CustomModalProps> = ({
   customIconColor,
 }) => {
   const { colors, isDark } = useTheme();
+
+  const triggerPrimaryHaptic = () => {
+    switch (type) {
+      case 'success':
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        break;
+      case 'error':
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        break;
+      case 'warning':
+      case 'destructive':
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        break;
+      default:
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  };
 
   const getIconConfig = () => {
     switch (type) {
@@ -141,7 +159,10 @@ export const CustomModal: React.FC<CustomModalProps> = ({
                     styles.secondaryButton,
                     { borderColor: colors.border, backgroundColor: isDark ? colors.border + '20' : colors.background }
                   ]}
-                  onPress={onSecondaryPress}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    onSecondaryPress!();
+                  }}
                   android_ripple={{ color: colors.border }}
                 >
                   <Text style={[styles.buttonText, { color: colors.textPrimary }]}>
@@ -156,7 +177,10 @@ export const CustomModal: React.FC<CustomModalProps> = ({
                   { backgroundColor: icon.color },
                   secondaryButtonText && { flex: 1 }
                 ]}
-                onPress={onPrimaryPress}
+                onPress={() => {
+                  triggerPrimaryHaptic();
+                  onPrimaryPress();
+                }}
                 android_ripple={{ color: '#FFFFFF40' }}
               >
                 <Text style={[styles.buttonText, styles.primaryButtonText]}>

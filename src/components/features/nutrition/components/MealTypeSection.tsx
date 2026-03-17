@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Card } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { Meal } from '../../../../types';
@@ -55,7 +56,10 @@ export const MealTypeSection: React.FC<MealTypeSectionProps> = ({
           )}
         </View>
         <Pressable
-          onPress={onAddMeal}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            onAddMeal();
+          }}
           style={({ pressed }) => pressed && styles.addButtonPressed}
           hitSlop={8}
         >

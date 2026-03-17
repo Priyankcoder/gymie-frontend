@@ -3,8 +3,13 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../src/contexts/ThemeContext';
+
+const tabPressListeners = {
+  tabPress: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+};
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -52,6 +57,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
+        listeners={tabPressListeners}
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
@@ -61,6 +67,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="workout"
+        listeners={tabPressListeners}
         options={{
           title: 'Workout',
           tabBarIcon: ({ color, focused }) => (
@@ -70,6 +77,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="progress"
+        listeners={tabPressListeners}
         options={{
           title: 'Progress',
           tabBarIcon: ({ color, focused }) => (
@@ -79,6 +87,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="nutrition"
+        listeners={tabPressListeners}
         options={{
           title: 'Nutrition',
           tabBarIcon: ({ color, focused }) => (
@@ -88,6 +97,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="profile"
+        listeners={tabPressListeners}
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (

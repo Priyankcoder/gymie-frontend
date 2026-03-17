@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../../../contexts/ThemeContext';
 
 type SettingType = 'toggle' | 'select' | 'navigation' | 'info';
@@ -94,7 +95,10 @@ export const SettingItem: React.FC<SettingItemProps> = ({
         styles.container,
         hasBorder && { borderTopWidth: 1, borderTopColor: colors.border }
       ]}
-      onPress={onPress}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress?.();
+      }}
       android_ripple={{ color: colors.border }}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >

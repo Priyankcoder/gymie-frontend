@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Modal, Pressable, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../../../../contexts/ThemeContext';
 import { api } from '../../../../services/api';
 
@@ -29,12 +30,14 @@ export const AddWeightModal: React.FC<AddWeightModalProps> = ({
       weight: weightValue,
       unit,
     });
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setWeight('');
     onClose();
     onSuccess();
   };
 
   const handleClose = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setWeight('');
     onClose();
   };

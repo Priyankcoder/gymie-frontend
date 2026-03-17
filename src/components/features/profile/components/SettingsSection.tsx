@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { Card } from '../../../ui';
 import { CustomModal } from '../../../common/CustomModal';
 import { SettingItem } from './SettingItem';
@@ -35,6 +36,7 @@ export const SettingsSection: React.FC = () => {
   };
 
   const handleLogout = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     setShowLogoutModal(true);
   };
 

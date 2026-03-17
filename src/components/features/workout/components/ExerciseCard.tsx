@@ -1,20 +1,29 @@
-
 /**
- * ExerciseCard Component
- * Displays an exercise with all its sets in an active workout
+ * ExerciseCard
+ *
+ * Displays an exercise with all its sets during an active workout.
+ *
+ * Microinteractions:
+ *  - Animated green completion badge (scale + fade) when all sets are done
+ *  - Success haptic when the last set is checked off
+ *  - Haptic feedback on add set / remove exercise
+ *  - Info icon to drill into ExerciseDetailModal
  */
 
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Card } from '../../../ui';
 import { useTheme } from '../../../../contexts/ThemeContext';
-import { Exercise, WorkoutSet } from '../../../../types';
+import { Exercise, ExerciseInfo, WorkoutSet } from '../../../../types';
 import { SetRow } from './SetRow';
+import { ExerciseDetailModal } from '../modals/ExerciseDetailModal';
 
 interface ExerciseCardProps {
   exercise: Exercise;
   exerciseIndex: number;
+  exerciseInfo?: ExerciseInfo;
   onUpdateSet: (exerciseId: string, setId: string, updates: Partial<WorkoutSet>) => void;
   onRemoveSet: (exerciseId: string, setId: string) => void;
   onAddSet: (exerciseId: string) => void;
@@ -25,7 +34,7 @@ interface ExerciseCardProps {
 
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   exercise,
-  exerciseIndex,
+  exerciseInfo,
   onUpdateSet,
   onRemoveSet,
   onAddSet,
@@ -34,26 +43,138 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   celebratingSetId,
 }) => {
   const { colors } = useTheme();
+  const [detailVisible, setDetailVisible] = useState(false);
+
+  // ── Completion animation ─────────────────────────────────────────────────
+
+  const completedSets = exercise.sets.filter((s) => s.completed).length;
+  const totalSets = exercise.sets.length;
+  const allDone = totalSets > 0 && completedSets === totalSets;
+
+  const badgeScale = useRef(new Animated.Value(0)).current;
+  const badgeOpacity = useRef(new Animated.Value(0)).current;
+  const prevAllDone = useRef(false);
+
+  useEffect(() => {
+    if (allDone && !prevAllDone.current) {
+      // Animate badge in
+      Animated.parallel([
+        Animated.spring(badgeScale, {
+          toValue: 1,
+          speed: 14,
+          bounciness: 14,
+          useNativeDriver: true,
+        }),
+        Animated.timing(badgeOpacity, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else if (!allDone && prevAllDone.current) {
+      // Animate badge out
+      Animated.parallel([
+        Animated.timing(badgeScale, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(badgeOpacity, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+    prevAllDone.current = allDone;
+  }, [allDone, badgeScale, badgeOpacity]);
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  const primaryMuscles = exerciseInfo?.primaryMuscles;
+  const muscleLabel = primaryMuscles?.length
+    ? primaryMuscles
+        .slice(0, 2)
+        .map((m) => m.charAt(0).toUpperCase() + m.slice(1))
+        .join(' · ')
+    : null;
 
   return (
-    <Card style={styles.exerciseCard}>
-      <View style={styles.exerciseHeader}>
+    <Card style={styles.card}>
+      {/* Header */}
+      <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.exerciseName, { color: colors.textPrimary }]}>
-            {exercise.name}
-          </Text>
-          <Text style={[styles.exerciseMeta, { color: colors.textSecondary }]}>
-            {exercise.sets.filter((s) => s.completed).length} of {exercise.sets.length} sets
-          </Text>
+          <View style={styles.nameRow}>
+            <Text
+              style={[styles.exerciseName, { color: colors.textPrimary }]}
+              numberOfLines={1}
+            >
+              {exercise.name}
+            </Text>
+            {/* Completion badge */}
+            <Animated.View
+              style={[
+                styles.completeBadge,
+                { opacity: badgeOpacity, transform: [{ scale: badgeScale }] },
+              ]}
+            >
+              <Ionicons name="checkmark-circle" size={20} color="#22C55E" />
+            </Animated.View>
+          </View>
+
+          <View style={styles.metaRow}>
+            <Text style={[styles.metaText, { color: colors.textSecondary }]}>
+              {completedSets} of {totalSets} sets
+            </Text>
+            {muscleLabel && (
+              <>
+                <View
+                  style={[styles.metaDot, { backgroundColor: colors.textSecondary }]}
+                />
+                <Text
+                  style={[styles.metaText, { color: colors.textSecondary }]}
+                  numberOfLines={1}
+                >
+                  {muscleLabel}
+                </Text>
+              </>
+            )}
+          </View>
         </View>
+
+        {/* Info button */}
+        {exerciseInfo && (
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setDetailVisible(true);
+            }}
+            style={styles.iconBtn}
+            hitSlop={8}
+          >
+            <Ionicons
+              name="information-circle-outline"
+              size={22}
+              color={colors.accentBlue}
+            />
+          </Pressable>
+        )}
+
+        {/* Remove button */}
         <Pressable
-          onPress={() => onRemoveExercise(exercise.id)}
-          style={styles.removeExerciseButton}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+            onRemoveExercise(exercise.id);
+          }}
+          style={styles.iconBtn}
+          hitSlop={8}
         >
           <Ionicons name="trash-outline" size={20} color={colors.error} />
         </Pressable>
       </View>
 
+      {/* Sets header */}
       <View style={styles.setsHeader}>
         <Text style={[styles.setsHeaderText, { color: colors.textSecondary }]}>
           Set
@@ -62,7 +183,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           Weight
         </Text>
         <Text style={[styles.setsHeaderText, { color: colors.textSecondary }]}>
-          
+          {' '}
         </Text>
         <Text style={[styles.setsHeaderText, { color: colors.textSecondary }]}>
           Reps
@@ -70,6 +191,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         <View style={{ width: 60 }} />
       </View>
 
+      {/* Sets */}
       {exercise.sets.map((set, setIndex) => (
         <SetRow
           key={set.id}
@@ -83,39 +205,56 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         />
       ))}
 
+      {/* Add set */}
       <Pressable
-        style={[styles.addSetButton, { borderColor: colors.border }]}
-        onPress={() => onAddSet(exercise.id)}
+        style={[styles.addSetBtn, { borderColor: colors.border }]}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onAddSet(exercise.id);
+        }}
       >
         <Ionicons name="add" size={20} color={colors.accentBlue} />
         <Text style={[styles.addSetText, { color: colors.accentBlue }]}>
           Add Set
         </Text>
       </Pressable>
+
+      {/* Detail modal */}
+      <ExerciseDetailModal
+        visible={detailVisible}
+        exercise={exerciseInfo ?? null}
+        onClose={() => setDetailVisible(false)}
+      />
     </Card>
   );
 };
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  exerciseCard: {
-    marginBottom: 12,
-  },
-  exerciseHeader: {
+  card: { marginBottom: 12 },
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
+    gap: 4,
   },
-  exerciseName: {
-    fontSize: 18,
-    fontWeight: '600',
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  exerciseMeta: {
-    fontSize: 13,
+  exerciseName: { fontSize: 17, fontWeight: '600', letterSpacing: -0.2, flexShrink: 1 },
+  completeBadge: { flexShrink: 0 },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 2,
   },
-  removeExerciseButton: {
-    padding: 8,
-  },
+  metaText: { fontSize: 12 },
+  metaDot: { width: 3, height: 3, borderRadius: 1.5, opacity: 0.5 },
+  iconBtn: { padding: 8 },
   setsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -124,12 +263,13 @@ const styles = StyleSheet.create({
   },
   setsHeaderText: {
     flex: 1,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     textTransform: 'uppercase',
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
-  addSetButton: {
+  addSetBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -138,10 +278,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderStyle: 'dashed',
     marginTop: 8,
+    gap: 4,
   },
-  addSetText: {
-    marginLeft: 4,
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  addSetText: { fontSize: 14, fontWeight: '600' },
 });
