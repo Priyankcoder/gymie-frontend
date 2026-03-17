@@ -14,6 +14,8 @@ const STORAGE_KEYS = {
   PROGRESS_PHOTOS: '@gymie_progress_photos',
   PHOTO_SYNC_QUEUE: '@gymie_photo_sync_queue',
   EXERCISES: '@gymie_exercises',
+  EXERCISES_LAST_SYNC: '@gymie_exercises_last_sync',
+  EXERCISES_VERSION: '@gymie_exercises_version',
   GYM_ATTENDANCE: '@gymie_gym_attendance',
   WEIGHT_LOGS: '@gymie_weight_logs',
 } as const;

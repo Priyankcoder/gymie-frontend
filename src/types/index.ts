@@ -40,6 +40,7 @@ export interface Exercise {
   name: string;
   sets: WorkoutSet[];
   notes?: string;
+  exerciseDbId?: string; // free-exercise-db ID — links back to ExerciseInfo for images/instructions
 }
 
 export interface Workout {
@@ -66,6 +67,7 @@ export interface WorkoutTemplate {
 
 export interface TemplateExercise {
   name: string;
+  exerciseDbId?: string; // free-exercise-db ID — links back to ExerciseInfo for images/instructions
   targetSets: number;
   targetReps: number | string; // Can be "8-12" range
   targetWeight?: number;
@@ -268,9 +270,17 @@ export interface ExerciseInfo {
   id: string;
   name: string;
   category: 'chest' | 'back' | 'shoulders' | 'arms' | 'legs' | 'core' | 'cardio' | 'other';
-  muscleGroups: string[];
+  muscleGroups: string[]; // kept for backward compatibility
   equipment?: string[];
   isCompound: boolean;
+  // Enriched from free-exercise-db (https://github.com/yuhonas/free-exercise-db)
+  level?: 'beginner' | 'intermediate' | 'expert';
+  force?: 'push' | 'pull' | 'static' | null;
+  mechanic?: 'compound' | 'isolation' | null;
+  primaryMuscles?: string[];
+  secondaryMuscles?: string[];
+  instructions?: string[];
+  images?: string[]; // Full jsDelivr CDN URLs: [startPosition, endPosition]
 }
 
 // Exercise Progress for analytics
