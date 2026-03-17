@@ -174,8 +174,15 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       {/* Backdrop tap to dismiss */}
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
-          {/* Sheet — inner Pressable absorbs touches so they don't reach backdrop */}
-          <Pressable style={[styles.sheet, { backgroundColor: colors.background, paddingBottom: insets.bottom + 16 }]}>
+          {/*
+            Sheet: onStartShouldSetResponder ensures all touches inside the sheet
+            are claimed by this View, preventing them from bubbling up to the
+            backdrop TouchableWithoutFeedback and accidentally closing the modal.
+          */}
+          <View
+            style={[styles.sheet, { backgroundColor: colors.background, paddingBottom: insets.bottom + 16 }]}
+            onStartShouldSetResponder={() => true}
+          >
 
             {/* Drag handle */}
             <View style={styles.handleRow}>
@@ -453,7 +460,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
                 )}
               </View>
             </ScrollView>
-          </Pressable>
+          </View>
         </View>
       </TouchableWithoutFeedback>
     </Modal>
